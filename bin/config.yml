@@ -1,0 +1,4 @@
+---
+#jobdir: ../jobs/
+jobdir: /home/andrew/adminware/jobs/
+logdir: /home/andrew/adminware/bin/

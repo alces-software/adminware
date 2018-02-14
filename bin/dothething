@@ -1,0 +1,176 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'yaml'
+require 'logger'
+
+path = File.expand_path(File.dirname(__FILE__))
+options = {}
+
+#All available options for the adminware command
+opt_parser = OptionParser.new do |opt|
+ opt.on('-n', '--name NAME', 'The name of the directory') do |v|
+  options[:name] = v
+ end
+
+ opt.on('-f', '--forward', 'Call the forward shell script from NAME') do
+  options[:command] = 'forward'
+ end
+
+ opt.on('-r', '--rewind', 'Call the rewind shell script from NAME') do 
+  options[:command] = 'rewind'
+ end
+end
+
+#Displays help command on invalid entry
+begin opt_parser.parse! ARGV
+rescue OptionParser::InvalidOption => e
+ puts e
+ puts opt_parser
+ exit 1
+end.parse!
+
+class State
+ #Loads the config file
+ def initialize(state)
+  @statefile = state 
+  @sf = YAML.load_file(@statefile)
+ end
+
+ #Toggles value in state hash
+ def toggle(name)
+  #Finds all true/false values in hash
+  t = @sf[name].key(true)
+  f = @sf[name].key(false) 
+  
+  #Toggles the values
+  @sf[name][:"#{t}"] = false
+  @sf[name][:"#{f}"] = true  
+ end
+ 
+ #Saves the current state to file
+ def save!
+  File.open(@statefile, 'w') { |f| YAML.dump(@sf, f) }
+ end
+
+ #Checks the current state of the requested script for the given job
+ def status(name, command, event)
+  #The script will run if it's state is currently false
+  if @sf[name][:"#{command}"] == false
+  else
+   event.log.error "Can't execute #{command} for #{name} as it is already set to true"
+   exit 1 
+  end
+ end
+end
+
+class Config
+ def initialize(config)
+  @configfile = config
+  @config = YAML.load_file(@configfile) 
+ end
+ 
+ #Sets the directory for any given setting in the file 
+ def dirset(path, name, setting)
+  if exists?(setting)
+   @dir = @config[setting]
+   
+   #If the setting exists it checks if it is absolute or relative
+   if @dir.include? "../"
+    @dir = File.join(path, @dir, name)
+   else
+    @dir = File.join(@dir, name)
+   end
+  else
+   puts "The config file does not contain a path for the setting: #{setting}"
+   if setting == 'jobdir' then exit 1 end
+  end
+ end
+ 
+ #Check to see if a given setting exists in the file
+ def exists?(setting)
+  if @config[setting] != nil then return true end
+ end
+end
+
+class Job
+ def initialize(jobdir, cmdscript, name, command, log)
+  @jobdir = jobdir
+  @cmdscript = cmdscript
+  @job = name
+  @command = command
+  @event = log
+ end
+ 
+ #Performs validation on entered command
+ def validate!
+  @event.log.info "Attempting to run #{@command} script for #{@job}"
+  if dir_exist? and file_exist? then
+   return true
+  else
+   @event.log.error "Failed to validate"
+   exit 1
+  end
+ end
+ 
+ #Checks to see if the directory exists for input NAME
+ def dir_exist?
+  if Dir.exist?(@jobdir)
+   return true
+  else
+   @event.log.error "#{@jobdir} does not exist"
+   return false
+  end
+ end
+ 
+ #Checks to see if the file exists for input COMMAND
+ def file_exist?
+  if File.exist?(@cmdscript)
+   return true
+  else
+   @event.log.error "The #{@command} script for #{@job} does not exist"
+   return false
+  end
+ end
+ 
+ #Runs the requested script for the job
+ def run
+  @event.log.info "Running #{@command} script for #{@job}"
+  system "bash", @cmdscript
+ end
+end
+
+class Log
+ def initialize(logdir)
+  @logger = Logger.new "#{logdir}" 
+  @logger.level = Logger::DEBUG 
+  @logger.formatter = proc do |severity, datetime, progname, msg|
+   date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
+   "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
+  end
+ end
+ 
+ def log 
+  @logger 
+ end
+end
+
+#Initialisation for variables, objects etc
+name = "#{options[:name]}"
+command = "#{options[:command]}"
+configfile = File.join(path, 'config.yml')
+config = Config.new(configfile)
+jobdir = config.dirset(path, name, 'jobdir')
+logdir = config.dirset(path, 'events.log', 'logdir')
+cmdscript = File.join(jobdir, command + '.sh')
+events = Log.new(logdir)
+
+#Attempted execution of the command
+job = Job.new(jobdir, cmdscript, name, command, events)
+job.validate!
+statefile = File.join(path, 'states.yml')
+state = State.new(statefile)
+state.status(name, command, events)
+state.toggle(name)
+state.save!
+job.run
