@@ -1,20 +1,24 @@
-[14-02-2018 12:25:48]  INFO : Attempting to run forward script for job1
-[14-02-2018 12:25:48]  ERROR: Can't execute forward for job1 as it is already set to true
-[14-02-2018 12:25:51]  INFO : Attempting to run rewind script for job1
-[14-02-2018 12:25:51]  INFO : Running rewind script for job1
-rewindjob1_stderr
-[14-02-2018 12:27:10]  INFO : Attempting to run forward script for job1
-[14-02-2018 12:27:10]  INFO : Running forward script for job1
-forwardjob1_stderr
-[14-02-2018 12:27:19]  INFO : Attempting to run forward script for job2
-[14-02-2018 12:27:19]  ERROR: Can't execute forward for job2 as it is already set to true
-[14-02-2018 12:27:21]  INFO : Attempting to run rewind script for job2
-[14-02-2018 12:27:21]  INFO : Running rewind script for job2
+[14-02-2018 14:03:29]  INFO : Attempting to run forward script for job2
+[14-02-2018 14:03:29]  ERROR: Can't execute forward for job2 as it is already set to true
+[14-02-2018 14:03:32]  INFO : Attempting to run rewind script for job2
+[14-02-2018 14:03:32]  INFO : Running rewind script for job2
 rewindjob2_stderr
-[14-02-2018 12:27:23]  INFO : Attempting to run forward script for job2
-[14-02-2018 12:27:23]  INFO : Running forward script for job2
+[14-02-2018 14:08:32]  INFO : Attempting to run rewind script for job1
+[14-02-2018 14:08:32]  INFO : Running rewind script for job1
+rewindjob1_stderr
+[14-02-2018 14:08:34]  INFO : Attempting to run rewind script for job1
+[14-02-2018 14:08:34]  ERROR: Can't execute rewind for job1 as it is already set to true
+[14-02-2018 14:12:20]  INFO : Attempting to run forward script for job1
+[14-02-2018 14:12:20]  INFO : Running forward script for job1
+forwardjob1_stderr
+[14-02-2018 14:12:38]  INFO : Attempting to run forward script for stevejob
+[14-02-2018 14:12:38]  ERROR: /home/andrew/adminware/jobs/stevejob does not exist
+[14-02-2018 14:12:38]  ERROR: Failed to validate
+[14-02-2018 14:12:47]  INFO : Attempting to run forward script for job1
+[14-02-2018 14:12:47]  ERROR: Can't execute forward for job1 as it is already set to true
+[14-02-2018 14:12:48]  INFO : Attempting to run rewind script for job1
+[14-02-2018 14:12:48]  INFO : Running rewind script for job1
+rewindjob1_stderr
+[14-02-2018 14:12:54]  INFO : Attempting to run forward script for job2
+[14-02-2018 14:12:54]  INFO : Running forward script for job2
 forwardjob2_stderr
-[14-02-2018 12:30:49]  INFO : Attempting to run forward script for dinosaur
-[14-02-2018 12:30:49]  ERROR: /home/andrew/adminware/jobs/dinosaur does not exist
-[14-02-2018 12:30:49]  ERROR: Failed to validate
-[14-02-2018 12:34:04]  ERROR: 

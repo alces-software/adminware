@@ -94,17 +94,15 @@ class Config
 end
 
 class Job
- def initialize(jobdir, cmdscript, name, command, log)
-  @jobdir = jobdir
-  @cmdscript = cmdscript
-  @job = name
-  @command = command
-  @event = log
- end
+ attr_accessor :name
+ attr_accessor :command
+ attr_accessor :dir
+ attr_accessor :script
+ attr_accessor :event
  
  #Performs validation on entered command
  def validate!
-  @event.log.info "Attempting to run #{@command} script for #{@job}"
+  @event.log.info "Attempting to run #{@command} script for #{@name}"
   if dir_exist? and file_exist? then
    return true
   else
@@ -115,32 +113,33 @@ class Job
  
  #Checks to see if the directory exists for input NAME
  def dir_exist?
-  if Dir.exist?(@jobdir)
+  if Dir.exist?(@dir)
    return true
   else
-   @event.log.error "#{@jobdir} does not exist"
+   @event.log.error "#{@dir} does not exist"
    return false
   end
  end
  
  #Checks to see if the file exists for input COMMAND
  def file_exist?
-  if File.exist?(@cmdscript)
+  if File.exist?(@script)
    return true
   else
-   @event.log.error "The #{@command} script for #{@job} does not exist"
+   @event.log.error "The #{@command} script for #{@name} does not exist"
    return false
   end
  end
  
  #Runs the requested script for the job
  def run
-  @event.log.info "Running #{@command} script for #{@job}"
-  system "bash", @cmdscript
+  @event.log.info "Running #{@command} script for #{@name}"
+  system "bash", @script
  end
 end
 
 class Log
+ attr_reader :logger
  def initialize(logdir)
   @logger = Logger.new "#{logdir}" 
   @logger.level = Logger::DEBUG
@@ -168,9 +167,18 @@ events = Log.new(logdir)
 #Redirects and appends STDERR messages to the log file
 $stderr.reopen(logdir, "a")
 
-#Attempted execution of the command
-job = Job.new(jobdir, cmdscript, name, command, events)
+#Initialise the job
+job = Job.new
+job.name = name
+job.command = command
+job.dir = jobdir
+job.script = cmdscript
+job.event = events
+
+#Attempt to validate the job command
 job.validate!
+
+#If valid executes the given job
 statefile = File.join(path, 'states.yml')
 state = State.new(statefile)
 state.status(name, command, events)

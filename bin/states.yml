@@ -1,7 +1,7 @@
 ---
 job1:
-  :forward: true
-  :rewind: false
+  :forward: false
+  :rewind: true
 job2:
   :forward: true
   :rewind: false
