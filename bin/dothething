@@ -12,12 +12,16 @@ opt_parser = OptionParser.new do |opt|
  opt.on('-n', '--name NAME', 'The name of the directory') do |v|
   options[:name] = v
  end
+ 
+ opt.on('-h', '--host NAME', 'The name of the host to run the script on') do |v|
+  options[:host] = v
+ end
 
- opt.on('-f', '--forward', 'Call the forward shell script from NAME') do
+ opt.on('-f', '--forward', 'Call the forward script for NAME') do
   options[:command] = 'forward'
  end
 
- opt.on('-r', '--rewind', 'Call the rewind shell script from NAME') do 
+ opt.on('-r', '--rewind', 'Call the rewind script for NAME') do 
   options[:command] = 'rewind'
  end
 end
@@ -99,15 +103,31 @@ class Job
  attr_accessor :dir
  attr_accessor :script
  attr_accessor :event
- 
+ attr_accessor :host
+
  #Performs validation on entered command
  def validate!
-  @event.log.info "Attempting to run #{@command} script for #{@name}"
+  if @host.empty?
+   @event.log.info "Attempting to run #{@command} script for #{@name}"
+  else 
+   @event.log.info "Attempting to run #{@command} script for #{@name} on #{@host}"
+   host_exist?
+  end
+  
   if dir_exist? and file_exist? then
    return true
   else
    @event.log.error "Failed to validate"
    exit 1
+  end
+ end
+ 
+ def host_exist?
+  if system "ssh", @host, "echo", "$$", ">", "/tmp/test"
+   @hostexists = true
+   return true
+  else
+   exit 1 
   end
  end
  
@@ -133,8 +153,13 @@ class Job
  
  #Runs the requested script for the job
  def run
-  @event.log.info "Running #{@command} script for #{@name}"
-  system "bash", @script
+  if @hostexists == true 
+   @event.log.info "Running #{@command} script for #{@name} on #{@host}"
+   system "ssh", @host, "bash", @script
+  else
+   @event.log.info "Running #{@command} script for #{@name}"
+   system "bash", @script
+  end
  end
 end
 
@@ -157,6 +182,7 @@ end
 #Initialisation for variables, objects etc
 name = "#{options[:name]}"
 command = "#{options[:command]}"
+host = "#{options[:host]}"
 configfile = File.join(path, 'config.yml')
 config = Config.new(configfile)
 jobdir = config.dirset(path, name, 'jobdir')
@@ -174,6 +200,7 @@ job.command = command
 job.dir = jobdir
 job.script = cmdscript
 job.event = events
+job.host = host 
 
 #Attempt to validate the job command
 job.validate!
