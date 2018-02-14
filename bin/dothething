@@ -143,7 +143,7 @@ end
 class Log
  def initialize(logdir)
   @logger = Logger.new "#{logdir}" 
-  @logger.level = Logger::DEBUG 
+  @logger.level = Logger::DEBUG
   @logger.formatter = proc do |severity, datetime, progname, msg|
    date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
    "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
@@ -164,6 +164,9 @@ jobdir = config.dirset(path, name, 'jobdir')
 logdir = config.dirset(path, 'events.log', 'logdir')
 cmdscript = File.join(jobdir, command + '.sh')
 events = Log.new(logdir)
+
+#Redirects and appends STDERR messages to the log file
+$stderr.reopen(logdir, "a")
 
 #Attempted execution of the command
 job = Job.new(jobdir, cmdscript, name, command, events)

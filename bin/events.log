@@ -1,13 +1,20 @@
-[14-02-2018 10:31:14]  INFO : Attempting to run rewind script for job1
-[14-02-2018 10:31:14]  ERROR: Can't execute rewind for job1 as it is already set to true
-[14-02-2018 10:31:18]  INFO : Attempting to run forward script for job1
-[14-02-2018 10:31:18]  INFO : Running forward script for job1
-[14-02-2018 10:31:46]  INFO : Attempting to run forward script for monkaS
-[14-02-2018 10:31:46]  ERROR: /home/andrew/adminware/jobs/monkaS does not exist
-[14-02-2018 10:31:46]  ERROR: Failed to validate
-[14-02-2018 10:31:53]  INFO : Attempting to run forward script for job2
-[14-02-2018 10:31:53]  INFO : Running forward script for job2
-[14-02-2018 10:31:54]  INFO : Attempting to run rewind script for job2
-[14-02-2018 10:31:54]  INFO : Running rewind script for job2
-[14-02-2018 10:31:58]  INFO : Attempting to run rewind script for job2
-[14-02-2018 10:31:58]  ERROR: Can't execute rewind for job2 as it is already set to true
+[14-02-2018 12:25:48]  INFO : Attempting to run forward script for job1
+[14-02-2018 12:25:48]  ERROR: Can't execute forward for job1 as it is already set to true
+[14-02-2018 12:25:51]  INFO : Attempting to run rewind script for job1
+[14-02-2018 12:25:51]  INFO : Running rewind script for job1
+rewindjob1_stderr
+[14-02-2018 12:27:10]  INFO : Attempting to run forward script for job1
+[14-02-2018 12:27:10]  INFO : Running forward script for job1
+forwardjob1_stderr
+[14-02-2018 12:27:19]  INFO : Attempting to run forward script for job2
+[14-02-2018 12:27:19]  ERROR: Can't execute forward for job2 as it is already set to true
+[14-02-2018 12:27:21]  INFO : Attempting to run rewind script for job2
+[14-02-2018 12:27:21]  INFO : Running rewind script for job2
+rewindjob2_stderr
+[14-02-2018 12:27:23]  INFO : Attempting to run forward script for job2
+[14-02-2018 12:27:23]  INFO : Running forward script for job2
+forwardjob2_stderr
+[14-02-2018 12:30:49]  INFO : Attempting to run forward script for dinosaur
+[14-02-2018 12:30:49]  ERROR: /home/andrew/adminware/jobs/dinosaur does not exist
+[14-02-2018 12:30:49]  ERROR: Failed to validate
+[14-02-2018 12:34:04]  ERROR: 

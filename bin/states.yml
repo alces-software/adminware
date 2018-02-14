@@ -3,5 +3,5 @@ job1:
   :forward: true
   :rewind: false
 job2:
-  :forward: false
-  :rewind: true
+  :forward: true
+  :rewind: false
