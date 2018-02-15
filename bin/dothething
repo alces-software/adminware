@@ -34,6 +34,12 @@ rescue OptionParser::InvalidOption => e
  exit 1
 end.parse!
 
+#If no command was entered display help and exit 
+if options.empty?
+ puts opt_parser
+ exit 1
+end
+
 class State
  #Loads the config file
  def initialize(state)
@@ -122,6 +128,7 @@ class Job
   end
  end
  
+ #Checks if the host exists to run the script on
  def host_exist?
   if system "ssh", @host, "echo", "$$", ">", "/tmp/test"
    @hostexists = true
@@ -164,7 +171,6 @@ class Job
 end
 
 class Log
- attr_reader :logger
  def initialize(logdir)
   @logger = Logger.new "#{logdir}" 
   @logger.level = Logger::DEBUG
@@ -205,10 +211,12 @@ job.host = host
 #Attempt to validate the job command
 job.validate!
 
-#If valid executes the given job
+#Checks the curent state of the requested script
 statefile = File.join(path, 'states.yml')
 state = State.new(statefile)
 state.status(name, command, events)
 state.toggle(name)
 state.save!
+
+#Runs the script for the job
 job.run

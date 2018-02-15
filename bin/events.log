@@ -56,3 +56,83 @@ ssh: Could not resolve hostname vm69: Name or service not known
 [14-02-2018 17:14:38]  INFO : Attempting to run rewind script for job1 on vm2
 [14-02-2018 17:14:39]  INFO : Running rewind script for job1 on vm2
 rewindjob1_stderr
+[14-02-2018 17:24:25]  INFO : Attempting to run rewind script for job1 on vm2
+[14-02-2018 17:24:25]  ERROR: Can't execute rewind for job1 as it is already set to true
+[14-02-2018 17:24:29]  INFO : Attempting to run forward script for job1 on vm2
+[14-02-2018 17:24:30]  INFO : Running forward script for job1 on vm2
+forwardjob1_stderr
+[15-02-2018 09:22:47]  INFO : Attempting to run forward script for job1
+[15-02-2018 09:22:47]  ERROR: Can't execute forward for job1 as it is already set to true
+[15-02-2018 09:22:52]  INFO : Attempting to run rewind script for job1
+[15-02-2018 09:22:52]  INFO : Running rewind script for job1
+rewindjob1_stderr
+[15-02-2018 09:22:58]  INFO : Attempting to run rewind script for job3
+[15-02-2018 09:22:58]  ERROR: /home/andrew/adminware/jobs/job3 does not exist
+[15-02-2018 09:22:58]  ERROR: Failed to validate
+[15-02-2018 09:23:15]  INFO : Attempting to run forward script for job1 on vm2
+[15-02-2018 09:23:16]  INFO : Running forward script for job1 on vm2
+forwardjob1_stderr
+[15-02-2018 09:23:40]  INFO : Attempting to run forward script for job1 on vm3
+ssh: Could not resolve hostname vm3: Name or service not known
+[15-02-2018 09:23:48]  INFO : Attempting to run forward script for job3 on vm2
+[15-02-2018 09:23:49]  ERROR: /home/andrew/adminware/jobs/job3 does not exist
+[15-02-2018 09:23:49]  ERROR: Failed to validate
+[15-02-2018 09:24:04]  INFO : Attempting to run forward script for job3 on vm3
+ssh: Could not resolve hostname vm3: Name or service not known
+[15-02-2018 09:49:12]  INFO : Attempting to run forward script for job2 on vm2
+[15-02-2018 09:49:13]  ERROR: Can't execute forward for job2 as it is already set to true
+[15-02-2018 09:49:16]  INFO : Attempting to run rewind script for job2 on vm2
+[15-02-2018 09:49:16]  INFO : Running rewind script for job2 on vm2
+rewindjob2_stderr
+[15-02-2018 09:54:52]  INFO : Attempting to run forward script for job2 on vm2
+[15-02-2018 09:54:52]  INFO : Running forward script for job2 on vm2
+forwardjob2_stderr
+[15-02-2018 09:55:00]  INFO : Attempting to run forward script for job1 on vm2
+[15-02-2018 09:55:01]  ERROR: Can't execute forward for job1 as it is already set to true
+[15-02-2018 09:55:02]  INFO : Attempting to run rewind script for job1 on vm2
+[15-02-2018 09:55:03]  INFO : Running rewind script for job1 on vm2
+rewindjob1_stderr
+[15-02-2018 10:55:14]  INFO : Attempting to run rewind script for job1 on vm2
+[15-02-2018 10:55:14]  ERROR: Can't execute rewind for job1 as it is already set to true
+[15-02-2018 10:55:18]  INFO : Attempting to run forward script for job1 on vm2
+[15-02-2018 10:55:18]  INFO : Running forward script for job1 on vm2
+forwardjob1_stderr
+[15-02-2018 11:16:12]  INFO : Attempting to run rewind script for job1 on vm2
+[15-02-2018 11:16:12]  INFO : Running rewind script for job1 on vm2
+rewindjob1_stderr
+[15-02-2018 11:16:21]  INFO : Attempting to run forward script for job1
+[15-02-2018 11:16:21]  INFO : Running forward script for job1
+forwardjob1_stderr
+[15-02-2018 11:19:07]  INFO : Attempting to run rewind script for job1 on vm2
+[15-02-2018 11:19:08]  INFO : Running rewind script for job1 on vm2
+rewindjob1_stderr
+[15-02-2018 11:19:32]  INFO : Attempting to run forward script for job1 on vm2
+[15-02-2018 11:19:33]  INFO : Running forward script for job1 on vm2
+forwardjob1_stderr
+[15-02-2018 11:19:36]  INFO : Attempting to run forward script for job1
+[15-02-2018 11:19:36]  ERROR: Can't execute forward for job1 as it is already set to true
+[15-02-2018 11:19:38]  INFO : Attempting to run rewind script for job1
+[15-02-2018 11:19:38]  INFO : Running rewind script for job1
+rewindjob1_stderr
+[15-02-2018 11:37:49]  INFO : Attempting to run  script for 
+[15-02-2018 11:37:49]  ERROR: The  script for  does not exist
+[15-02-2018 11:37:49]  ERROR: Failed to validate
+[15-02-2018 11:38:31]  INFO : Attempting to run rewind script for job1
+[15-02-2018 11:38:31]  ERROR: Can't execute rewind for job1 as it is already set to true
+[15-02-2018 11:39:12]  INFO : Attempting to run rewind script for job1
+[15-02-2018 11:39:12]  ERROR: Can't execute rewind for job1 as it is already set to true
+[15-02-2018 11:39:17]  INFO : Attempting to run  script for 
+[15-02-2018 11:39:17]  ERROR: The  script for  does not exist
+[15-02-2018 11:39:17]  ERROR: Failed to validate
+[15-02-2018 11:39:47]  INFO : Attempting to run  script for 
+[15-02-2018 11:39:47]  ERROR: The  script for  does not exist
+[15-02-2018 11:39:47]  ERROR: Failed to validate
+[15-02-2018 11:40:08]  INFO : Attempting to run  script for 
+[15-02-2018 11:40:08]  ERROR: The  script for  does not exist
+[15-02-2018 11:40:08]  ERROR: Failed to validate
+[15-02-2018 11:41:46]  INFO : Attempting to run forward script for job1
+[15-02-2018 11:41:46]  INFO : Running forward script for job1
+forwardjob1_stderr
+[15-02-2018 11:41:50]  INFO : Attempting to run rewind script for job1
+[15-02-2018 11:41:50]  INFO : Running rewind script for job1
+rewindjob1_stderr
