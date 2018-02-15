@@ -40,9 +40,28 @@ if options.empty?
  exit 1
 end
 
+module EventLogger
+ class Log
+  def initialize 
+    @logger = Logger.new $logdir
+    @logger.level = Logger::DEBUG
+    @logger.formatter = proc do |severity, datetime, progname, msg|
+     date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
+     "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
+    end
+  end
+
+  def log
+   @logger
+  end
+ end
+end
+
 class State
+ include EventLogger
  #Loads the config file
  def initialize(state)
+  @event = Log.new
   @statefile = state 
   @sf = YAML.load_file(@statefile)
  end
@@ -64,11 +83,11 @@ class State
  end
 
  #Checks the current state of the requested script for the given job
- def status(name, command, event)
+ def status(name, command)
   #The script will run if it's state is currently false
   if @sf[name][:"#{command}"] == false
   else
-   event.log.error "Can't execute #{command} for #{name} as it is already set to true"
+   @event.log.error "Can't execute #{command} for #{name} as it is already set to true"
    exit 1 
   end
  end
@@ -104,12 +123,16 @@ class Config
 end
 
 class Job
+ include EventLogger
  attr_accessor :name
  attr_accessor :command
  attr_accessor :dir
  attr_accessor :script
- attr_accessor :event
  attr_accessor :host
+
+ def initialize
+  @event = Log.new
+ end
 
  #Performs validation on entered command
  def validate!
@@ -165,25 +188,25 @@ class Job
    system "ssh", @host, "bash", @script
   else
    @event.log.info "Running #{@command} script for #{@name}"
-   system "bash", @script
+   system "bash", @script 
   end
  end
 end
 
-class Log
- def initialize(logdir)
-  @logger = Logger.new "#{logdir}" 
-  @logger.level = Logger::DEBUG
-  @logger.formatter = proc do |severity, datetime, progname, msg|
-   date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
-   "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
-  end
- end
- 
- def log 
-  @logger 
- end
-end
+#class Log
+# def initialize(logdir)
+#  @logger = Logger.new "#{logdir}" 
+#  @logger.level = Logger::DEBUG
+#  @logger.formatter = proc do |severity, datetime, progname, msg|
+#   date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
+#   "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
+#  end
+# end
+# 
+# def log 
+#  @logger 
+# end
+#end
 
 #Initialisation for variables, objects etc
 name = "#{options[:name]}"
@@ -192,12 +215,12 @@ host = "#{options[:host]}"
 configfile = File.join(path, 'config.yml')
 config = Config.new(configfile)
 jobdir = config.dirset(path, name, 'jobdir')
-logdir = config.dirset(path, 'events.log', 'logdir')
+$logdir = config.dirset(path, 'events.log', 'logdir')
 cmdscript = File.join(jobdir, command + '.sh')
-events = Log.new(logdir)
+#log = Log.new(logdir)
 
 #Redirects and appends STDERR messages to the log file
-$stderr.reopen(logdir, "a")
+$stderr.reopen($logdir, "a")
 
 #Initialise the job
 job = Job.new
@@ -205,7 +228,6 @@ job.name = name
 job.command = command
 job.dir = jobdir
 job.script = cmdscript
-job.event = events
 job.host = host 
 
 #Attempt to validate the job command
@@ -214,7 +236,7 @@ job.validate!
 #Checks the curent state of the requested script
 statefile = File.join(path, 'states.yml')
 state = State.new(statefile)
-state.status(name, command, events)
+state.status(name, command)
 state.toggle(name)
 state.save!
 
