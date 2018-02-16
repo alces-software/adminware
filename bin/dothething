@@ -59,15 +59,16 @@ end
 
 class State
  include EventLogger
+ attr_accessor :file
+
  #Loads the config file
- def initialize(state)
+ def initialize
   @event = Log.new
-  @statefile = state 
-  @sf = YAML.load_file(@statefile)
  end
 
  #Toggles value in state hash
  def toggle(name)
+  @sf = YAML.load_file(@file)
   #Finds all true/false values in hash
   t = @sf[name].key(true)
   f = @sf[name].key(false) 
@@ -79,11 +80,12 @@ class State
  
  #Saves the current state to file
  def save!
-  File.open(@statefile, 'w') { |f| YAML.dump(@sf, f) }
+  File.open(@file, 'w') { |f| YAML.dump(@sf, f) }
  end
 
  #Checks the current state of the requested script for the given job
  def status(name, command)
+  @sf = YAML.load_file(@file)
   #The script will run if it's state is currently false
   if @sf[name][:"#{command}"] == false
   else
@@ -193,31 +195,13 @@ class Job
  end
 end
 
-#class Log
-# def initialize(logdir)
-#  @logger = Logger.new "#{logdir}" 
-#  @logger.level = Logger::DEBUG
-#  @logger.formatter = proc do |severity, datetime, progname, msg|
-#   date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
-#   "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
-#  end
-# end
-# 
-# def log 
-#  @logger 
-# end
-#end
-
 #Initialisation for variables, objects etc
 name = "#{options[:name]}"
 command = "#{options[:command]}"
 host = "#{options[:host]}"
 configfile = File.join(path, 'config.yml')
 config = Config.new(configfile)
-jobdir = config.dirset(path, name, 'jobdir')
 $logdir = config.dirset(path, 'events.log', 'logdir')
-cmdscript = File.join(jobdir, command + '.sh')
-#log = Log.new(logdir)
 
 #Redirects and appends STDERR messages to the log file
 $stderr.reopen($logdir, "a")
@@ -226,16 +210,16 @@ $stderr.reopen($logdir, "a")
 job = Job.new
 job.name = name
 job.command = command
-job.dir = jobdir
-job.script = cmdscript
-job.host = host 
+job.dir = config.dirset(path, name, 'jobdir')
+job.script = File.join(job.dir, command + '.sh')
+job.host = "#{options[:host]}" 
 
 #Attempt to validate the job command
 job.validate!
 
 #Checks the curent state of the requested script
-statefile = File.join(path, 'states.yml')
-state = State.new(statefile)
+state = State.new
+state.file = File.join(path, 'states.yml')
 state.status(name, command)
 state.toggle(name)
 state.save!
