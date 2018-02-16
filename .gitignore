@@ -1,2 +1,4 @@
 bin/events.log
 bin/states.yml
+logs/adminware.log
+var/state.yaml
