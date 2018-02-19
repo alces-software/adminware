@@ -1,5 +1,4 @@
 ---
-#jobdir: ../jobs/
-jobdir: /home/andrew/adminware/jobs/
-logfile: /home/andrew/adminware/logs/adminware.log
-statefile: /home/andrew/adminware/var/state.yaml
+jobdir: jobs/
+logfile: logs/adminware.log
+statefile: var/state.yaml
