@@ -42,71 +42,66 @@ end
 
 module ConfigFile
  class Config
+  
+  DEFAULT_JOBDIR = "jobs/"
+  DEFAULT_LOGFILE = "logs/adminware.log"
+  DEFAULT_STATEFILE = "var/state.yaml"
+
   #Load the config file
   def initialize
    configfile = File.join($path, 'config.yml')
    @config = YAML.load_file(configfile)
+
+   @jobdir = @config['jobdir'] ||= DEFAULT_JOBDIR
+   @jobdir = set_path(@jobdir)
+
+   @logfile = @config['logfile'] ||= DEFAULT_LOGFILE
+   @logfile = set_path(@logfile)
+
+   @statefile = @config['statefile'] ||= DEFAULT_STATEFILE
+   @statefile = set_path(@statefile)
   end
   
-  #Check if a setting has been set
-  def setting_exists?(setting)
-   if @config[setting] != nil then
-    return true 
+  private 
+
+  #Sets the path for the given config setting 
+  def set_path(path)
+   #path = @config[setting]
+      
+   #Checks if the path is absolute or relative
+   if File.exist?(path) == false
+    #Relative
+    path = File.join($path,"..", path)
    else
-    puts "The config file does not contain a path for the setting: #{setting}"
-    exit 1 
-   end 
-  end
-  
-  #Set the directory for the job   
-  def jobdir(name)
-   setting_exists?('jobdir')
-   @jobdir = @config['jobdir']
-   
-   #Check if the path given in the file is absolute or relative   
-   if @jobdir.include? "../"
-    @jobdir = File.join($path, @jobdir, name)
-   else
-    @jobdir = File.join(@jobdir, name)
-   end      
-  end
-  
+    #Absolute
+    path
+   end
+  end  
+ 
   #Check if a file exists
-  def file_exist?(setting)
-   if File.exist?(@config[setting])
+  def file_exist?(file)
+   if File.exist?(file)
     return true
    else
     #Create the file if it doesn't
-    system "touch", "#{@config[setting]}"
-    return false
+    system "touch", "#{file}"
    end
   end
   
-  #Check if the log file setting and file exist
-  #If they do then it returns the set path
+  public 
+ 
+  def jobdir
+   @jobdir
+  end
+
   def logfile
-   setting_exists?('logfile')
-   file_exist?('logfile')
-   @config['logfile']
+   file_exist?(@logfile)
+   @logfile
   end
   
-  #Check if the state file setting and file exist
-  #If they do then it returns the set path
   def statefile
-   setting_exists?('statefile')
-   if file_exist?('statefile') == false
-    #Create the necessary configuration within state.yaml
-    #This only runs if the file was just created within file_exist?
-    open(@config['statefile'], 'a') { |f|
-     f << "---\n"
-     f << "job1:\n"
-     f << "  :forward: true\n"
-     f << "  :rewind: false\n"
-     f << "job2:\n"
-     f << "  :forward: true\n"
-     f << "  :rewind: false\n" }
-   end
-   @config['statefile']
+   file_exist?(@statefile)
+   @statefile
   end
  end
   
@@ -163,32 +158,42 @@ class Job
  class State
   include EventLogger
   include ConfigFile
-
-  #Toggles value in state hash
-  def toggle(name) 
-   @sf = YAML.load_file(config.statefile)
-
-   #Finds all true/false values in hash
-   t = @sf[name].key(true)
-   f = @sf[name].key(false)
- 
-   #Toggles the values
-   @sf[name][:"#{t}"] = false
-   @sf[name][:"#{f}"] = true
-
-   File.open(config.statefile, 'w') { |f| YAML.dump(@sf, f) }
+  
+  def initialize(name)
+   @name = name 
+   @file = YAML.load_file(config.statefile) || {}
   end
- 
-  #Checks the current state of the requested script for the given job
-  def status(name, command)
-   @sf = YAML.load_file(config.statefile)
-   #The script will run if it's state is currently false
-   if @sf[name][:"#{command}"] == false
-    toggle(name)
-   else
-    log.error "Can't execute #{command} for #{name} as it is already set to true"
-    exit 1
+  
+  #Checks if the file contains the key for the job 
+  def check_file
+   #If the job has no key it creates the necessary structure for it
+   if !(system "grep", "#{@name}", "#{config.statefile}", "-q")
+     test = {"#{@name}"=> {:forward=>false, :rewind=>true}}
+     File.open(config.statefile, 'w') { |f| YAML.dump(@file.merge(test), f)}
+     @file = YAML.load_file(config.statefile)
    end
+  end
+
+  #Checks the current state of the given job
+  def status
+   #Returns the current key with a value of true
+   @file["#{@name}"].key(true)
+  end
+  
+  #Toggles forward to true
+  def forward
+   @file[@name][:forward] = true
+   @file[@name][:rewind] = false
+
+   File.open(config.statefile, 'w') { |f| YAML.dump(@file, f) }
+  end
+
+  #Toggles rewind to true
+  def rewind
+   @file[@name][:forward] = false
+   @file[@name][:rewind] = true
+
+   File.open(config.statefile, 'w') { |f| YAML.dump(@file, f) }
   end
  end
 
@@ -199,21 +204,21 @@ class Job
 
  def initialize(name)
    @name = name
-   @state = State.new 
+   @state = State.new(name) 
  end
 
  #Performs validation on entered command
  def validate!
-  @script = File.join(config.jobdir(@name), @command + '.sh')
+  @script = File.join(config.jobdir, @name, @command + '.sh')
   if @host.empty?
    log.info "Attempting to run #{@command} script for #{@name}"
   else 
    log.info "Attempting to run #{@command} script for #{@name} on #{@host}"
-   host_exist?
   end
   
   #Check if the directoy and file exist
   if dir_exist? and file_exist? then
+   @state.check_file
    return true
   else
    log.error "Failed to validate"
@@ -221,27 +226,17 @@ class Job
   end
  end
  
- #Checks if the host exists to run the script on
- def host_exist?
-  if system "ssh", @host, "echo", "$$", ">", "/tmp/test"
-   @hostexists = true
-   return true
-  else
-   exit 1 
-  end
- end
- 
  #Checks to see if the directory exists for input NAME
  def dir_exist?
-  if Dir.exist?(config.jobdir(@name))
+  if Dir.exist?(config.jobdir)
    return true
   else
-   log.error "#{config.jobdir(@name)} does not exist"
+   log.error "#{config.jobdir} does not exist"
    return false
   end
  end
  
- #Checks to see if the file exists for input COMMAND
+ #Checks to see if the file exists for input COMMAND:
  def file_exist? 
   if File.exist?(@script)
    return true
@@ -253,13 +248,19 @@ class Job
  
  #Runs the requested script for the job
  def run
-  @state.status(@name, @command)
-  if @hostexists == true 
-   log.info "Running #{@command} script for #{@name} on #{@host}"
-   system "ssh", @host, "bash", @script
+  #If the current command's state is false the job can run
+  if "#{@state.status}" != @command
+   if !@host.empty?
+    log.info "Running #{@command} script for #{@name} on #{@host}"
+    system "ssh", @host, "bash", @script
+   else
+    log.info "Running #{@command} script for #{@name}"
+    system "bash", @script 
+   end
+   if @command == 'forward' then @state.forward else @state.rewind end
   else
-   log.info "Running #{@command} script for #{@name}"
-   system "bash", @script 
+   log.error "Can't execute #{@command} script for #{@name} as it is already set to true"
+   exit 1
   end
  end
 end
