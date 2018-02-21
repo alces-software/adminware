@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+#TODO Implement the ability to output to console and log simultaneously
+#TODO ListCommands should potentially be changed into a module
+#TODO Potentially use Commander for parsing input commands
+#TODO Clean up the optionparser where possible
 
 require 'optparse'
 require 'yaml'
@@ -27,21 +31,18 @@ opt_parser = OptionParser.new do |opt|
  #List all options for the 'run' command
  opt.separator '   run:'
  opt.separator '    -n, --name NAME                The name of the directory for the job'
- opt.separator '    -c, --connect HOST             The name of the host to run the script on'
+ opt.separator '    -c, --connect HOST             The name of the host to run the script for NAME on'
  opt.separator '    -f, --forward                  Call the forward script for NAME'
  opt.separator '    -r, --rewind                   Call the rewind script for NAME'
+ opt.separator '    -h, --help                     Prints the help message for only run, with examples'
  opt.separator ''
 
  #List all options for the 'list' command
  opt.separator '   list:'
  opt.separator '    -a, --all                      Lists all available jobs'
  opt.separator '    -j, --job NAME                 Lists all values for NAME within the state file'
+ opt.separator '    -h, --help                     Prints the help message for only list, with examples'
  opt.separator ''
-
- #Example inputs
- opt.separator '  Examples:'
- opt.separator '   Run forward script for a job:            adminware run --name NAME --forward'
- opt.separator '   Run forward script on another machine :  adminware run --name NAME --connect HOST --forward'
 end
 
 #Commands for the optionparser
@@ -68,11 +69,17 @@ commands = {
    options[:script] = 'rewind'
    options[:command] = 'run'
   end
+
+  #Example inputs for run
+  opt.separator '' 
+  opt.separator '  Examples:'
+  opt.separator '   Run forward script for a job:            adminware run --name NAME --forward'
+  opt.separator '   Run forward script on another machine :  adminware run --name NAME --connect HOST --forward'
  end,
  
  #List command to list details about jobs
  'list' => OptionParser.new do |opt|
-  opt.banner = 'Usage: adminware list'
+  opt.banner = 'Usage: adminware list [options]'
   opt.on('-a', '--all', 'Lists all values for jobs within the state file') do 
    options[:list] = 'all'
    options[:command] = 'list'
@@ -83,6 +90,12 @@ commands = {
    options[:name] = v
    options[:command] = 'list'
   end
+
+  #Example inputs for list
+  opt.separator ''
+  opt.separator '  Examples:'
+  opt.separator '   List all available jobs:                 adminware list --all'
+  opt.separator '   List values for NAME:                    adminware list --job NAME'
  end
 }
 
@@ -349,6 +362,7 @@ class Job
  end
 end
 
+#Methods for handling list commands
 class ListCommands
  include ConfigFile
  include EventLogger
@@ -364,7 +378,7 @@ class ListCommands
   when 'all'
    list_all_jobs
   when 'job'
-   list_job_status
+   list_job_values
   end
  end
 
@@ -375,8 +389,9 @@ class ListCommands
   puts 'Available jobs:'
   system "ls", config.jobdir
  end
-
- def list_job_status
+ 
+ #Lists the values of a job within the state file
+ def list_job_values
   if job_exists? 
    status = @state.print["#{@name}"][:status]
    code = @state.print["#{@name}"][:exit]
@@ -384,6 +399,7 @@ class ListCommands
   else exit 1 end
  end
 
+ #Checks the job exists within the state file
  def job_exists?
   if @state.print.include? "#{@name}" 
    return true
