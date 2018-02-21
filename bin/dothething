@@ -3,28 +3,92 @@
 require 'optparse'
 require 'yaml'
 require 'logger'
+require 'open3'
 
+#Path of the current file
 $path = File.expand_path(File.dirname(__FILE__))
 options = {}
 
 #All available options for the adminware command
 opt_parser = OptionParser.new do |opt|
- opt.on('-n', '--name NAME', 'The name of the directory') do |v|
-  options[:name] = v
- end
+ #Help message for adminware
+ opt.banner = '  Usage: adminware [command] [options]'
+ opt.separator ''
+
+ #List all available commands for adminware
+ opt.separator  '  Commands:'
+ opt.separator  '     run                           Run a script for a job locally or on another machine via SSH'
+ opt.separator  '     list                          List details about jobs'
+ opt.separator ''
  
- opt.on('-h', '--host NAME', 'The name of the host to run the script on') do |v|
-  options[:host] = v
- end
+ #All available option below here separated by command
+ opt.separator  '  Options:'
 
- opt.on('-f', '--forward', 'Call the forward script for NAME') do
-  options[:command] = 'forward'
- end
+ #List all options for the 'run' command
+ opt.separator '   run:'
+ opt.separator '    -n, --name NAME                The name of the directory for the job'
+ opt.separator '    -c, --connect HOST             The name of the host to run the script on'
+ opt.separator '    -f, --forward                  Call the forward script for NAME'
+ opt.separator '    -r, --rewind                   Call the rewind script for NAME'
+ opt.separator ''
 
- opt.on('-r', '--rewind', 'Call the rewind script for NAME') do 
-  options[:command] = 'rewind'
- end
+ #List all options for the 'list' command
+ opt.separator '   list:'
+ opt.separator '    -a, --all                      Lists all available jobs'
+ opt.separator '    -j, --job NAME                 Lists all values for NAME within the state file'
+ opt.separator ''
+
+ #Example inputs
+ opt.separator '  Examples:'
+ opt.separator '   Run forward script for a job:            adminware run --name NAME --forward'
+ opt.separator '   Run forward script on another machine :  adminware run --name NAME --connect HOST --forward'
 end
+
+#Commands for the optionparser
+commands = {
+ #Run command to run a script for a job locally or on another machine via SSH
+ 'run' => OptionParser.new do |opt|
+  opt.banner = 'Usage: adminware run [options]'
+  opt.on('-n', '--name NAME', 'The name of the directory for the job') do |v|
+   options[:name] = v
+   options[:command] = 'run'
+  end
+ 
+  opt.on('-c', '--connect HOST', 'The name of the host to run the script on') do |v|
+   options[:host] = v
+   options[:command] = 'run'
+  end
+ 
+  opt.on('-f', '--forward', 'Call the forward script for NAME') do
+   options[:script] = 'forward'
+   options[:command] = 'run'
+  end
+ 
+  opt.on('-r', '--rewind', 'Call the rewind script for NAME') do
+   options[:script] = 'rewind'
+   options[:command] = 'run'
+  end
+ end,
+ 
+ #List command to list details about jobs
+ 'list' => OptionParser.new do |opt|
+  opt.banner = 'Usage: adminware list'
+  opt.on('-a', '--all', 'Lists all values for jobs within the state file') do 
+   options[:list] = 'all'
+   options[:command] = 'list'
+  end
+  
+  opt.on('-j', '--job NAME', 'List the status of NAME') do |v|
+   options[:list] = 'job'
+   options[:name] = v
+   options[:command] = 'list'
+  end
+ end
+}
+
+#Iterates through input
+opt_parser.order!
+commands[ARGV.shift].order! rescue 
 
 #Displays help command on invalid entry
 begin opt_parser.parse! ARGV
@@ -40,9 +104,20 @@ if options.empty?
  exit 1
 end
 
+#Module for the config file
 module ConfigFile
+ #Returns/Creates the config object
+ def self.config
+  @config ||= Config::new
+ end
+ 
+ #Calls the config object
+ def config
+  ConfigFile::config
+ end
+
  class Config
-  
+  #Set default values for config settings
   DEFAULT_JOBDIR = "jobs/"
   DEFAULT_LOGFILE = "logs/adminware.log"
   DEFAULT_STATEFILE = "var/state.yaml"
@@ -51,7 +126,8 @@ module ConfigFile
   def initialize
    configfile = File.join($path, 'config.yml')
    @config = YAML.load_file(configfile)
-
+   
+   #If no path given in config then set them to their defaults
    @jobdir = @config['jobdir'] ||= DEFAULT_JOBDIR
    @jobdir = set_path(@jobdir)
 
@@ -62,34 +138,7 @@ module ConfigFile
    @statefile = set_path(@statefile)
   end
   
-  private 
-
-  #Sets the path for the given config setting 
-  def set_path(path)
-   #path = @config[setting]
-      
-   #Checks if the path is absolute or relative
-   if File.exist?(path) == false
-    #Relative
-    path = File.join($path,"..", path)
-   else
-    #Absolute
-    path
-   end
-  end  
- 
-  #Check if a file exists
-  def file_exist?(file)
-   if File.exist?(file)
-    return true
-   else
-    #Create the file if it doesn't
-    system "touch", "#{file}"
-   end
-  end
-  
-  public 
- 
+  #Calls the 
   def jobdir
    @jobdir
   end
@@ -100,20 +149,33 @@ module ConfigFile
   end
   
   def statefile
-   file_exist?(@statefile)
    @statefile
   end
- end
-  
- #Returns/Creates the config object
- def self.config
-  @config ||= Config::new 
- end
 
- def config
-  ConfigFile::config
+  private
+  
+  #Check if a file exists
+  def file_exist?(file)
+   if File.exist?(file)
+    return true
+   else
+    #Create it if necessary
+    system "touch", "#{file}"
+   end
+  end
+
+  #Sets the path for the given config setting
+  def set_path(path)
+   #Checks if the path is absolute or relative
+   if File.exist?(path) == false
+    path = File.join($path,"..", path)
+   else
+    path
+   end
+  end
  end
 end
+
 
 #Logger Module
 module EventLogger
@@ -128,9 +190,6 @@ module EventLogger
      date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
      "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
     end
-    
-    #Redirect STDERR messages and append to the log file
-    $stderr.reopen(config.logfile, "a")
   end
   
   #This does something
@@ -154,128 +213,213 @@ module EventLogger
  end 
 end
 
-class Job
- class State
-  include EventLogger
+class State
+ include EventLogger
   include ConfigFile
-  
-  def initialize(name)
-   @name = name 
-   @file = YAML.load_file(config.statefile) || {}
-  end
-  
-  #Checks if the file contains the key for the job 
-  def check_file
-   #If the job has no key it creates the necessary structure for it
-   if !(system "grep", "#{@name}", "#{config.statefile}", "-q")
-     test = {"#{@name}"=> {:forward=>false, :rewind=>true}}
-     File.open(config.statefile, 'w') { |f| YAML.dump(@file.merge(test), f)}
-     @file = YAML.load_file(config.statefile)
-   end
-  end
-
-  #Checks the current state of the given job
-  def status
-   #Returns the current key with a value of true
-   @file["#{@name}"].key(true)
-  end
-  
-  #Toggles forward to true
-  def forward
-   @file[@name][:forward] = true
-   @file[@name][:rewind] = false
-
-   File.open(config.statefile, 'w') { |f| YAML.dump(@file, f) }
-  end
-
-  #Toggles rewind to true
-  def rewind
-   @file[@name][:forward] = false
-   @file[@name][:rewind] = true
-
-   File.open(config.statefile, 'w') { |f| YAML.dump(@file, f) }
-  end
+ 
+ def initialize
+  load_state(config.statefile)
+ end
+ 
+ #Checks the current state of the given job
+ def status(name)
+  @state[name][:status] rescue nil
+ end
+ 
+ #Toggles state of current job 
+ def toggle(name, command)
+  jobstate(name)[:status] = command
+ end
+ 
+ def exit(name, code)
+  jobstate(name)[:exit] = code
  end
 
+ #Save the job's state to file
+ def save!
+  File::write(config.statefile, @state.to_yaml)
+ end
+ 
+ def print
+  @state
+ end
+
+ private
+
+ def jobstate(name)
+   @state[name] ||= {}
+ end
+
+ def load_state(statefile)
+   @state=YAML::load_file(statefile) rescue {}
+ end
+end
+
+class Job
  include EventLogger
  include ConfigFile
  attr_accessor :command
  attr_accessor :host
 
- def initialize(name)
+ def initialize(name, state)
    @name = name
-   @state = State.new(name) 
+   @state = state
  end
 
  #Performs validation on entered command
  def validate!
-  @script = File.join(config.jobdir, @name, @command + '.sh')
-  if @host.empty?
-   log.info "Attempting to run #{@command} script for #{@name}"
-  else 
-   log.info "Attempting to run #{@command} script for #{@name} on #{@host}"
-  end
-  
-  #Check if the directoy and file exist
+  @file = File.join(config.jobdir, @name, @command + '.sh')
+  @job = "#{@command} script for #{@name}"
+
+  running_locally?    
+  puts "Attempting to run #{@job}"
+
+  #Check if the directory and file exist
   if dir_exist? and file_exist? then
-   @state.check_file
    return true
   else
-   log.error "Failed to validate"
+   $stderr.puts "Failed to validate"
    exit 1
-  end
- end
- 
- #Checks to see if the directory exists for input NAME
- def dir_exist?
-  if Dir.exist?(config.jobdir)
-   return true
-  else
-   log.error "#{config.jobdir} does not exist"
-   return false
-  end
- end
- 
- #Checks to see if the file exists for input COMMAND:
- def file_exist? 
-  if File.exist?(@script)
-   return true
-  else
-   log.error "The #{@command} script for #{@name} does not exist"
-   return false
   end
  end
  
  #Runs the requested script for the job
  def run
-  #If the current command's state is false the job can run
-  if "#{@state.status}" != @command
-   if !@host.empty?
-    log.info "Running #{@command} script for #{@name} on #{@host}"
-    system "ssh", @host, "bash", @script
-   else
-    log.info "Running #{@command} script for #{@name}"
-    system "bash", @script 
-   end
-   if @command == 'forward' then @state.forward else @state.rewind end
+  if status_matches_command? #Don't execute 
+  else  
+   execute(@script) 
+   set_job_values
+  end
+ end
+ 
+ private
+
+ #Checks to see if the directory exists for input NAME
+ def dir_exist?
+  if Dir.exist?(config.jobdir)
+   return true
   else
+   puts "#{config.jobdir} does not exist"
+   return false
+  end
+ end
+
+ #Checks to see if the file exists for input COMMAND:
+ def file_exist?
+  if File.exist?(@file)
+   return true
+  else
+   puts "The #{@command} script for #{@name} does not exist"
+   return false
+  end
+ end
+
+ #Execute the command given and sends necessary output to the logger
+ def execute(command)
+  log.info "Running #{@job}"
+  stdout, stderr, status = Open3.capture3(command)
+  log.info stderr.chomp
+  log.info status
+ end
+ 
+ #Checks if the job's status matches the entered command
+ def status_matches_command?  
+  if "#{@state.status(@name)}" == @command
    log.error "Can't execute #{@command} script for #{@name} as it is already set to true"
-   exit 1
+   @state.exit(@name, 1)
+   @state.save!
+   return true 
+  end
+ end
+ 
+ #Checks if the job needs to run locally or on another machine
+ def running_locally?
+  if @host.empty?
+   @script = "bash #{@file}"  
+  else
+   @job = @job + " on #{@host}"
+   @script = "ssh #{@host} bash #{@file}"
+  end
+ end
+
+ #Sets the correct values for the job after successful execution
+ def set_job_values
+  @state.toggle(@name, @command)
+  @state.exit(@name, 0)
+ end
+end
+
+class ListCommands
+ include ConfigFile
+ include EventLogger
+
+ def initialize(name, command, state)
+  @name = name
+  @command = command
+  @state = state
+ end
+
+ def run
+  case @command
+  when 'all'
+   list_all_jobs
+  when 'job'
+   list_job_status
+  end
+ end
+
+ private
+ 
+ #List all available jobs
+ def list_all_jobs
+  puts 'Available jobs:'
+  system "ls", config.jobdir
+ end
+
+ def list_job_status
+  if job_exists? 
+   status = @state.print["#{@name}"][:status]
+   code = @state.print["#{@name}"][:exit]
+   puts "#{@name}: Status = #{status},  Last Exit Code = #{code}"
+  else exit 1 end
+ end
+
+ def job_exists?
+  if @state.print.include? "#{@name}" 
+   return true
+  else
+   puts "There is no #{@name} to list"
   end
  end
 end
 
-name = "#{options[:name]}"
+#Initialisation 
+name = options[:name] ||= nil
 command = "#{options[:command]}"
-host = "#{options[:host]}"
+script = "#{options[:script]}" 
+host = options[:host] ||= {} 
+listcmd = options[:list] ||= nil
+state = State.new
 
-#Initialise the job
-job = Job.new(name)
-job.host = host
-job.command = command
+#Checks which command was input
+case command
+ #User input the run command
+ when 'run'
+  #Initialise the job
+  job = Job.new(name,state)
+  job.host = host
+  job.command = script
 
-#Attempt to validate the command
-job.validate!
+  #Attempt to validate the command
+  job.validate!
+ 
+  #Runs the script for the job
+  job.run
+  state.save!
 
-#Runs the script for the job
-job.run
+ #User input the list command
+ when 'list'
+  #Initialise the list class to handle command
+  list = ListCommands.new(name, listcmd, state)
+  list.run
+end
