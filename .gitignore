@@ -2,3 +2,10 @@ bin/events.log
 bin/states.yml
 logs/adminware.log
 var/state.yaml
+
+.bundle
+*~
+*.bak
+vendor/ruby
+tmp
+*.pyc
