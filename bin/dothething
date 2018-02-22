@@ -221,8 +221,18 @@ module EventLogger
    @log ||= Log::new
  end
 
- def log
-  EventLogger::log
+ def log(level, message)
+  @logger = EventLogger::log
+  case level
+  when 'info'
+   @logger.info message
+   puts message
+  when 'error'
+   @logger.error message
+   puts message
+  when 'debug'
+   @logger.debug message
+  end
  end 
 end
 
@@ -285,7 +295,7 @@ class Job
   @job = "#{@command} script for #{@name}"
 
   running_locally?    
-  puts "Attempting to run #{@job}"
+  log('debug', "Attempting to run #{@job}")
 
   #Check if the directory and file exist
   if dir_exist? and file_exist? then
@@ -312,7 +322,7 @@ class Job
   if Dir.exist?(config.jobdir)
    return true
   else
-   puts "#{config.jobdir} does not exist"
+   log('error', "#{config.jobdir} does not exist")
    return false
   end
  end
@@ -329,16 +339,16 @@ class Job
 
  #Execute the command given and sends necessary output to the logger
  def execute(command)
-  log.info "Running #{@job}"
+  log('info', "Running #{@job}")
   stdout, stderr, status = Open3.capture3(command)
-  log.info stderr.chomp
-  log.info status
+  log('debug', stderr.chomp)
+  log('debug', status)
  end
  
  #Checks if the job's status matches the entered command
  def status_matches_command?  
   if "#{@state.status(@name)}" == @command
-   log.error "Can't execute #{@command} script for #{@name} as it is already set to true"
+   log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
    @state.exit(@name, 1)
    @state.save!
    return true 
@@ -359,6 +369,7 @@ class Job
  def set_job_values
   @state.toggle(@name, @command)
   @state.exit(@name, 0)
+  log('info', "Successfully executed #{@job}")
  end
 end
 
@@ -419,23 +430,23 @@ state = State.new
 
 #Checks which command was input
 case command
- #User input the run command
- when 'run'
-  #Initialise the job
-  job = Job.new(name,state)
-  job.host = host
-  job.command = script
+#User input the run command
+when 'run'
+ #Initialise the job
+ job = Job.new(name,state)
+ job.host = host
+ job.command = script
 
-  #Attempt to validate the command
-  job.validate!
+ #Attempt to validate the command
+ job.validate!
  
-  #Runs the script for the job
-  job.run
-  state.save!
+ #Runs the script for the job
+ job.run
+ state.save!
 
- #User input the list command
- when 'list'
-  #Initialise the list class to handle command
-  list = ListCommands.new(name, listcmd, state)
-  list.run
+#User input the list command
+when 'list'
+ #Initialise the list class to handle command
+ list = ListCommands.new(name, listcmd, state)
+ list.run
 end
