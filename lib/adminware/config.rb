@@ -11,7 +11,7 @@ module Adminware
     #Load the config file
     def initialize
       @path = File.expand_path(File.dirname(__FILE__)) 
-      configfile = File.join(@path, '../../etc', 'config.yml')
+      configfile = File.join(@path, '../../etc', 'config.yaml')
       @config = YAML.load_file(configfile)
 
       #If no path given in config then set them to their defaults
