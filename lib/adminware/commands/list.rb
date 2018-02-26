@@ -12,17 +12,13 @@ module Adminware
         
         #Assign the requested command      
         if all == true
-          listcmd = 'all'
+          command = 'all'
         elsif name.empty? == false
-          listcmd = 'job'
+          command = 'job'
         end
         
-        #Initialise the list
-        #TODO Change ListCommands to a module?
-        list = ListCommands::new(name, listcmd, state)
-        
         #Run the command
-        list.run     
+        ListCommands::run(name, command, state)     
       end
     end
     end
