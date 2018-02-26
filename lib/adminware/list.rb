@@ -1,4 +1,3 @@
-require 'adminware/log'
 require 'adminware/config'
 require 'adminware/state'
 require 'fileutils'
@@ -18,8 +17,9 @@ module Adminware
 
       #List all available jobs
       def list_all_jobs
+        config = Config::new
         puts 'Available jobs:'
-        puts Dir.entries(ConfigFile::config.jobdir)[2..-1]
+        puts Dir.entries(config.jobdir)[2..-1]
       end
 
       #Lists the values of a job within the state file

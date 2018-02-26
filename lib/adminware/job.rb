@@ -10,24 +10,25 @@ module Adminware
 
     def initialize(name, state)
       @path = File.expand_path(File.dirname(__FILE__))
-      @config = ConfigFile::config.jobdir
+      @config = Config::new
+      @logger = Log::new
       @name = name
       @state = state
     end
 
     #Performs validation on entered command
     def validate!
-      @file = File.join(@config, @name, @command + '.sh')
+      @file = File.join(@config.jobdir, @name, @command + '.sh')
       @job = "#{@command} script for #{@name}"
 
       running_locally?
-      EventLogger.log('info', "Attempting to run #{@job}")
+      @logger.log('info', "Attempting to run #{@job}")
 
       #Check if the directory and file exist
       if dir_exist? and file_exist? then
         return true
       else
-        EventLogger.log('error', "Failed to validate")
+        @logger.log('error', "Failed to validate")
         exit 1
       end
     end
@@ -45,10 +46,10 @@ module Adminware
 
     #Checks to see if the directory exists for input NAME
     def dir_exist?
-      if Dir.exist?(@config)
+      if Dir.exist?(@config.jobdir)
         return true
       else
-        EventLogger.log('error', "#{@config} does not exist")
+        @logger.log('error', "#{@config.jobdir} does not exist")
         return false
       end
     end
@@ -58,19 +59,19 @@ module Adminware
       if File.exist?(@file)
         return true
       else
-        EventLogger.log('error', "The #{@command} script for #{@name} does not exist")
+        @logger.log('error', "The #{@command} script for #{@name} does not exist")
         return false
       end
     end
 
     #Execute the command given and sends necessary output to the logger
     def execute(command)
-      EventLogger.log('info', "Running #{@job}")
+      @logger.log('info', "Running #{@job}")
       stdout, stderr, status = Open3.capture3(command)
-      EventLogger.log('debug', stderr.chomp)
-      EventLogger.log('debug', status)
+      @logger.log('debug', stderr.chomp)
+      @logger.log('debug', status)
       if (status.to_s).include? "exit 127" or (status.to_s).include? "exit 255"
-        EventLogger.log('error', "Failed to execute #{@job}")
+        @logger.log('error', "Failed to execute #{@job}")
         exit!
       end
     end
@@ -78,7 +79,7 @@ module Adminware
     #Checks if the job's status matches the entered command
     def status_matches_command?
       if "#{@state.status(@name)}" == @command
-        EventLogger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
+        @logger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
         @state.set_exit(@name, 1)
         @state.save!
         return true
@@ -99,7 +100,7 @@ module Adminware
     def set_job_values
       @state.toggle(@name, @command)
       @state.set_exit(@name, 0)
-      EventLogger.log('info', "Successfully executed #{@job}")
+      @logger.log('info', "Successfully executed #{@job}")
     end
   end
 end
