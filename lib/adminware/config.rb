@@ -1,4 +1,5 @@
 require 'yaml'
+require 'fileutils'
 
 module Adminware
   module ConfigFile
@@ -21,7 +22,7 @@ module Adminware
       #Load the config file
       def initialize
         @path = File.expand_path(File.dirname(__FILE__)) 
-        configfile = File.join(@path, '../../bin', 'config.yml')
+        configfile = File.join(@path, '../../etc', 'config.yml')
         @config = YAML.load_file(configfile)
 
         #If no path given in config then set them to their defaults
@@ -57,7 +58,7 @@ module Adminware
           return true
         else
           #Create it if necessary
-          system "touch", "#{file}"
+          FileUtils::touch "#{file}"
         end
       end
 
@@ -65,7 +66,7 @@ module Adminware
       def set_path(path)
         #Checks if the path is absolute or relative
         if File.exist?(path) == false
-          path = File.join(@path,"..", path)
+          path = File.join(@path,"../..", path)
         else
           path
         end
