@@ -1,0 +1,4 @@
+---
+jobdir: jobs/
+logfile: logs/adminware.log
+statefile: var/state.yaml
