@@ -16,7 +16,7 @@ module Adminware
         job = Job.new(name, state)
         job.host = host
 
-        #Assign the request script
+        #Assign the requested script
         if forward == true
           job.command = 'forward'
         elsif rewind == true

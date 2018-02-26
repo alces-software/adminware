@@ -9,14 +9,19 @@ module Adminware
         name = options.name
         all = options.all
         state = State.new
-              
+        
+        #Assign the requested command      
         if all == true
           listcmd = 'all'
         elsif name.empty? == false
           listcmd = 'job'
         end
-
+        
+        #Initialise the list
+        #TODO Change ListCommands to a module?
         list = ListCommands::new(name, listcmd, state)
+        
+        #Run the command
         list.run     
       end
     end
