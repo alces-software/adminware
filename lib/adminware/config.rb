@@ -20,8 +20,8 @@ module Adminware
 
       #Load the config file
       def initialize
-        @path = '/home/andrew/adminware/bin'
-        configfile = File.join(@path, 'config.yml')
+        @path = File.expand_path(File.dirname(__FILE__)) 
+        configfile = File.join(@path, '../../bin', 'config.yml')
         @config = YAML.load_file(configfile)
 
         #If no path given in config then set them to their defaults
@@ -62,7 +62,7 @@ module Adminware
       end
 
       #Sets the path for the given config setting
-       def set_path(path)
+      def set_path(path)
         #Checks if the path is absolute or relative
         if File.exist?(path) == false
           path = File.join(@path,"..", path)
