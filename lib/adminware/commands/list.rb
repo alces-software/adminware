@@ -1,6 +1,6 @@
 require 'adminware/list'
 require 'adminware/state'
-
+require 'adminware/cli'
 module Adminware
   module Commands
     module List 
@@ -11,10 +11,13 @@ module Adminware
         state = State.new
         
         #Assign the requested command      
-        if all == true
+        if all
           command = 'all'
-        elsif name.empty? == false
+        elsif !name.nil?
           command = 'job'
+        else
+          puts "Please enter a valid command. See adminware list --help for more info"
+          exit 1
         end
         
         #Run the command
