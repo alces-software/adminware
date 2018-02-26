@@ -1,3 +1,6 @@
+require 'adminware/list'
+require 'adminware/state'
+
 module Adminware
   module Commands
     module List 
@@ -5,8 +8,16 @@ module Adminware
       def execute(args, options)
         name = options.name
         all = options.all
+        state = State.new
+              
+        if all == true
+          listcmd = 'all'
+        elsif name.empty? == false
+          listcmd = 'job'
+        end
 
-        puts "Name = #{name}. All = #{all}"
+        list = ListCommands::new(name, listcmd, state)
+        list.run     
       end
     end
     end

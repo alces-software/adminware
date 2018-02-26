@@ -1,6 +1,6 @@
-require 'log'
-require 'config'
-require 'state'
+require 'adminware/log'
+require 'adminware/config'
+require 'adminware/state'
 
 module Adminware
   class ListCommands
@@ -27,7 +27,7 @@ module Adminware
     #List all available jobs
     def list_all_jobs
       puts 'Available jobs:'
-      system "ls", config.jobdir
+      system "ls", ConfigFile::config.jobdir
     end
 
     #Lists the values of a job within the state file

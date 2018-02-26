@@ -1,10 +1,31 @@
-require 'config'
+require 'adminware/config'
+require 'logger'
+
 module Adminware
   module EventLogger
+    #Returns/Creates the logger    
+    def self.return
+      @log ||= Log::new
+    end
+    
+    def self.log(level, message)
+      @logger = EventLogger::return
+      case level
+      when 'info'
+        @logger.info message
+        puts message
+      when 'error'
+        @logger.error message
+        $stderr.puts message
+      when 'debug' 
+        @logger.debug message
+      end
+    end
+
     class Log
       #Configure the logger
       def initialize
-          @logger = Logger.new(config.logfile)
+          @logger = Logger.new(ConfigFile::config.logfile)
           @logger.level = Logger::DEBUG
           @logger.formatter = proc do |severity, datetime, progname, msg|
           date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
@@ -19,25 +40,6 @@ module Adminware
       #Return the logger
       def log
         @logger
-      end
-    end
-
-    #Returns/Creates the logger
-    def self.log
-      @log ||= Log::new
-    end
-
-    def log(level, message)
-      @logger = EventLogger::log
-      case level
-      when 'info'
-        @logger.info message
-        puts message
-      when 'error'
-        @logger.error message
-        $stderr.puts message
-      when 'debug'
-        @logger.debug message
       end
     end
   end

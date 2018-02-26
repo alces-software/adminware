@@ -1,15 +1,15 @@
-#TODO Set $path
+require 'yaml'
 
 module Adminware
   module ConfigFile
     #Returns/Creates the config object
-    def self.config
+    def self.return
       @config ||= Config::new
     end
 
     #Calls the config object
-    def config
-      ConfigFile::config
+    def self.config
+      ConfigFile::return
     end
 
     class Config
@@ -20,7 +20,8 @@ module Adminware
 
       #Load the config file
       def initialize
-        configfile = File.join($path, 'config.yml')
+        @path = '/home/andrew/adminware/bin'
+        configfile = File.join(@path, 'config.yml')
         @config = YAML.load_file(configfile)
 
         #If no path given in config then set them to their defaults
@@ -64,7 +65,7 @@ module Adminware
        def set_path(path)
         #Checks if the path is absolute or relative
         if File.exist?(path) == false
-          path = File.join($path,"..", path)
+          path = File.join(@path,"..", path)
         else
           path
         end

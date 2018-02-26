@@ -1,10 +1,11 @@
-require 'config'
-require 'log'
+require 'adminware/config'
+require 'adminware/log'
+require 'yaml'
 
 module Adminware
   class State
     def initialize
-      load_state(config.statefile)
+      load_state(ConfigFile::config.statefile)
     end
 
     #Checks the current state of the given job
@@ -23,7 +24,7 @@ module Adminware
 
     #Save the job's state to file
     def save!
-      File::write(config.statefile, @state.to_yaml)
+      File::write(ConfigFile::config.statefile, @state.to_yaml)
     end
 
     def print
@@ -37,7 +38,7 @@ module Adminware
     end
 
     def load_state(statefile)
-      @state=YAML::load_file(statefile) rescue {}
+      @state = YAML::load_file(statefile) rescue {}
     end
   end
 end
