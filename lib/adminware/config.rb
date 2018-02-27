@@ -54,10 +54,10 @@ module Adminware
     #Sets the path for the given config setting
     def set_path(path)
       #Checks if the path is absolute or relative
-      if File.exist?(path) == false
-        path = File.join(@path,"..", path)
-      else
+      if File.exist?(path) 
         path
+      else
+        path = File.expand_path(pah)
       end
     end
   end
