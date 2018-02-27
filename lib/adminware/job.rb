@@ -72,7 +72,9 @@ module Adminware
       stdout, stderr, status = Open3.capture3(command)
       @logger.log('debug', stderr.chomp)
       @logger.log('debug', status)
-      if (status.to_s).include? "exit 127" or (status.to_s).include? "exit 255"
+      if status.success?
+        @logger.log('info', "Successfully executed #{@job}")
+      else 
         @logger.log('error', "Failed to execute #{@job}")
         exit!
       end
@@ -102,7 +104,6 @@ module Adminware
     def set_job_values
       @state.toggle(@name, @command)
       @state.set_exit(@name, 0)
-      @logger.log('info', "Successfully executed #{@job}")
     end
   end
 end
