@@ -96,7 +96,7 @@ module Adminware
         @script = "bash #{@file}"
       else
         @job = @job + " on #{@host}"
-        @script = "ssh #{@host} bash #{@path}/../jobs/#{@name}/#{@command}.sh"
+        @script = "ssh #{@host} bash #{@path}/jobs/#{@name}/#{@command}.sh"
       end
     end
 

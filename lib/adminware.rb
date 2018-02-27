@@ -12,7 +12,7 @@ module Adminware
     end
     
     def root
-      @root ||= File.expand_path(File.dirname(__FILE__))
+      @root ||= File.expand_path("~/adminware")
     end
   end
 end
