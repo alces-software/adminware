@@ -24,7 +24,7 @@ module Adminware
 
       running_locally?
       @logger.log('info', "Attempting to run #{@job}")
-
+      
       #Check if the directory and file exist
       if dir_exist? and file_exist? then
         return true
@@ -47,10 +47,11 @@ module Adminware
 
     #Checks to see if the directory exists for input NAME
     def dir_exist?
-      if Dir.exist?(@config.jobdir)
+      jobdir = File.join(@config.jobdir, @name)
+      if Dir.exist?(jobdir)
         return true
       else
-        @logger.log('error', "#{@config.jobdir} does not exist")
+        @logger.log('error', "The directory: #{jobdir} does not exist")
         return false
       end
     end
