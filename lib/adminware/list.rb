@@ -37,7 +37,16 @@ module Adminware
         if state.print.include? "#{name}"
           return true
         else
-          puts "There is no #{name} to list"
+          job_dir_exist?(name)
+        end
+      end
+
+      def job_dir_exist?(name)
+        jobdir = File.join(Adminware::config.jobdir, name)
+        if Dir.exist?(jobdir)
+          puts "#{name} needs to be run at least once before it can be listed"
+        else
+          puts "The directory for #{name} does not exist and therefore can't be run or listed"
         end
       end
     end
