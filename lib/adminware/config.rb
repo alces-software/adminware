@@ -10,7 +10,6 @@ module Adminware
 
     #Load the config file
     def initialize
-      puts "Hello Config!"
       @path = File.expand_path(File.dirname(__FILE__)) 
       configfile = File.join(@path, '../../etc', 'config.yaml')
       @config = YAML.load_file(configfile)
