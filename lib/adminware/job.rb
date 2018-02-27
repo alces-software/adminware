@@ -10,7 +10,7 @@ module Adminware
     attr_accessor :host
 
     def initialize(name, state)
-      @path = File.expand_path(File.dirname(__FILE__))
+      @path = Adminware::root 
       @config = Adminware::config
       @logger = Adminware::log
       @name = name
@@ -96,7 +96,7 @@ module Adminware
         @script = "bash #{@file}"
       else
         @job = @job + " on #{@host}"
-        @script = "ssh #{@host} bash #{@path}/../../jobs/#{@name}/#{@command}.sh"
+        @script = "ssh #{@host} bash #{@path}/../jobs/#{@name}/#{@command}.sh"
       end
     end
 

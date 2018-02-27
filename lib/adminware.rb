@@ -10,5 +10,9 @@ module Adminware
     def log
       @logger ||= Log.new
     end
+    
+    def root
+      @root ||= File.expand_path(File.dirname(__FILE__))
+    end
   end
 end
