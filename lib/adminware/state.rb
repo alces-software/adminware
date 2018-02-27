@@ -1,10 +1,11 @@
+require 'adminware'
 require 'adminware/config'
 require 'yaml'
 
 module Adminware
   class State
     def initialize
-      @config = Config::new
+      @config = Adminware::config
       load_state(@config.statefile)
     end
 

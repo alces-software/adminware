@@ -1,3 +1,4 @@
+require 'adminware'
 require 'adminware/log'
 require 'adminware/config'
 require 'adminware/state'
@@ -10,8 +11,8 @@ module Adminware
 
     def initialize(name, state)
       @path = File.expand_path(File.dirname(__FILE__))
-      @config = Config::new
-      @logger = Log::new
+      @config = Adminware::config
+      @logger = Adminware::log
       @name = name
       @state = state
     end

@@ -5,7 +5,7 @@ module Adminware
   class Log
     #Configure the logger
     def initialize
-      @config = Config::new
+      @config = Adminware::config
       @logger = Logger.new(@config.logfile)
       @logger.level = Logger::DEBUG
       @logger.formatter = proc do |severity, datetime, progname, msg|
