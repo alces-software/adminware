@@ -31,7 +31,8 @@ module Adminware
       command :list do |c|
         c.syntax = 'adminware list [options]'
         c.description = 'Lists details about jobs'
-        c.example 'List values for NAME', 'adminware list --name NAME'
+        c.example 'List values for NAME', 'adminware list --job NAME'
+        c.example 'List values for every job', 'adminware list --job all'
         c.option '-a', '--all', 'Lists all available jobs'
         c.option '-j', '--job NAME', String, 'Specify the name of the job to list'
         c.action do |args, options|
