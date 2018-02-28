@@ -23,12 +23,12 @@ module Adminware
         jobs = Dir.entries(config.jobdir)
 
         #Create the table of jobs
-        table = Terminal::Table.new do |rows|
-          rows << ['Available jobs']
-          rows.add_separator
+        table = Terminal::Table.new :headings => ['Name', 'Description'] do |rows|
           (2..(jobs.length-1)).each do |i|
-            rows << [{:value => jobs[i], :alignment => :center}]
+            file = YAML::load_file(File.join(config.jobdir, jobs[i], 'job.yaml'))
+            rows << [jobs[i], file['description']]
           end
+          rows.style = {:alignment => :center}
         end
         puts table
       end
@@ -42,10 +42,10 @@ module Adminware
       
       #Create the table for the given job      
       def create_table(name, state)
-        table = Terminal::Table.new :headings => ['Job', 'Variable', 'Value'] do |rows|
-          rows << [name, 'Status', state.print[name][:status]]
-          rows << ['','Exit Code', state.print[name][:exit]]
-          rows.style = {:alignment => :right}
+        job = YAML::load_file(File.join(Adminware::config.jobdir, name, 'job.yaml'))
+        table = Terminal::Table.new :headings => ['Job', 'Description', 'Status', 'Exit Code'] do |rows|
+          rows << [name, job['description'], state.print[name][:status], state.print[name][:exit]]
+          rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
         end
         puts table
       end 
