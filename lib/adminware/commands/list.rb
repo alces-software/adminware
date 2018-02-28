@@ -6,7 +6,7 @@ module Adminware
     module List 
     class << self
       def execute(args, options)
-        name = options.name
+        name = options.job
         all = options.all
         state = State.new
         
