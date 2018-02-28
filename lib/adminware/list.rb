@@ -8,11 +8,12 @@ module Adminware
   module ListCommands
     class << self
       #Handle the input command
-      def run(name, command, state)
+      def run(name, command, state, output)
         @name = name
         @command = command
         @state = state
         @jobdir = Adminware::config.jobdir
+        @output = output
 
         case command
         when 'all'
@@ -24,33 +25,45 @@ module Adminware
 
       #List all available jobs
       def list_all_jobs
-        jobs = Dir.entries(@jobdir)
-
-        #Create the table of jobs
-        table = Terminal::Table.new :headings => ['Jobs', 'Description', 'Status', 'Exit Code'] do |rows|
-          #Iterate through each job and create a row for them
-          (2..(jobs.length-1)).each do |i|
-            file = YAML::load_file(File.join(@jobdir, jobs[i], 'job.yaml'))
-            rows << [jobs[i], file['description'], @state.print[jobs[i]][:status], @state.print[jobs[i]][:exit]]
-          end
-          rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
+        jobs = []
+        Dir.entries(@jobdir).each do |dir|
+          jobs << dir unless dir =~ /^\.\.?$/
         end
-        puts table
-      end
-
-      #Lists the values of a job within the state file
-      def list_job_values
-        if job_exists?
-          create_table
-        else exit 1 end
+        which_output?(jobs)
       end
       
-      #Create the table for the given job      
-      def create_table
-        job = YAML::load_file(File.join(@jobdir, @name, 'job.yaml'))
-        table = Terminal::Table.new :headings => ['Job', 'Description', 'Status', 'Exit Code'] do |rows|
-          rows << [@name, job['description'], @state.print[@name][:status], @state.print[@name][:exit]]
-          rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
+      #Lists the values of a job within the state file
+      def list_job_values
+        job_exists?
+        job = [@name]
+        which_output?(job)
+      end
+     
+      #Figure out which output to use 
+      def which_output?(job)
+        if @output
+          plain_output(job)
+        else
+          create_table(job)
+        end
+      end
+
+      #Output in tab delimited form
+      def plain_output(jobs)
+        puts "Jobs\tDescription\tStatus\tExit Code"
+        (0..(jobs.length-1)).each do |i|
+          file = YAML::load_file(File.join(@jobdir, jobs[i], 'job.yaml'))
+          puts "#{jobs[i]}\t#{file['description']}\t#{@state.print[jobs[i]][:status]}\t#{@state.print[jobs[i]][:exit]}"        end
+      end
+      
+      #Create the table for the given job(s)      
+      def create_table(jobs)
+        table = Terminal::Table.new :headings => ['Job(s)', 'Description', 'Status', 'Exit Code'] do |rows|
+          (0..(jobs.length-1)).each do |i|
+            file = YAML::load_file(File.join(@jobdir, jobs[i], 'job.yaml'))
+            rows << [jobs[i], file['description'], @state.print[jobs[i]][:status], @state.print[jobs[i]][:exit]]
+            rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
+          end
         end
         puts table
       end 
@@ -71,6 +84,7 @@ module Adminware
           puts "#{@name} needs to be run at least once before it can be listed"
         else
           puts "The directory for #{@name} does not exist and therefore can't be run or listed"
+          exit 1
         end
       end
     end
