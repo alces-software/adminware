@@ -33,7 +33,7 @@ module Adminware
         c.description = 'Lists details about jobs'
         c.example 'List values for NAME', 'adminware list --name NAME'
         c.option '-a', '--all', 'Lists all available jobs'
-        c.option '-n', '--name NAME', String, 'Specify the name of the job to list'
+        c.option '-j', '--job NAME', String, 'Specify the name of the job to list'
         c.action do |args, options|
           options.default \
             :all => false
