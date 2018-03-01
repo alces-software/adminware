@@ -8,8 +8,8 @@ module Adminware
       def execute(args, options)
         name = options.job
         all = options.all
-        state = State.new
-        output = options.plain
+        host = options.host
+        plain = options.plain
 
         #Assign the requested command      
         if all
@@ -22,7 +22,7 @@ module Adminware
         end
         
         #Run the command
-        ListCommands::run(name, command, state, output)     
+        ListCommands::run(name, command, host, plain)
       end
     end
     end

@@ -4,9 +4,11 @@ require 'yaml'
 
 module Adminware
   class State
-    def initialize
+    def initialize(host)
+      @host = host
       @config = Adminware::config
-      load_state(@config.statefile)
+      @statefile = File.join(@config.statedir, "#{@host}_state.yaml")
+      load_state
     end
 
     #Checks the current state of the given job
@@ -25,10 +27,10 @@ module Adminware
 
     #Save the job's state to file
     def save!
-      File::write(@config.statefile, @state.to_yaml)
+      File::write(@statefile, @state.to_yaml)
     end
 
-    def print
+    def file
       @state
     end
 
@@ -38,8 +40,8 @@ module Adminware
       @state[name] ||= {}
     end
 
-    def load_state(statefile)
-      @state = YAML::load_file(statefile) rescue {}
+    def load_state
+      @state = YAML::load_file(@statefile) rescue {}
     end
   end
 end
