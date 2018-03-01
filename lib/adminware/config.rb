@@ -6,7 +6,7 @@ module Adminware
     #Set default values for config settings
     DEFAULT_JOBDIR = "jobs/"
     DEFAULT_LOGFILE = "logs/adminware.log"
-    DEFAULT_STATEFILE = "var/state.yaml"
+    DEFAULT_STATEDIR = "var/state.yaml"
 
     #Load the config file
     def initialize
@@ -21,8 +21,8 @@ module Adminware
       @logfile = @config['logfile'] ||= DEFAULT_LOGFILE
       @logfile = set_path(@logfile)
 
-      @statefile = @config['statefile'] ||= DEFAULT_STATEFILE
-      @statefile = set_path(@statefile)
+      @statedir = @config['statedir'] ||= DEFAULT_STATEDIR
+      @statedir = set_path(@statedir)
     end
 
     #These methods return their respective files
@@ -35,8 +35,8 @@ module Adminware
       @logfile
     end
 
-    def statefile
-     @statefile
+    def statedir
+     @statedir
     end
 
     private

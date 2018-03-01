@@ -8,7 +8,7 @@ module Adminware
       def execute(args, options)
         name = options.job
         all = options.all
-        state = State.new
+        host = options.host
         output = options.plain
 
         #Assign the requested command      
@@ -22,7 +22,7 @@ module Adminware
         end
         
         #Run the command
-        ListCommands::run(name, command, state, output)     
+        ListCommands::run(name, command, host, output)     
       end
     end
     end

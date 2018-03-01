@@ -10,7 +10,7 @@ module Adminware
         host = options.connect
         forward = options.forward
         rewind = options.rewind
-        state = State.new
+        state = State.new(host)
          
         #Initialise the job
         job = Job.new(name, state)
