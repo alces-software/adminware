@@ -23,7 +23,6 @@ module Adminware
       @job = "#{@command} script for #{@name}"
 
       running_locally?
-      @logger.log('info', "Attempting to run #{@job}")
       
       #Check if the directory and file exist
       if dir_exist? and file_exist? then
@@ -68,7 +67,7 @@ module Adminware
 
     #Execute the command given and sends necessary output to the logger
     def execute(command)
-      @logger.log('info', "Running #{@job}")
+      @logger.log('info', "Attempting to execute #{@job}")
       stdout, stderr, status = Open3.capture3(command)
       @logger.log('debug', stderr.chomp)
       @logger.log('debug', status)

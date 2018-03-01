@@ -23,10 +23,10 @@ module Adminware
       case level
       when 'info'
         @logger.info message
-        puts message
+        puts "\t> #{message}"
       when 'error'
         @logger.error message
-        $stderr.puts message
+        $stderr.puts "\t> #{message}"
       when 'debug'
         @logger.debug message
       end  

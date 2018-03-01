@@ -31,11 +31,15 @@ module Adminware
       command :list do |c|
         c.syntax = 'adminware list [options]'
         c.description = 'Lists details about jobs'
-        c.example 'List values for NAME', 'adminware list --name NAME'
+        c.example 'List values for NAME', 'adminware list --job NAME'
+        c.example 'List values for every job', 'adminware list -all'
+        c.example 'List values for NAME in a tab delimited format', 'adminware list --job NAME --plain'
         c.option '-a', '--all', 'Lists all available jobs'
-        c.option '-n', '--name NAME', String, 'Specify the name of the job to list'
+        c.option '-j', '--job NAME', String, 'Specify the name of the job to list'
+        c.option '-p', '--plain', 'Output in a tab delimited format'
         c.action do |args, options|
           options.default \
+            :plain => false,
             :all => false
           Commands::List.execute(args, options)
         end

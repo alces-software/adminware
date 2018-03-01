@@ -6,10 +6,11 @@ module Adminware
     module List 
     class << self
       def execute(args, options)
-        name = options.name
+        name = options.job
         all = options.all
         state = State.new
-        
+        output = options.plain
+
         #Assign the requested command      
         if all
           command = 'all'
@@ -21,7 +22,7 @@ module Adminware
         end
         
         #Run the command
-        ListCommands::run(name, command, state)     
+        ListCommands::run(name, command, state, output)     
       end
     end
     end
