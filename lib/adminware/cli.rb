@@ -37,8 +37,10 @@ module Adminware
         c.option '-a', '--all', 'Lists all available jobs'
         c.option '-j', '--job NAME', String, 'Specify the name of the job to list'
         c.option '-p', '--plain', 'Output in a tab delimited format'
+        c.option '--host HOST', String, 'Specify the host you wish to view the jobs for'
         c.action do |args, options|
           options.default \
+            :host => 'local',
             :plain => false,
             :all => false
           Commands::List.execute(args, options)
