@@ -8,13 +8,13 @@ module Adminware
   module ListCommands
     class << self
       #Handle the input command
-      def run(name, command, host, output)
+      def run(name, command, host, boolean)
         @name = name
         @command = command
         @host = host
         @state = State.new(host)
         @jobdir = Adminware::config.jobdir
-        @output = output
+        @plain = boolean
 
         case command
         when 'all'
@@ -32,7 +32,7 @@ module Adminware
         end
 
         if jobs.empty?
-          puts "\t> Nothing to list, run a job first"
+          puts "\t> Nothing in the #{@host} state file to list, run a job for it first"
         else
           which_output?(jobs)
         end
@@ -47,7 +47,7 @@ module Adminware
      
       #Figure out which output to use 
       def which_output?(job)
-        if @output
+        if @plain
           plain_output(job)
         else
           create_table(job)

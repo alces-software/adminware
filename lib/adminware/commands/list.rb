@@ -9,7 +9,7 @@ module Adminware
         name = options.job
         all = options.all
         host = options.host
-        output = options.plain
+        plain = options.plain
 
         #Assign the requested command      
         if all
@@ -22,7 +22,7 @@ module Adminware
         end
         
         #Run the command
-        ListCommands::run(name, command, host, output)     
+        ListCommands::run(name, command, host, plain)
       end
     end
     end
