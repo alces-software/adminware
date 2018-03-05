@@ -1,6 +1,7 @@
 require 'commander'
 require 'adminware/commands/run'
 require 'adminware/commands/list'
+require 'adminware/commands/schedule'
 
 module Adminware
   class CLI
@@ -44,6 +45,25 @@ module Adminware
             :plain => false,
             :all => false
           Commands::List.execute(args, options)
+        end
+      end
+      
+      command :'schedule-add' do |c|
+        c.syntax = 'adminware schedule-add <name> [options]'
+        c.description = 'Schedule a job for a host'
+        c.option '--host HOST', String, 'Specify the host to schedule jobs for'
+        c.option '-f', '--forward', 'Schedule the forward script for <name> on <host>'
+        c.option '-r', '--rewind', 'Schedule the rewind script for <name> on <host>'
+        c.action do |args, options|
+          Commands::Schedule.add(args, options)
+        end
+      end
+
+      command :'schedule-apply' do |c|
+        c.syntax = 'adminware schedule-apply <host>'
+        c.description = 'Apply the schedule for a host'
+        c.action do |args, options|
+          Commands::Schedule.apply(args, options)
         end
       end
 
