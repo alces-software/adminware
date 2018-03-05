@@ -51,6 +51,7 @@ module Adminware
       command :'schedule-add' do |c|
         c.syntax = 'adminware schedule-add <name> [options]'
         c.description = 'Schedule a job for a host'
+        c.example 'Add a job to the schedule', 'adminware schedule-add <name> --host HOST --forward'
         c.option '--host HOST', String, 'Specify the host to schedule jobs for'
         c.option '-f', '--forward', 'Schedule the forward script for <name> on <host>'
         c.option '-r', '--rewind', 'Schedule the rewind script for <name> on <host>'
