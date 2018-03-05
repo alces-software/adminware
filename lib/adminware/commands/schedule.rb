@@ -1,5 +1,5 @@
-require 'adminware/schedule_add'
 require 'adminware/schedule_apply'
+require 'adminware/schedule'
 
 module Adminware
   module Commands
@@ -8,9 +8,14 @@ module Adminware
         def add(args, options)
           name = args[0]
           host = options.host ||= nil
-          
-          if host == nil
-            puts 'Please enter a host to schedule for. See adminware schedule-add --help for more info'
+         
+          if name.nil?
+            puts "\t> Please enter a job to schedule. See adminware schedule-add --help for more info"
+            exit 1
+          end
+ 
+          if host.nil?
+            puts "\t> Please enter a host to schedule for. See adminware schedule-add --help for more info"
             exit 1
           end
  
@@ -19,11 +24,18 @@ module Adminware
           elsif options.rewind 
             command = 'rewind'
           else
-            puts 'Please enter a script to schedule. See adminware schedule-add --help for more more info'
+            puts "\t> Please enter a script to schedule. See adminware schedule-add --help for more more info"
             exit 1
           end
+          
+          @file = Schedule.new(name, host, command)
 
-          ScheduleAdd::run(name, host, command)
+          if @file.validate!
+            @file.add_job
+            @file.save!
+          else
+            puts "\t> Failed to validate!"
+          end
         end
         
         def apply(args, options)
