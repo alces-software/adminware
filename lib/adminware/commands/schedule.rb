@@ -28,11 +28,13 @@ module Adminware
             exit 1
           end
           
-          @file = Schedule.new(name, host, command)
+          file = Schedule.new(host)
+          file.name = name
+          file.command = command
 
-          if @file.validate!
-            @file.add_job
-            @file.save!
+          if file.validate!
+            file.add_job
+            file.save!
           else
             puts "\t> Failed to validate!"
           end
@@ -40,7 +42,7 @@ module Adminware
         
         def apply(args, options)
           host = args[0]
-
+          
           ScheduleApply::run(host)
         end
       end

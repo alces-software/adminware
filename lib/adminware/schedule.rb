@@ -4,10 +4,11 @@ require 'yaml'
 
 module Adminware
   class Schedule
-    def initialize(name, host, command)
-      @name = name
+    attr_accessor :name
+    attr_accessor :command
+
+    def initialize(host)
       @host = host
-      @command = command
       @config = Adminware::config
       @file = File.join(Adminware::root, 'var', "#{@host}_schedule.yaml")
       @array = []
@@ -31,6 +32,10 @@ module Adminware
       else
         return false
       end
+    end
+    
+    def load_array
+      @array
     end
 
     private
