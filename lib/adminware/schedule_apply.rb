@@ -18,7 +18,7 @@ module Adminware
       #Finds the next job to run in the schedule
       def find_next_job
         (0..(@schedule.length-1)).each do |n|
-          if @schedule[n][:run] == false
+          if @schedule[n][:scheduled]
             @job_number = n
             break
           end 
@@ -35,8 +35,8 @@ module Adminware
             @status = @schedule[n][:status]
             execute_job
             
-            #After the job has run assign it a UUID
-            @schedule[n][:run] = true
+            #After the job has run flag it as no longer scheduled
+            @schedule[n][:scheduled] = false
             @file.save!
           end
         end

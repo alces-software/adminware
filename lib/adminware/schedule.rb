@@ -18,7 +18,7 @@ module Adminware
 
     #Add a job to the schedule
     def add_job
-      hash = { :job => @name, :status => @command, :run => false }
+      hash = { :job => @name, :status => @command, :scheduled => true }
       @array.push(hash)
       puts "\t> #{@command} script for #{@name} scheduled on #{@host}"
     end
