@@ -44,7 +44,7 @@ module Adminware
             :host => 'local',
             :plain => false,
             :all => false
-          Commands::List.execute(args, options)
+          Commands::ListCommands.execute(args, options)
         end
       end
       
@@ -55,7 +55,7 @@ module Adminware
         c.option '-f', '--forward', 'Schedule the forward script for <name> on <host>'
         c.option '-r', '--rewind', 'Schedule the rewind script for <name> on <host>'
         c.action do |args, options|
-          Commands::Schedule.add(args, options)
+          Commands::ScheduleCommands.add(args, options)
         end
       end
 
@@ -63,7 +63,7 @@ module Adminware
         c.syntax = 'adminware schedule-apply <host>'
         c.description = 'Apply the schedule for a host'
         c.action do |args, options|
-          Commands::Schedule.apply(args, options)
+          Commands::ScheduleCommnands.apply(args, options)
         end
       end
 

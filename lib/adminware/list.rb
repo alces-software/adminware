@@ -5,7 +5,7 @@ require 'fileutils'
 require 'terminal-table'
 
 module Adminware
-  module ListCommands
+  module List
     class << self
       #Handle the input command
       def run(name, command, host, boolean)
