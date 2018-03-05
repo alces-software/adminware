@@ -67,6 +67,14 @@ module Adminware
           Commands::ScheduleCommands.apply(args, options)
         end
       end
+      
+      command :'schedule-clear' do |c|
+        c.syntax = 'adminware schedule-list <host>'
+        c.description = 'Clear the schedule for a host'
+        c.action do |args, options|
+          Commands::ScheduleCommands.clear(args, options)    
+        end
+      end
 
       run!
     end
