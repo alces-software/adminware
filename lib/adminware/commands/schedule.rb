@@ -45,6 +45,13 @@ module Adminware
           
           ScheduleApply::run(host)
         end
+        
+        def clear(args, options)
+          host = args[0]
+
+          file = Schedule.new(host)
+          file.clear_schedule
+        end
       end
     end
   end

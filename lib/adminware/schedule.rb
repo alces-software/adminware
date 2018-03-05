@@ -1,6 +1,7 @@
 require 'adminware'
 require 'adminware/config'
 require 'yaml'
+require 'fileutils'
 
 module Adminware
   class Schedule
@@ -37,6 +38,12 @@ module Adminware
     
     def load_array
       @array
+    end
+   
+    #Deletes the schedule file 
+    def clear_schedule
+      FileUtils::rm(@file)
+      puts "\t> Successfully cleared schedule for #{@host}"
     end
 
     private
