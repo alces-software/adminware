@@ -63,7 +63,7 @@ module Adminware
         c.syntax = 'adminware schedule-apply <host>'
         c.description = 'Apply the schedule for a host'
         c.action do |args, options|
-          Commands::ScheduleCommnands.apply(args, options)
+          Commands::ScheduleCommands.apply(args, options)
         end
       end
 
