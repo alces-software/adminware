@@ -1,7 +1,6 @@
 require 'adminware/schedule'
 require 'adminware/state'
 require 'adminware/job'
-require 'securerandom'
 
 module Adminware
   module ScheduleApply
@@ -19,7 +18,7 @@ module Adminware
       #Finds the next job to run in the schedule
       def find_next_job
         (0..(@schedule.length-1)).each do |n|
-          if @schedule[n][:UUID] == 0
+          if @schedule[n][:run] == false
             @job_number = n
             break
           end 
@@ -37,7 +36,7 @@ module Adminware
             execute_job
             
             #After the job has run assign it a UUID
-            @schedule[n][:UUID] = SecureRandom.uuid
+            @schedule[n][:run] = true
             @file.save!
           end
         end
@@ -48,7 +47,7 @@ module Adminware
         job = Job.new(@job_name, @state)
         job.command = @status
         job.host = @host
-
+        
         job.validate!
 
         job.run
