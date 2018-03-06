@@ -66,9 +66,11 @@ module Adminware
       def print_schedule
         @file = Schedule.new(@host)
         @schedule = @file.load_array
-        table = Terminal::Table.new :headings => ['Host', 'Job(s)', 'Status', 'Scheduled?'] do |rows|
+        table = Terminal::Table.new :title => 'Scheduled Jobs', :headings => ['Host', 'Job(s)', 'Status'] do |rows|
           (0..(@schedule.length-1)).each do |i|
-            rows << [@host, @schedule[i][:job], @schedule[i][:status], @schedule[i][:scheduled]]
+            if @schedule[i][:scheduled]
+              rows << [@host, @schedule[i][:job], @schedule[i][:status]]
+            end
           end
           rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
         end
