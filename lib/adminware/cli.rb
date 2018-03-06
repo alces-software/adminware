@@ -1,6 +1,7 @@
 require 'commander'
 require 'adminware/commands/run'
 require 'adminware/commands/list'
+require 'adminware/commands/schedule'
 
 module Adminware
   class CLI
@@ -38,12 +39,41 @@ module Adminware
         c.option '-j', '--job NAME', String, 'Specify the name of the job to list'
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '--host HOST', String, 'Specify the host you wish to view the jobs for'
+        c.option '-s', '--schedule HOST', String, 'List the schedule for HOST'
         c.action do |args, options|
           options.default \
             :host => 'local',
             :plain => false,
             :all => false
-          Commands::List.execute(args, options)
+          Commands::ListCommands.execute(args, options)
+        end
+      end
+      
+      command :'schedule-add' do |c|
+        c.syntax = 'adminware schedule-add <name> [options]'
+        c.description = 'Schedule a job for a host'
+        c.example 'Add a job to the schedule', 'adminware schedule-add <name> --host HOST --forward'
+        c.option '--host HOST', String, 'Specify the host to schedule jobs for'
+        c.option '-f', '--forward', 'Schedule the forward script for <name> on <host>'
+        c.option '-r', '--rewind', 'Schedule the rewind script for <name> on <host>'
+        c.action do |args, options|
+          Commands::ScheduleCommands.add(args, options)
+        end
+      end
+
+      command :'schedule-apply' do |c|
+        c.syntax = 'adminware schedule-apply <host>'
+        c.description = 'Apply the schedule for a host'
+        c.action do |args, options|
+          Commands::ScheduleCommands.apply(args, options)
+        end
+      end
+      
+      command :'schedule-clear' do |c|
+        c.syntax = 'adminware schedule-list <host>'
+        c.description = 'Clear the schedule for a host'
+        c.action do |args, options|
+          Commands::ScheduleCommands.clear(args, options)    
         end
       end
 

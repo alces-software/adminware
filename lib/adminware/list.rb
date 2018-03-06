@@ -1,11 +1,12 @@
 require 'adminware'
 require 'adminware/config'
 require 'adminware/state'
+require 'adminware/schedule'
 require 'fileutils'
 require 'terminal-table'
 
 module Adminware
-  module ListCommands
+  module List
     class << self
       #Handle the input command
       def run(name, command, host, boolean)
@@ -21,6 +22,8 @@ module Adminware
           list_all_jobs
         when 'job'
           list_job_values
+        when 'schedule'
+          list_schedule
         end
       end
 
@@ -44,7 +47,13 @@ module Adminware
         job = [@name]
         which_output?(job)
       end
-     
+      
+      #List the schedule for the given host
+      def list_schedule
+        schedule_exists?
+        print_schedule
+      end
+
       #Figure out which output to use 
       def which_output?(job)
         if @plain
@@ -52,6 +61,20 @@ module Adminware
         else
           create_table(job)
         end
+      end
+      
+      def print_schedule
+        @file = Schedule.new(@host)
+        @schedule = @file.load_array
+        table = Terminal::Table.new :title => 'Scheduled Jobs', :headings => ['Host', 'Job(s)', 'Status'] do |rows|
+          (0..(@schedule.length-1)).each do |i|
+            if @schedule[i][:scheduled]
+              rows << [@host, @schedule[i][:job], @schedule[i][:status]]
+            end
+          end
+          rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
+        end
+        puts table
       end
 
       #Output in tab delimited form
@@ -92,6 +115,16 @@ module Adminware
           puts "\t> The directory for #{@name} does not exist and therefore can't be run or listed"
         end
         exit 1
+      end
+      
+      def schedule_exists?
+        @schedule = File.join(Adminware::root, 'var', "#{@host}_schedule.yaml")
+        if File.exist?(@schedule)
+          return true
+        else
+          puts "\t> There is no schedule for #{@host}"
+          exit 1
+        end
       end
     end
   end
