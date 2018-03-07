@@ -14,7 +14,7 @@ module Adminware
         @command = command
         @host = host
         @state = State.new(host)
-        @jobdir = Adminware::config.jobdir
+        @config = Adminware::config
         @plain = boolean
 
         case command
@@ -22,16 +22,16 @@ module Adminware
           list_all_jobs
         when 'job'
           list_job_values
-        when 'schedule'
-          list_schedule
         end
       end
 
       #List all available jobs
       def list_all_jobs
         jobs = []
-        @state.file.each do |key, value|
-           jobs << key
+        Dir["#{@config.statedir}*state.yaml"].each do |file|
+          host = file.delete_prefix("var/")
+          host = host.delete_suffix("_state.yaml")
+          jobs << host 
         end
 
         if jobs.empty?
@@ -62,7 +62,8 @@ module Adminware
           create_table(job)
         end
       end
-      
+     
+      #TODO Move this 
       def print_schedule
         @file = Schedule.new(@host)
         @schedule = @file.load_array
@@ -81,17 +82,21 @@ module Adminware
       def plain_output(jobs)
         puts "Host\tJobs\tDescription\tStatus\tExit Code"
         (0..(jobs.length-1)).each do |i|
-          file = YAML::load_file(File.join(@jobdir, jobs[i], 'job.yaml'))
+          file = YAML::load_file(File.join(@config.jobdir, jobs[i], 'job.yaml'))
           puts "#{@host}\t#{jobs[i]}\t#{file['description']}\t#{@state.file[jobs[i]][:status]}\t#{@state.file[jobs[i]][:exit]}"        end
       end
       
       #Create the table for the given job(s)      
-      def create_table(jobs)
+      def create_table(hosts)
         table = Terminal::Table.new :headings => ['Host', 'Job(s)', 'Description', 'Status', 'Exit Code'] do |rows|
-          (0..(jobs.length-1)).each do |i|
-            file = YAML::load_file(File.join(@jobdir, jobs[i], 'job.yaml'))
-            rows << [@host, jobs[i], file['description'], @state.file[jobs[i]][:status], @state.file[jobs[i]][:exit]]
-            rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
+          (0..(hosts.length-1)).each do |i|
+            state = State.new(hosts[i])
+            state.file.each do |key, value|
+              file = YAML::load_file(File.join(@config.jobdir, key, 'job.yaml'))
+              rows << [hosts[i], key, file['description'], state.file[key][:status], state.file[key][:exit]]
+             end
+             if hosts[i+1] != nil then rows.add_separator end
+             rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
           end
         end
         puts table
@@ -108,7 +113,7 @@ module Adminware
 
       #Checks the job directory exists
       def job_dir_exist?
-        namedir = File.join(@jobdir, @name)
+        namedir = File.join(@config.jobdir, @name)
         if Dir.exist?(namedir)
           puts "\t> #{@name} needs to be run at least once before it can be listed"
         else
