@@ -6,8 +6,8 @@ module Adminware
     module Run
       class << self
         def execute(args, options)
-          name = args[0]
-          host = options.connect
+          name = options.name
+          host = options.host
           forward = options.forward
           rewind = options.rewind
           state = State.new(host)
@@ -18,17 +18,28 @@ module Adminware
           
           #Check a job name has been given
           if name.nil?
-            puts 'Please enter a job name. See adminware run --help for more info'
+            puts "\t> Please enter a job name. See adminware job-run --help for more info"
+            exit 1
+          end
+
+          #Check a host name has been given         
+          if host.nil?
+            puts "\t> Please enter a host to run the job on. See adminware job-run --help for more info"
             exit 1
           end
 
           #Assign the requested script
+          if forward and rewind
+            puts "\t> Only request one script at a time for a job"
+            exit 1
+          end
+
           if forward
             job.command = 'forward'
           elsif rewind
             job.command = 'rewind'
           else
-            puts "Please enter an option for the job. See adminware run --help for more info"
+            puts "Please enter an option for the job. See adminware job-run --help for more info"
             exit 1
           end
          

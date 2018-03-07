@@ -6,22 +6,18 @@ module Adminware
     module ListCommands 
       class << self
         def execute(args, options)
-          name = options.job
+          name = options.name
           all = options.all
           host = options.host
           plain = options.plain
-          schedule = options.schedule
 
           #Assign the requested command      
           if all
             command = 'all'
           elsif !name.nil?
             command = 'job'
-          elsif !schedule.nil?
-            command = 'schedule'
-            host = schedule
           else
-            puts "Please enter a valid command. See adminware list --help for more info"
+            puts "\t> Please enter a valid command. See adminware list --help for more info"
             exit 1
           end
           
