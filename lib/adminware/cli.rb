@@ -54,6 +54,9 @@ module Adminware
         c.option '-n', '--name NAME', String, 'Filter for a specific job'
         c.option '--host HOST', String, 'Filter for a specific host'
         c.action do |args, options|
+          options.default \
+            :all => true
+          Commands::ListCommands.execute(args, options)
         end
       end
  
