@@ -8,15 +8,16 @@ module Adminware
   module Commands
     module ListCommands 
       class << self
+        #Handles command: adminware job-list 
         def job(args, options)
           name = options.name
           host = options.host
           plain = options.plain
 
-          #Run the command
           JobList.run(name, host, plain)
         end
 
+        #Handles command: adminware state-list
         def state(args, options) 
           name = options.name
           host = options.host
@@ -25,6 +26,7 @@ module Adminware
           StateList.run(name, host, plain)
         end
 
+        #Handles command: adminware schedule-list
         def schedule(args, options)
           host = options.host
           show_all = options.all
