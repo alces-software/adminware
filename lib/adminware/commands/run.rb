@@ -30,7 +30,7 @@ module Adminware
 
           #Assign the requested script
           if forward and rewind
-            puts "\t> Only request one script at a time for a job"
+            puts "\t> Only specify one script to run for a job at a time"
             exit 1
           end
 
