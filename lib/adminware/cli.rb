@@ -31,20 +31,13 @@ module Adminware
 
       command :'job-list' do |c|
         c.syntax = 'adminware job-list [options]'
-        c.description = 'Lists details about jobs'
-        c.example 'List values for NAME', 'adminware list --name NAME'
-        c.example 'List values for every job', 'adminware list -all'
-        c.example 'List values for NAME in a tab delimited format', 'adminware list --name NAME --plain'
-        c.option '-a', '--all', 'Lists all available jobs'
-        c.option '-n', '--name NAME', String, 'Specify the name of the job to list'
+        c.description = 'Lists all available jobs for a host'
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '--host HOST', String, 'Specify the host you wish to view the jobs for'
         c.action do |args, options|
           options.default \
-            :host => 'local',
-            :plain => false,
-            :all => false
-          Commands::ListCommands.execute(args, options)
+            :host => 'local'
+          Commands::ListCommands.job(args, options)
         end
       end
      
@@ -52,11 +45,10 @@ module Adminware
         c.syntax = 'adminware state-list [options]'
         c.description = 'List the state values for all run jobs'
         c.option '-n', '--name NAME', String, 'Filter for a specific job'
+        c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '--host HOST', String, 'Filter for a specific host'
         c.action do |args, options|
-          options.default \
-            :all => true
-          Commands::ListCommands.execute(args, options)
+          Commands::ListCommands.state(args, options)
         end
       end
  
@@ -94,6 +86,13 @@ module Adminware
       command :'schedule-list' do |c|
         c.syntax = 'adminware schedule-list [options]'
         c.description = 'List the schedule for a host'
+        c.option '--host HOST', String, 'Specify a host to list the schedule for'
+        c.option '-a', '--all', 'Show all jobs in the schedule, history included'
+        c.action do |args, options|
+          options.default \
+            :host => 'local'
+          Commands::ListCommands.schedule(args, options)
+        end
       end
 
       run!
