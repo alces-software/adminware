@@ -10,8 +10,8 @@ module Adminware
 
     def initialize(host)
       @host = host
-      @config = Adminware::config
-      @file = File.join(Adminware::root, 'var', "#{@host}_schedule.yaml")
+      @config = Adminware.config
+      @file = File.join(Adminware.root, 'var', "#{@host}_schedule.yaml")
       @array = []
 
       load_schedule
@@ -19,7 +19,7 @@ module Adminware
 
     #Add a job to the schedule
     def add_job
-      hash = { :job => @name, :status => @command, :scheduled => true }
+      hash = { :job => @name, :status => @command, :scheduled => true, :exit => 'N/A' }
       @array.push(hash)
       puts "\t> #{@command} script for #{@name} scheduled on #{@host}"
     end
@@ -42,7 +42,7 @@ module Adminware
    
     #Deletes the schedule file 
     def clear_schedule
-      FileUtils::rm(@file)
+      FileUtils.rm(@file)
       puts "\t> Successfully cleared schedule for #{@host}"
     end
 
@@ -50,7 +50,7 @@ module Adminware
     
     #Load the schedule file for the given host
     def load_schedule
-      @schedule = YAML::load_file(@file) rescue {}
+      @schedule = YAML.load_file(@file) rescue {}
       load_into_array
     end
 

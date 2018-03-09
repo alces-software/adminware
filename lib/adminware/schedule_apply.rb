@@ -1,3 +1,4 @@
+require 'adminware/config'
 require 'adminware/schedule'
 require 'adminware/state'
 require 'adminware/job'
@@ -10,6 +11,7 @@ module Adminware
         @state = State.new(host)
         @schedule = @file.load_array
         @host = host
+        @config = Adminware.config
 
         find_next_job
         run_schedule        
@@ -37,6 +39,8 @@ module Adminware
             
             #After the job has run flag it as no longer scheduled
             @schedule[n][:scheduled] = false
+            state = YAML.load_file(File.join(@config.statedir, "#{@host}_state.yaml"))
+            @schedule[n][:exit] = state[@job_name][:exit] 
             @file.save!
           end
         end
