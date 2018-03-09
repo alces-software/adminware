@@ -13,8 +13,13 @@ module Adminware
         @host = host
         @config = Adminware.config
         @plain = boolean
-      
-        list_job_values
+        @description = nil
+
+        if @host == 'local' 
+          list_job_values
+        else
+          search_remote_host
+        end
       end
       
       #Lists the values of a job within the state file
@@ -54,13 +59,40 @@ module Adminware
         table = Terminal::Table.new do |rows|
           rows.headings = ['Host', 'Job', 'Description']
           (0..(jobs.length-1)).each do |i|
-            file = YAML.load_file(File.join(@config.jobdir, jobs[i], 'job.yaml'))
-            rows << [@host, jobs[i], file['description']]
+            if @description.nil?
+              file = YAML.load_file(File.join(@config.jobdir, jobs[i], 'job.yaml'))
+              rows << [@host, jobs[i], file['description']]
+            else
+              rows << [@host, jobs[i], @description[i]]
+            end
           end
         rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
         end
         puts table
-      end  
+      end 
+
+     def search_remote_host
+      jobs = []
+      stdout, stderr, status = Open3.capture3("ssh #{@host} ls adminware/jobs/")
+      start = 0
+      (0..(stdout.length-1)).each do |i|
+        if stdout[i+1] == "\n"
+          jobs << stdout[start..i]
+          start = i + 2
+        end
+      end
+      
+      @description = [] 
+      jobs.each do |job|
+        stdout, stderr, status = Open3.capture3("ssh #{@host} cat adminware/jobs/#{job}/job.yaml")
+        if status.success?
+          @description << stdout[18..-3] 
+        else
+          @description << 'No description available'
+        end
+      end
+      create_table(jobs)
+     end 
     end
   end
 end
