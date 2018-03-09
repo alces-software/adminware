@@ -10,12 +10,12 @@ module Adminware
 
     #Load the config file
     def initialize
-      @path = Adminware::root 
+      @path = Adminware.root 
       configfile = File.join(@path, 'etc/config.yaml')
       @config = YAML.load_file(configfile)
 
       #If no path given in config then set them to their defaults
-      @jobdir = @config['jobdir'] ||= DEFAULT_JOBDIR
+      @jobdir = @config['centraljobdir'] ||= DEFAULT_JOBDIR
       @jobdir = set_path(@jobdir)
 
       @logfile = @config['logfile'] ||= DEFAULT_LOGFILE
@@ -36,7 +36,7 @@ module Adminware
     end
 
     def statedir
-     @statedir
+      @statedir
     end
 
     private
@@ -47,7 +47,7 @@ module Adminware
         return true
       else
         #Create it if necessary
-        FileUtils::touch "#{file}"
+        FileUtils.touch "#{file}"
       end
     end
 
@@ -57,7 +57,7 @@ module Adminware
       if File.exist?(path) 
         path
       else
-        path = File.expand_path(pah)
+        path = File.expand_path(path)
       end
     end
   end

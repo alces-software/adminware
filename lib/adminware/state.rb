@@ -6,7 +6,7 @@ module Adminware
   class State
     def initialize(host)
       @host = host
-      @config = Adminware::config
+      @config = Adminware.config
       @statefile = File.join(@config.statedir, "#{@host}_state.yaml")
       load_state
     end
@@ -27,7 +27,7 @@ module Adminware
 
     #Save the job's state to file
     def save!
-      File::write(@statefile, @state.to_yaml)
+      File.write(@statefile, @state.to_yaml)
     end
 
     def file
@@ -41,7 +41,7 @@ module Adminware
     end
 
     def load_state
-      @state = YAML::load_file(@statefile) rescue {}
+      @state = YAML.load_file(@statefile) rescue {}
     end
   end
 end

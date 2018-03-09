@@ -10,9 +10,9 @@ module Adminware
     attr_accessor :host
 
     def initialize(name, state)
-      @path = Adminware::root 
-      @config = Adminware::config
-      @logger = Adminware::log
+      @path = Adminware.root 
+      @config = Adminware.config
+      @logger = Adminware.log
       @name = name
       @state = state
     end
