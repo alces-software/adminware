@@ -37,9 +37,17 @@ module Adminware
           rows.headings = ['Host', 'Job', 'Status', 'Exit Code', 'Queued']
           (0..(@schedule.length-1)).each do |i|
             s = @schedule[i]
-            if @schedule[i][:scheduled] or @show_all 
+            
+            #Separate queued and unqueued jobs
+            if @show_all
+              if s[:scheduled] and !@schedule[i-1][:scheduled]
+                rows.add_separator
+              end
+            end
+
+            if s[:scheduled] or @show_all 
               rows << [@host, s[:job], s[:status], s[:exit], s[:scheduled]]
-            else
+            elsif i == (@schedule.length-1)
               puts "\t> There are no scheduled jobs to list. Use adminware schedule-list --all to see history"
               exit 1
             end
