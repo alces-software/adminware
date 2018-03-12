@@ -88,6 +88,7 @@ module Adminware
         c.description = 'List the schedule for a host'
         c.option '--host HOST', String, 'Specify a host to list the schedule for'
         c.option '-a', '--all', 'Show all jobs in the schedule, history included'
+        c.option '-p', '--plain', 'Output in a tab delimited format'
         c.action do |args, options|
           options.default \
             :host => 'local'

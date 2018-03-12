@@ -6,16 +6,17 @@ require 'terminal-table'
 module Adminware
   module ScheduleList
     class << self
-      def run(host, boolean)
+      def run(host, boolean, plain)
         @host = host
         @show_all = boolean
+        @plain = plain
 
         list_schedule
       end
 
       def list_schedule
         schedule_exists?
-        print_schedule
+        which_output?
       end
   
       #Check if a schedule exists for the host
@@ -27,6 +28,34 @@ module Adminware
           puts "\t> There is no schedule for #{@host}"
           exit 1
         end
+      end
+      
+      def which_output?
+        if @plain
+          plain_output
+        else
+          print_schedule
+        end
+      end
+     
+      #Output schedule data in a tab delimited format 
+      def plain_output
+        @file = Schedule.new(@host)
+        @schedule = @file.load_array
+        puts "Host\tJob\tStatus\tExit Code\tQueued"
+        (0..(@schedule.length-1)).each do |i|
+          s = @schedule[i]
+          if s[:scheduled] or @show_all
+            print "#{@host}"
+            print "\t#{s[:job]}"
+            print "\t#{s[:status]}"
+            print "\t#{s[:exit]}"
+            print "\t#{s[:scheduled]}\n"
+          elsif i == (@schedule.length-1)
+            puts "\t> There are no scheduled jobs to list. Use adminware schedule-list --all to see history"
+            exit 1
+          end
+        end 
       end
 
       #Output the schedule in a table for the given host
@@ -54,7 +83,7 @@ module Adminware
           end
           rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
         end
-        puts table
+        puts "\n#{table}"
       end
     end
   end
