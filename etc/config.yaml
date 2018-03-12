@@ -1,0 +1,5 @@
+---
+centraljobdir: jobs/
+localjobdir: /var/adminware/jobs/
+logfile: logs/adminware.log
+statedir: var/
