@@ -30,8 +30,9 @@ module Adminware
         def schedule(args, options)
           host = options.host
           show_all = options.all
+          plain = options.plain
 
-          ScheduleList.run(host, show_all)
+          ScheduleList.run(host, show_all, plain)
         end
       end
     end
