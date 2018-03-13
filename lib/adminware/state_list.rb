@@ -52,11 +52,10 @@ module Adminware
         (0..(hosts.length-1)).each do |i|
           state = State.new(hosts[i])
           state.file.each do |key, value|
-            file = YAML.load_file(File.join(@config.jobdir, key, 'job.yaml'))
             if @name.nil? or key == @name
               print "#{hosts[i]}"
               print "\t#{key}"
-              print "\t#{file['description']}"
+              print "\t#{get_description(key)}"
               print "\t#{state.file[key][:status]}"
               print "\t#{state.file[key][:exit]}\n"
             else
@@ -73,9 +72,9 @@ module Adminware
           (0..(hosts.length-1)).each do |i|
             state = State.new(hosts[i])
             state.file.each do |key, value|
-              file = YAML.load_file(File.join(@config.jobdir, key, 'job.yaml'))       
               if @name.nil? or key == @name
-                rows << [hosts[i], key, file['description'], state.file[key][:status], state.file[key][:exit]]
+                s = state.file[key]
+                rows << [hosts[i], key, get_description(hosts[i], key), s[:status], s[:exit]]
               else
                 next
               end 
@@ -84,7 +83,38 @@ module Adminware
             rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
           end
         end
-        puts table
+        puts "\n#{table}"
+      end
+
+      def get_description(host, key)
+        file = File.join(find_directory(key), 'job.yaml') rescue file = '' 
+        if File.exist?(file)
+          file = YAML.load_file(file)
+          return file['description']
+        elsif check_remotely(host, key)
+          return @desc
+        else
+          return 'No description available'
+        end
+      end
+
+      def find_directory(key)
+        central = File.join(@config.central_jobdir, key)
+        local = File.join(@config.local_jobdir, key)
+        if Dir.exist?(central)
+          return central
+        elsif Dir.exist?(local)
+          return local
+        end
+      end
+
+      def check_remotely(host, key)
+        stdout, stderr, status = Open3.capture3("ssh #{host} cat #{@config.local_jobdir}/#{key}/job.yaml")
+        if status.success?
+          @desc = stdout[18..-3]
+        else
+          return false
+        end
       end
     end
   end

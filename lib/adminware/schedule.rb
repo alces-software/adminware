@@ -1,4 +1,5 @@
 require 'adminware'
+require 'adminware/job'
 require 'adminware/config'
 require 'yaml'
 require 'fileutils'
@@ -29,7 +30,11 @@ module Adminware
     end
 
     def validate!
-      if dir_exist? and script_exist?
+      job = Job.new(@name)
+      job.command = @command
+      job.host = @host
+
+      if job.validate!
         return true
       else
         return false
@@ -59,24 +64,6 @@ module Adminware
       @schedule.each do |s|
         @array.push(s)
       end 
-    end
-
-    def dir_exist?
-      if Dir.exist?(File.join(@config.jobdir, @name))
-        return true
-      else
-        puts "\t> The directory for #{@name} does not exist"
-        return false
-      end
-    end
-
-    def script_exist?
-      if File.exist?(File.join(@config.jobdir, @name, "#{@command}.sh"))
-        return true
-      else
-        puts "\t> The #{@command} script does not exist for #{@name}"
-        return false
-      end
     end
   end
 end

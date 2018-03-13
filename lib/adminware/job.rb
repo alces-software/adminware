@@ -8,18 +8,17 @@ module Adminware
   class Job
     attr_accessor :command
     attr_accessor :host
+    attr_accessor :state
 
-    def initialize(name, state)
+    def initialize(name)
       @path = Adminware.root 
       @config = Adminware.config
       @logger = Adminware.log
       @name = name
-      @state = state
     end
 
     #Performs validation on entered command
     def validate!
-      @file = File.join(@config.jobdir, @name, @command + '.sh')
       @job = "#{@command} script for #{@name}"
 
       running_locally?
@@ -46,11 +45,17 @@ module Adminware
 
     #Checks to see if the directory exists for input NAME
     def dir_exist?
-      jobdir = File.join(@config.jobdir, @name)
-      if Dir.exist?(jobdir)
-        return true
-      else
-        @logger.log('error', "The directory: #{jobdir} does not exist")
+      central = File.join(@config.central_jobdir, @name)
+      local = File.join(@config.local_jobdir, @name)
+
+      if Dir.exist?(central)
+        @file = File.join(central, @command + '.sh')
+      elsif Dir.exist?(local)
+        @file = File.join(local, @command + '.sh')
+      elsif check_remotely("ssh #{@host} find #{local}")
+        @file = File.join(local, @command + '.sh')
+      else  
+        @logger.log('error', "The job directory for #{@name} on #{@host} does not exist")
         return false
       end
     end
@@ -59,8 +64,10 @@ module Adminware
     def file_exist?
       if File.exist?(@file)
         return true
+      elsif check_remotely("ssh #{@host} find #{@file}")
+        @script = "ssh #{@host} bash #{@file}"
       else
-        @logger.log('error', "The #{@command} script for #{@name} does not exist")
+        @logger.log('error', "The #{@command} script for #{@name} on #{@host} does not exist")
         return false
       end
     end
@@ -93,9 +100,21 @@ module Adminware
     def running_locally?
       if @host == 'local'
         @script = "bash #{@file}"
+        @running_remotely = false
       else
         @job = @job + " on #{@host}"
-        @script = "ssh #{@host} bash #{@path}/jobs/#{@name}/#{@command}.sh"
+        @script = "ssh #{@host} bash #{File.expand_path(@config.central_jobdir)}/#{@name}/#{@command}.sh"
+        @running_remotely = true
+      end
+    end
+   
+    #Checks the remote host for a given directory/file 
+    def check_remotely(command)
+      stdout, stderr, status = Open3.capture3(command)
+      if status.success?
+        return true
+      else
+        return false
       end
     end
 
