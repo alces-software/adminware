@@ -13,9 +13,10 @@ module Adminware
           state = State.new(host)
            
           #Initialise the job
-          job = Job.new(name, state)
+          job = Job.new(name)
           job.host = host
-          
+          job.state = state
+ 
           #Check a job name has been given
           if name.nil?
             puts "\t> Please enter a job name. See adminware job-run --help for more info"
@@ -39,7 +40,7 @@ module Adminware
           elsif rewind
             job.command = 'rewind'
           else
-            puts "Please enter an option for the job. See adminware job-run --help for more info"
+            puts "\t> Please enter an option for the job. See adminware job-run --help for more info"
             exit 1
           end
          
