@@ -4,9 +4,10 @@ require 'fileutils'
 module Adminware
   class Config
     #Set default values for config settings
-    DEFAULT_JOBDIR = "jobs/"
-    DEFAULT_LOGFILE = "logs/adminware.log"
-    DEFAULT_STATEDIR = "var/state.yaml"
+    DEFAULT_CENTRAL_JOBDIR = 'jobs/'
+    DEFAULT_LOCAL_JOBDIR = 'var/lib/adminware/jobs/'
+    DEFAULT_LOGFILE = 'logs/adminware.log'
+    DEFAULT_STATEDIR = 'var/state.yaml'
 
     #Load the config file
     def initialize
@@ -15,8 +16,11 @@ module Adminware
       @config = YAML.load_file(configfile)
 
       #If no path given in config then set them to their defaults
-      @jobdir = @config['centraljobdir'] ||= DEFAULT_JOBDIR
-      @jobdir = set_path(@jobdir)
+      @centraljobdir = @config['centraljobdir'] ||= DEFAULT_CENTRAL_JOBDIR
+      @centraljobdir = set_path(@centraljobdir)
+
+      @localjobdir = @config['localjobdir'] ||= DEFAULT_LOCAL_JOBDIR
+      @localjobdir = set_path(@localjobdir)
 
       @logfile = @config['logfile'] ||= DEFAULT_LOGFILE
       @logfile = set_path(@logfile)
@@ -25,9 +29,13 @@ module Adminware
       @statedir = set_path(@statedir)
     end
 
-    #These methods return their respective files
-    def jobdir
-      @jobdir
+    #These methods return their respective files/directories
+    def central_jobdir
+      @centraljobdir
+    end
+
+    def local_jobdir
+      @localjobdir
     end
 
     def logfile
@@ -54,10 +62,10 @@ module Adminware
     #Sets the path for the given config setting
     def set_path(path)
       #Checks if the path is absolute or relative
-      if File.exist?(path) 
+      if File.exist?(path)
         path
       else
-        path = File.expand_path(path)
+        path = File.join(Dir.home, path) 
       end
     end
   end
