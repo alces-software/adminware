@@ -6,38 +6,54 @@ require 'open3'
 
 module Adminware
   class Job
-    attr_accessor :command
-    attr_accessor :host
     attr_accessor :state
 
-    def initialize(name)
+    def initialize(name, command, host)
       @path = Adminware.root 
       @config = Adminware.config
       @logger = Adminware.log
       @name = name
+      @command = command
+      @host = host
     end
 
     #Performs validation on entered command
-    def validate!
-      @job = "#{@command} script for #{@name}"
-
-      running_locally?
-      
+    def valid?
       #Check if the directory and file exist
-      if dir_exist? and file_exist? then
-        return true
+      if dir_exist? && file_exist? 
+        true
       else
         @logger.log('error', "Failed to validate")
-        exit 1
       end
     end
 
     #Runs the requested script for the job
     def run
-      if status_matches_command? #Don't execute
+      @job = "#{@command} script for #{@name} on #{@host}"
+
+      if running_locally?
+        set_script("bash #{@file}")
+      elsif @remote_dir == 'local'
+        set_script("ssh #{@host} bash #{@file}")
       else
-        execute(@script)
-        set_job_values
+        set_script("ssh #{@host} bash #{File.expand_path(@config.central_jobdir)}/#{@name}/#{@command}.sh")
+      end
+
+      if status_matches_command?
+        @logger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
+        @state.set_exit(@name, 1)
+        @state.save!
+      else
+        @logger.log('info', "Attempting to execute #{@job}")
+        stdout, stderr, status = Open3.capture3(@script)
+        @logger.log('debug', stderr.chomp) if !stderr.empty? 
+        @logger.log('debug', status)
+        if status.success?
+          @logger.log('info', "Successfully executed #{@job}")
+          set_job_values
+        else
+          @logger.log('error', "Failed to execute #{@job}")
+        end
       end
     end
 
@@ -56,66 +72,40 @@ module Adminware
         @file = File.join(local, @command + '.sh')
       else  
         @logger.log('error', "The job directory for #{@name} on #{@host} does not exist")
-        return false
+        false
       end
     end
 
     #Checks to see if the file exists for input COMMAND:
     def file_exist?
       if File.exist?(@file)
-        return true
+        true
       elsif check_remotely("ssh #{@host} find #{@file}")
-        @script = "ssh #{@host} bash #{@file}"
+        @remote_dir = 'local'
       else
         @logger.log('error', "The #{@command} script for #{@name} on #{@host} does not exist")
-        return false
+        false
       end
     end
-
-    #Execute the command given and sends necessary output to the logger
-    def execute(command)
-      @logger.log('info', "Attempting to execute #{@job}")
-      stdout, stderr, status = Open3.capture3(command)
-      @logger.log('debug', stderr.chomp)
-      @logger.log('debug', status)
-      if status.success?
-        @logger.log('info', "Successfully executed #{@job}")
-      else 
-        @logger.log('error', "Failed to execute #{@job}")
-        exit!
-      end
-    end
-
+    
     #Checks if the job's status matches the entered command
     def status_matches_command?
-      if "#{@state.status(@name)}" == @command
-        @logger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
-        @state.set_exit(@name, 1)
-        @state.save!
-        return true
-      end
+      if @state.status(@name) == @command then true end
     end
 
     #Checks if the job needs to run locally or on another machine
     def running_locally?
-      if @host == 'local'
-        @script = "bash #{@file}"
-        @running_remotely = false
-      else
-        @job = @job + " on #{@host}"
-        @script = "ssh #{@host} bash #{File.expand_path(@config.central_jobdir)}/#{@name}/#{@command}.sh"
-        @running_remotely = true
-      end
+      @host == 'local' ? true : false
     end
    
     #Checks the remote host for a given directory/file 
     def check_remotely(command)
       stdout, stderr, status = Open3.capture3(command)
-      if status.success?
-        return true
-      else
-        return false
-      end
+      status.success?
+    end
+
+    def set_script(command)
+      @script = command
     end
 
     #Sets the correct values for the job after successful execution

@@ -9,7 +9,7 @@ module Adminware
       @logger = Logger.new(@config.logfile)
       @logger.level = Logger::DEBUG
       @logger.formatter = proc do |severity, datetime, progname, msg|
-      date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
+        date_format = datetime.strftime("%d-%m-%Y %H:%M:%S")
         "[#{date_format}]  #{severity.ljust(5)}: #{msg}\n"
       end
     end

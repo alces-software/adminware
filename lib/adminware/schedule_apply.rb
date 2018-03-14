@@ -48,15 +48,12 @@ module Adminware
       
       #Creates a job instance and attempts to run the job from the schedule
       def execute_job
-        job = Job.new(@job_name)
+        job = Job.new(@job_name, @status, @host)
         job.state = @state
-        job.command = @status
-        job.host = @host
         
-        job.validate!
-
-        job.run
-        @state.save!
+        job.valid? 
+          job.run
+          @state.save!
       end
     end
   end

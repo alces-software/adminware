@@ -18,7 +18,7 @@ module Adminware
           list_all_states
         else
           host = [@host]
-          which_output?(host)
+          output(host)
         end
       end
       
@@ -33,17 +33,13 @@ module Adminware
         if hosts.empty?
           puts "\t> No host state files to list, run a job first"
         else
-          which_output?(hosts)
+          output(hosts)
         end
       end
       
       #Checks if the -p option has been selected and outputs accordingly
-      def which_output?(hosts)
-        if @plain
-          plain_output(hosts)
-        else
-          create_table(hosts)
-        end
+      def output(hosts)
+        @plain ? plain_output(hosts) : table_output(hosts)
       end
       
       #Outputs state data in a tab delimited format
@@ -55,7 +51,7 @@ module Adminware
             if @name.nil? or key == @name
               print "#{hosts[i]}"
               print "\t#{key}"
-              print "\t#{get_description(key)}"
+              print "\t#{get_description(hosts[i], key)}"
               print "\t#{state.file[key][:status]}"
               print "\t#{state.file[key][:exit]}\n"
             else
@@ -66,7 +62,7 @@ module Adminware
       end 
       
       #Outputs state data in a table
-      def create_table(hosts)
+      def table_output(hosts)
         table = Terminal::Table.new do |rows|
           rows.headings = ['Host', 'Job', 'Description', 'Status', 'Exit Code']
           (0..(hosts.length-1)).each do |i|
@@ -79,7 +75,7 @@ module Adminware
                 next
               end 
             end
-            if hosts[i+1] != nil then rows.add_separator end
+            if hosts[i+1] != nil && @name.nil? then rows.add_separator end
             rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
           end
         end
@@ -90,11 +86,11 @@ module Adminware
         file = File.join(find_directory(key), 'job.yaml') rescue file = '' 
         if File.exist?(file)
           file = YAML.load_file(file)
-          return file['description']
+          file['description']
         elsif check_remotely(host, key)
-          return @desc
+          @desc
         else
-          return 'No description available'
+          'No description available'
         end
       end
 
@@ -102,9 +98,9 @@ module Adminware
         central = File.join(@config.central_jobdir, key)
         local = File.join(@config.local_jobdir, key)
         if Dir.exist?(central)
-          return central
+          central
         elsif Dir.exist?(local)
-          return local
+          local
         end
       end
 
@@ -113,7 +109,7 @@ module Adminware
         if status.success?
           @desc = stdout[18..-3]
         else
-          return false
+          false
         end
       end
     end

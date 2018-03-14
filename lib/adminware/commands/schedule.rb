@@ -21,12 +21,10 @@ module Adminware
             exit 1
           end
       
-          if forward and rewind
+          if forward && rewind
             puts "\t> Only specify one script to schedule for a job at a time"
             exit 1
-          end
- 
-          if forward 
+          elsif forward 
             command = 'forward'
           elsif rewind 
             command = 'rewind'
@@ -35,15 +33,13 @@ module Adminware
             exit 1
           end
           
-          file = Schedule.new(host)
-          file.name = name
-          file.command = command
+          schedule = Schedule.new(host)
+          schedule.name = name
+          schedule.command = command
 
-          if file.validate!
-            file.add_job
-            file.save!
-          else
-            puts "\t> Failed to validate!"
+          if schedule.valid?
+            schedule.add_job
+            schedule.save!
           end
         end
         
@@ -55,7 +51,7 @@ module Adminware
             exit 1
           end 
           
-          ScheduleApply::run(host)
+          ScheduleApply.run(host)
         end
         
         def clear(args, options)

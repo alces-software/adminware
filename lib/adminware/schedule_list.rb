@@ -16,7 +16,7 @@ module Adminware
 
       def list_schedule
         schedule_exists?
-        which_output?
+        output
       end
   
       #Check if a schedule exists for the host
@@ -30,12 +30,8 @@ module Adminware
         end
       end
       
-      def which_output?
-        if @plain
-          plain_output
-        else
-          print_schedule
-        end
+      def output
+        @plain ? plain_output : table_output 
       end
      
       #Output schedule data in a tab delimited format 
@@ -59,7 +55,7 @@ module Adminware
       end
 
       #Output the schedule in a table for the given host
-      def print_schedule
+      def table_output
         @file = Schedule.new(@host)
         @schedule = @file.load_array
         table = Terminal::Table.new :title => 'Scheduled Jobs' do |rows|

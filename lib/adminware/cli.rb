@@ -22,9 +22,10 @@ module Adminware
         c.option '-f', '--forward', 'Run the forward script for <name>'
         c.option '-r', '--rewind', 'Run the rewind script for <name>'
         c.action do |args, options|
-          options.default \
-            :forward => false,
-            :rewind => false
+          options.default( 
+            forward: false,
+            rewind:  false
+          )
           Commands::Run.execute(args, options)
         end
       end
@@ -35,8 +36,7 @@ module Adminware
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '-H', '--host HOST', String, 'Specify the host you wish to view the jobs for'
         c.action do |args, options|
-          options.default \
-            :host => 'local'
+          options.default(host: 'local') 
           Commands::ListCommands.job(args, options)
         end
       end
@@ -90,8 +90,7 @@ module Adminware
         c.option '-a', '--all', 'Show all jobs in the schedule, history included'
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.action do |args, options|
-          options.default \
-            :host => 'local'
+          options.default(host: 'local')
           Commands::ListCommands.schedule(args, options)
         end
       end

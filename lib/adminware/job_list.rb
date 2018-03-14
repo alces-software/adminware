@@ -30,13 +30,13 @@ module Adminware
         if @jobs.empty?
           puts "\t> No jobs to list"
         else
-          which_output?
+          output
         end
       end
      
       def add_jobs_from(directory)
         if Dir.exist?(directory)
-          Dir.foreach("#{directory}") do |item|
+          Dir.foreach(directory) do |item|
             next if item == '.' or item == '..'
 
             file = File.join(directory, item, 'job.yaml')
@@ -54,12 +54,8 @@ module Adminware
       end
  
       #Figure out which output to use 
-      def which_output?
-        if @plain
-          plain_output
-        else
-          create_table
-        end
+      def output
+        @plain ? plain_output : table_output
       end
      
       #Output in tab delimited form
@@ -70,7 +66,7 @@ module Adminware
         end
       end
      
-      def create_table
+      def table_output
         table = Terminal::Table.new do |rows|
           rows.headings = ['Host', 'Job', 'Description']
           (0..(@jobs.length-1)).each do |i|
@@ -109,7 +105,7 @@ module Adminware
             @jobs.push(hash)
           end
 
-          which_output?
+          output
         else
           puts "\t> #{@host} is not a valid host name"
           exit 1
