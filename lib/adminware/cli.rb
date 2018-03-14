@@ -15,8 +15,8 @@ module Adminware
       command :'job-run' do |c|
         c.syntax = 'adminware job-run [options]'
         c.description = 'Run a script locally or on another machine via SSH'
-        c.example 'Run forward script for a job', 'adminware run --name NAME --forward'
-        c.example 'Run forward script on another machine', 'adminware run --name NAME --host HOST --forward'
+        c.example 'Run forward script for a job', 'adminware run --host HOST --name NAME --forward'
+        c.example 'Run rewind script for a job', 'adminware run --host HOST --name NAME --rewind'
         c.option '-n', '--name NAME', String, 'Specify the job to run'
         c.option '-H', '--host HOST', String, 'Specify the host to run the job on'
         c.option '-f', '--forward', 'Run the forward script for <name>'
@@ -33,6 +33,7 @@ module Adminware
       command :'job-list' do |c|
         c.syntax = 'adminware job-list [options]'
         c.description = 'Lists all available jobs for a host'
+        c.example 'List all jobs for a host', 'adminware job-list --host HOST'
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '-H', '--host HOST', String, 'Specify the host you wish to view the jobs for'
         c.action do |args, options|
@@ -44,6 +45,8 @@ module Adminware
       command :'state-list' do |c|
         c.syntax = 'adminware state-list [options]'
         c.description = 'List the state values for all run jobs'
+        c.example 'List all states for a specific job', 'adminware state-list --name NAME'
+        c.example 'List all states for a specific host', 'adminware state-list --host HOST'
         c.option '-n', '--name NAME', String, 'Filter for a specific job'
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '-H', '--host HOST', String, 'Filter for a specific host'
@@ -55,7 +58,7 @@ module Adminware
       command :'schedule-add' do |c|
         c.syntax = 'adminware schedule-add [options]'
         c.description = 'Schedule a job for a host'
-        c.example 'Add a job to the schedule', 'adminware schedule-add <name> --host HOST --forward'
+        c.example 'Add a job to the schedule', 'adminware schedule-add --host HOST --name NAME --forward'
         c.option '-n', '--name NAME', String, 'Specify the job to add'
         c.option '-H', '--host HOST', String, 'Specify the host to schedule jobs for'
         c.option '-f', '--forward', 'Schedule the forward script for <name> on <host>'
@@ -68,6 +71,7 @@ module Adminware
       command :'schedule-apply' do |c|
         c.syntax = 'adminware schedule-apply [options]'
         c.description = 'Apply the schedule for a host'
+        c.example 'Apply the schedule for a given host', 'adminware schedule-apply --host HOST'
         c.option '-H', '--host HOST', String, 'Specify a host to apply the schedule for'
         c.action do |args, options|
           Commands::ScheduleCommands.apply(args, options)
@@ -77,6 +81,7 @@ module Adminware
       command :'schedule-clear' do |c|
         c.syntax = 'adminware schedule-clear [options]'
         c.description = 'Clear the schedule for a host'
+        c.example 'Clear the schedule for a given host', 'adminware schedule-clear --host HOST'
         c.option '-H', '--host HOST', String, 'Specify a host to clear the schedule for'
         c.action do |args, options|
           Commands::ScheduleCommands.clear(args, options)    
@@ -86,6 +91,7 @@ module Adminware
       command :'schedule-list' do |c|
         c.syntax = 'adminware schedule-list [options]'
         c.description = 'List the schedule for a host'
+        c.example 'List all items in the schedule', 'adminware schedule-list --host HOST --all'
         c.option '-H', '--host HOST', String, 'Specify a host to list the schedule for'
         c.option '-a', '--all', 'Show all jobs in the schedule, history included'
         c.option '-p', '--plain', 'Output in a tab delimited format'
