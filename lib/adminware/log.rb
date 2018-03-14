@@ -18,7 +18,7 @@ module Adminware
       log.send(m,*args,&block)
     end
 
-    #Return the logger
+    #Log a message
     def log(level, message)
       case level
       when 'info'

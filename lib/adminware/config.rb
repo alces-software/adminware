@@ -11,11 +11,10 @@ module Adminware
 
     #Load the config file
     def initialize
-      configfile = File.join(Adminware.root, 'etc/config.yaml')
-      @config = YAML.load_file(configfile)
+      @config = YAML.load_file(File.join(Adminware.root, 'etc/config.yaml'))
     end
 
-    #These methods return their respective files/directories
+    #These methods return their respective file/directory
     def central_jobdir
       @centraljobdir ||= resolve_path(@config['centraljobdir'] || DEFAULT_CENTRAL_JOBDIR)
     end
@@ -38,14 +37,11 @@ module Adminware
 
     #Create the file if it doesn't exist
     def create_if_necessary(file)
-      if !File.exist?(file)
-        FileUtils.touch(file)
-      end
+      if !File.exist?(file) then FileUtils.touch(file) end
     end
-
-    #Sets the path for the given config setting
+    
+    #Sorts out whether or not the path is absolute
     def resolve_path(path)
-      #Checks if the path is absolute or relative
       File.exist?(path) ? path : File.join(Dir.home, path)
     end
   end

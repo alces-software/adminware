@@ -17,7 +17,6 @@ module Adminware
       @host = host
     end
 
-    #Performs validation on entered command
     def valid?
       #Check if the directory and file exist
       if dir_exist? && file_exist? 
@@ -27,10 +26,10 @@ module Adminware
       end
     end
 
-    #Runs the requested script for the job
     def run
       @job = "#{@command} script for #{@name} on #{@host}"
 
+      #Checks if the job needs to run on another host
       if running_locally?
         set_script("bash #{@file}")
       elsif @remote_dir == 'local'
@@ -39,6 +38,7 @@ module Adminware
         set_script("ssh #{@host} bash #{File.expand_path(@config.central_jobdir)}/#{@name}/#{@command}.sh")
       end
 
+      #Prevents the running of commands that match the requested job's status
       if status_matches_command?
         @logger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
         @state.set_exit(@name, 1)
@@ -68,7 +68,7 @@ module Adminware
         @file = File.join(central, @command + '.sh')
       elsif Dir.exist?(local)
         @file = File.join(local, @command + '.sh')
-      elsif check_remotely("ssh #{@host} find #{local}")
+      elsif exist_remotely?(local)
         @file = File.join(local, @command + '.sh')
       else  
         @logger.log('error', "The job directory for #{@name} on #{@host} does not exist")
@@ -76,11 +76,11 @@ module Adminware
       end
     end
 
-    #Checks to see if the file exists for input COMMAND:
+    #Checks to see if the file exists for input COMMAND
     def file_exist?
       if File.exist?(@file)
         true
-      elsif check_remotely("ssh #{@host} find #{@file}")
+      elsif exist_remotely?(@file)
         @remote_dir = 'local'
       else
         @logger.log('error', "The #{@command} script for #{@name} on #{@host} does not exist")
@@ -93,14 +93,14 @@ module Adminware
       if @state.status(@name) == @command then true end
     end
 
-    #Checks if the job needs to run locally or on another machine
+    #Checks if the job needs to run locally or on another host
     def running_locally?
       @host == 'local' ? true : false
     end
    
-    #Checks the remote host for a given directory/file 
-    def check_remotely(command)
-      stdout, stderr, status = Open3.capture3(command)
+    #Checks the remote host for a given path 
+    def exist_remotely?(path)
+      stdout, stderr, status = Open3.capture3("ssh #{@host} find #{path}")
       status.success?
     end
 

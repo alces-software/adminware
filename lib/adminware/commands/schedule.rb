@@ -34,11 +34,9 @@ module Adminware
           end
           
           schedule = Schedule.new(host)
-          schedule.name = name
-          schedule.command = command
 
-          if schedule.valid?
-            schedule.add_job
+          if schedule.valid?(name, command)
+            schedule.add_job(name, command)
             schedule.save!
           end
         end

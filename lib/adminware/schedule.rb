@@ -6,9 +6,6 @@ require 'fileutils'
 
 module Adminware
   class Schedule
-    attr_accessor :name
-    attr_accessor :command
-
     def initialize(host)
       @host = host
       @config = Adminware.config
@@ -18,18 +15,19 @@ module Adminware
     end
 
     #Add a job to the schedule
-    def add_job
-      hash = { :job => @name, :status => @command, :scheduled => true, :exit => 'N/A' }
+    def add_job(name, command)
+      hash = { :job => name, :status => command, :scheduled => true, :exit => 'N/A' }
       @schedule.push(hash)
-      puts "\t> #{@command} script for #{@name} scheduled on #{@host}"
+      puts "\t> #{command} script for #{name} scheduled on #{@host}"
     end
  
     def save!
       File.write(@file, @schedule.to_yaml)
     end
 
-    def valid?
-      Job.new(@name, @command, @host).valid?
+    #This ensures you can't schedule invalid jobs
+    def valid?(name, command)
+      Job.new(name, command, @host).valid?
     end
     
     def load_array

@@ -29,7 +29,8 @@ module Adminware
           exit 1
         end
       end
-      
+     
+      #Figure out which output to use 
       def output
         @plain ? plain_output : table_output 
       end

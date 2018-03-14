@@ -27,11 +27,7 @@ module Adminware
         @jobs = []
         add_jobs_from(@config.central_jobdir)
         add_jobs_from(@config.local_jobdir)
-        if @jobs.empty?
-          puts "\t> No jobs to list"
-        else
-          output
-        end
+        @jobs.empty? ? (puts "\t> No jobs to list") : output
       end
      
       def add_jobs_from(directory)
@@ -76,7 +72,8 @@ module Adminware
         end
         puts "\n#{table}"
       end 
-
+      
+      #Search a remote host for jobs
       def search_remote_host
         @jobs = []
         add_jobs_from(@config.central_jobdir)
