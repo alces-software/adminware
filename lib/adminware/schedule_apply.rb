@@ -61,7 +61,7 @@ module Adminware
     
       def get_time
         time = Time.new
-        time.strftime("%d-%m-%Y %H:%M:%S")
+        time.strftime("%Y-%m-%d %H:%M:%S")
       end
 
       #Creates a job instance and attempts to run the job from the schedule

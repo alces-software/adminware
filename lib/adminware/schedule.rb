@@ -30,7 +30,7 @@ module Adminware
     
     def get_time
       time = Time.new
-      time.strftime("%d-%m-%Y %H:%M:%S")
+      time.strftime("%Y-%m-%d %H:%M:%S")
     end
 
     def save!
