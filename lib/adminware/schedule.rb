@@ -16,15 +16,27 @@ module Adminware
 
     #Add a job to the schedule
     def add_job(name, command)
-      hash = { :job => name, :status => command, :scheduled => true, :exit => 'N/A' }
+      hash = {
+        :job => name, 
+        :status => command, 
+        :scheduled => true, 
+        :exit => 'N/A', 
+        :schedule_date => get_time,
+        :run_date => 'N/A'
+      }
       @schedule.push(hash)
       puts "\t> #{command} script for #{name} scheduled on #{@host}"
     end
- 
+    
+    def get_time
+      time = Time.new
+      time.strftime("%d-%m-%Y %H:%M:%S")
+    end
+
     def save!
       File.write(@file, @schedule.to_yaml)
     end
-
+    
     #This ensures you can't schedule invalid jobs
     def valid?(name, command)
       Job.new(name, command, @host).valid?
@@ -36,8 +48,12 @@ module Adminware
    
     #Deletes the schedule file 
     def clear_schedule
-      FileUtils.rm(@file)
-      puts "\t> Successfully cleared schedule for #{@host}"
+      if File.exist?(@file) 
+        FileUtils.rm(@file) 
+        puts "\t> Successfully cleared schedule for #{@host}"
+      else
+        puts "\t> No schedule to clear for #{@host}"
+      end
     end
 
     private

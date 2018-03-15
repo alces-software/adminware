@@ -39,7 +39,7 @@ module Adminware
       def plain_output
         @file = Schedule.new(@host)
         @schedule = @file.load_array
-        puts "Host\tJob\tStatus\tExit Code\tQueued"
+        puts "Host\tJob\tStatus\tExit Code\tQueued\tSchedule Date\tRun Date"
         (0..(@schedule.length-1)).each do |i|
           s = @schedule[i]
           if s[:scheduled] or @show_all
@@ -47,7 +47,9 @@ module Adminware
             print "\t#{s[:job]}"
             print "\t#{s[:status]}"
             print "\t#{s[:exit]}"
-            print "\t#{s[:scheduled]}\n"
+            print "\t#{s[:scheduled]}"
+            print "\t#{s[:schedule_date]}"
+            print "\t#{s[:run_date]}"
           elsif i == (@schedule.length-1)
             puts "\t> There are no scheduled jobs to list. Use adminware schedule-list --all to see history"
             exit 1
@@ -60,7 +62,7 @@ module Adminware
         @file = Schedule.new(@host)
         @schedule = @file.load_array
         table = Terminal::Table.new :title => 'Scheduled Jobs' do |rows|
-          rows.headings = ['Host', 'Job', 'Status', 'Exit Code', 'Queued']
+          rows.headings = ['Host', 'Job', 'Status', 'Exit Code', 'Queued', 'Schedule Date', 'Run Date']
           (0..(@schedule.length-1)).each do |i|
             s = @schedule[i]
             
@@ -72,7 +74,7 @@ module Adminware
             end
 
             if s[:scheduled] or @show_all 
-              rows << [@host, s[:job], s[:status], s[:exit], s[:scheduled]]
+              rows << [@host, s[:job], s[:status], s[:exit], s[:scheduled], s[:schedule_date], s[:run_date]]
             elsif i == (@schedule.length-1)
               puts "\t> There are no scheduled jobs to list. Use adminware schedule-list --all to see history"
               exit 1
