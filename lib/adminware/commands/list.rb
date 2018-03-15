@@ -1,32 +1,38 @@
-require 'adminware/list'
 require 'adminware/state'
 require 'adminware/cli'
+require 'adminware/job_list'
+require 'adminware/state_list'
+require 'adminware/schedule_list'
+
 module Adminware
   module Commands
     module ListCommands 
       class << self
-        def execute(args, options)
-          name = options.job
-          all = options.all
+        #Handles command: adminware job-list 
+        def job(args, options)
+          name = options.name
           host = options.host
           plain = options.plain
-          schedule = options.schedule
 
-          #Assign the requested command      
-          if all
-            command = 'all'
-          elsif !name.nil?
-            command = 'job'
-          elsif !schedule.nil?
-            command = 'schedule'
-            host = schedule
-          else
-            puts "Please enter a valid command. See adminware list --help for more info"
-            exit 1
-          end
-          
-          #Run the command
-          List::run(name, command, host, plain)
+          JobList.run(name, host, plain)
+        end
+
+        #Handles command: adminware state-list
+        def state(args, options) 
+          name = options.name
+          host = options.host
+          plain = options.plain
+ 
+          StateList.run(name, host, plain)
+        end
+
+        #Handles command: adminware schedule-list
+        def schedule(args, options)
+          host = options.host
+          show_all = options.all
+          plain = options.plain
+
+          ScheduleList.run(host, show_all, plain)
         end
       end
     end

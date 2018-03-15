@@ -4,61 +4,45 @@ require 'fileutils'
 module Adminware
   class Config
     #Set default values for config settings
-    DEFAULT_JOBDIR = "jobs/"
-    DEFAULT_LOGFILE = "logs/adminware.log"
-    DEFAULT_STATEDIR = "var/state.yaml"
+    DEFAULT_CENTRAL_JOBDIR = 'jobs/'
+    DEFAULT_LOCAL_JOBDIR = 'var/adminware/jobs/'
+    DEFAULT_LOGFILE = 'logs/adminware.log'
+    DEFAULT_STATEDIR = 'var/state.yaml'
 
     #Load the config file
     def initialize
-      @path = Adminware::root 
-      configfile = File.join(@path, 'etc/config.yaml')
-      @config = YAML.load_file(configfile)
-
-      #If no path given in config then set them to their defaults
-      @jobdir = @config['jobdir'] ||= DEFAULT_JOBDIR
-      @jobdir = set_path(@jobdir)
-
-      @logfile = @config['logfile'] ||= DEFAULT_LOGFILE
-      @logfile = set_path(@logfile)
-
-      @statedir = @config['statedir'] ||= DEFAULT_STATEDIR
-      @statedir = set_path(@statedir)
+      @config = YAML.load_file(File.join(Adminware.root, 'etc/config.yaml'))
     end
 
-    #These methods return their respective files
-    def jobdir
-      @jobdir
+    #These methods return their respective file/directory
+    def central_jobdir
+      @centraljobdir ||= resolve_path(@config['centraljobdir'] || DEFAULT_CENTRAL_JOBDIR)
+    end
+
+    def local_jobdir
+      @localjobdir ||= resolve_path(@config['localjobdir'] || DEFAULT_LOCAL_JOBDIR)
     end
 
     def logfile
-      file_exist?(@logfile)
+      @logfile = resolve_path(@config['logfile'] || DEFAULT_LOGFILE) 
+      create_if_necessary(@logfile)
       @logfile
     end
 
     def statedir
-     @statedir
+      @statedir ||= resolve_path(@config['statedir'] || DEFAULT_STATEDIR)
     end
 
     private
 
-    #Check if a file exists
-    def file_exist?(file)
-      if File.exist?(file)
-        return true
-      else
-        #Create it if necessary
-        FileUtils::touch "#{file}"
-      end
+    #Create the file if it doesn't exist
+    def create_if_necessary(file)
+      if !File.exist?(file) then FileUtils.touch(file) end
     end
-
-    #Sets the path for the given config setting
-    def set_path(path)
-      #Checks if the path is absolute or relative
-      if File.exist?(path) 
-        path
-      else
-        path = File.expand_path(pah)
-      end
+    
+    #Sorts out whether or not the path is absolute
+    def resolve_path(path)
+      File.exist?(path) ? path : File.join(Dir.home, path)
     end
   end
 end

@@ -1,3 +1,4 @@
+require 'adminware/config'
 require 'adminware/schedule'
 require 'adminware/state'
 require 'adminware/job'
@@ -10,6 +11,7 @@ module Adminware
         @state = State.new(host)
         @schedule = @file.load_array
         @host = host
+        @config = Adminware.config
 
         find_next_job
         run_schedule        
@@ -33,25 +35,42 @@ module Adminware
           (@job_number..(@schedule.length-1)).each do |n|
             @job_name = @schedule[n][:job]
             @status = @schedule[n][:status]
-            execute_job
             
-            #After the job has run flag it as no longer scheduled
-            @schedule[n][:scheduled] = false
-            @file.save!
+            #Stop further jobs in schedule if current fails
+            unless execute_job
+              save_schedule_values(n, false) 
+              break
+            else
+              save_schedule_values(n, true)
+            end
           end
         end
       end
       
+      def save_schedule_values(n, success)
+        if success
+          #If ran successfully flag as no longer scheduled
+          @schedule[n][:scheduled] = false
+        end
+        
+        state = YAML.load_file(File.join(@config.statedir, "#{@host}_state.yaml"))
+        @schedule[n][:run_date] = get_time
+        @schedule[n][:exit] = state[@job_name][:exit]
+        @file.save!
+      end
+    
+      def get_time
+        time = Time.new
+        time.strftime("%Y-%m-%d %H:%M:%S")
+      end
+
       #Creates a job instance and attempts to run the job from the schedule
       def execute_job
-        job = Job.new(@job_name, @state)
-        job.command = @status
-        job.host = @host
+        job = Job.new(@job_name, @status, @host)
+        job.state = @state
         
-        job.validate!
-
-        job.run
-        @state.save!
+        job.valid? 
+          job.run ? true : false
       end
     end
   end
