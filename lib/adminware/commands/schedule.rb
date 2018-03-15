@@ -63,13 +63,11 @@ module Adminware
           end
           
           unless options.force
-            answer = (cli.ask "\t> Clear schedule for #{host}? (y/n)").downcase
+            exit unless cli.agree("\t> Clear schedule for #{host}? (y/n)")
           end
 
-          if answer == 'yes' || answer == 'y' || options.force
-            file = Schedule.new(host)
-            file.clear_schedule
-          end
+          file = Schedule.new(host)
+          file.clear_schedule
         end
       end
     end
