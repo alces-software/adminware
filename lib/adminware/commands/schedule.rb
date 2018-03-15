@@ -1,5 +1,6 @@
 require 'adminware/schedule_apply'
 require 'adminware/schedule'
+require 'highline'
 
 module Adminware
   module Commands
@@ -54,14 +55,18 @@ module Adminware
         
         def clear(args, options)
           host = options.host
-          
+          cli = HighLine.new
+ 
           if host.nil?
             puts "\t> Please enter a host to clear the schedule for"
             exit 1
           end
 
-          file = Schedule.new(host)
-          file.clear_schedule
+          answer = (cli.ask "\t> Clear schedule for #{host}? (y/n)").downcase
+          if answer == 'yes' || answer == 'y'
+            file = Schedule.new(host)
+            file.clear_schedule
+          end
         end
       end
     end
