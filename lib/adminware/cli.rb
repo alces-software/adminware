@@ -81,8 +81,9 @@ module Adminware
       command :'schedule-clear' do |c|
         c.syntax = 'adminware schedule-clear [options]'
         c.description = 'Clear the schedule for a host'
-        c.example 'Clear the schedule for a given host', 'adminware schedule-clear --host HOST'
+        c.example 'Clear the schedule without a prompt', 'adminware schedule-clear --host HOST --force'
         c.option '-H', '--host HOST', String, 'Specify a host to clear the schedule for'
+        c.option '--force', 'Clear the schedule without a prompt'
         c.action do |args, options|
           Commands::ScheduleCommands.clear(args, options)    
         end
