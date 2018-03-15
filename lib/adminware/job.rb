@@ -51,6 +51,8 @@ module Adminware
           set_job_values
         else
           @logger.log('error', "Failed to execute #{@job}")
+          @state.save!
+          false
         end
       end
     end
@@ -102,7 +104,8 @@ module Adminware
       stdout, stderr, status = Open3.capture3("ssh #{@host} find #{path}")
       status.success?
     end
-
+    
+    #Sets the command for running the script
     def set_script(command)
       @script = command
     end
@@ -111,6 +114,7 @@ module Adminware
     def set_job_values
       @state.toggle(@name, @command)
       @state.set_exit(@name, 0)
+      @state.save!
     end
   end
 end
