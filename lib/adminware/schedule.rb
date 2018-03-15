@@ -44,7 +44,7 @@ module Adminware
     
     #Load the schedule file for the given host
     def load_schedule
-      @schedule = YAML.load_file(@file) rescue {}
+      @schedule = YAML.load_file(@file) rescue [] 
     end
   end
 end
