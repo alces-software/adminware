@@ -11,7 +11,7 @@ install_ruby() {
   title "Installing Ruby"
   tar -C /tmp/build -xzf /tmp/ruby-source.tar.gz
   cd /tmp/build/ruby-*
-  ./configure --prefix"${ins_dir}/opt/ruby" --enable-shared -disable-install-doc \
+  ./configure --prefix"$ins_dir/opt/ruby" --enable-shared -disable-install-doc \
     --with-libyaml --with-opt-dir="/opt/adminware/opt/lib"
   make
   make install

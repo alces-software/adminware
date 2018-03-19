@@ -4,7 +4,7 @@ detect_bundler() {
 
 fetch_bundler() {
   title "Fetching Bundler"
-  curl https://rubygems.org/downloads/bundler-1.10.6.gem bundler.gem
+  curl -L https://rubygems.org/downloads/bundler-1.10.6.gem > /tmp/src/bundler.gem
 }
 
 install_bundler() {
