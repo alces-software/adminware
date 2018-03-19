@@ -7,14 +7,14 @@ ins_opt="${alces_INS:-install}"
 deps="libyaml ruby bundler"
 
 install_adminware() {
-  yum -y install git 
+  yum -y install git zlib-devel openssl-devel readline-devel libffi-devel 
   mkdir -p $src_dir $ins_dir
   cd $src_dir
   git clone $src_url $src_dir
 
   echo "Installing necessary files..."
 
-  dirs_to_copy=("bin/" "etc/" "jobs/" "lib/" "logs" "var/")
+  dirs_to_copy=("bin/" "etc/" "jobs/" "lib/" "logs" "var/" "Gemfile" "Gemfile.lock")
   for i in "${dirs_to_copy[@]}"
   do
     :
@@ -35,7 +35,7 @@ install_adminware() {
   done
 
   cd $ins_dir
-  bundle install
+  bundle install --path="vendor"
 }
 
 copy_dir() {
