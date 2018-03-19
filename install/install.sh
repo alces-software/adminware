@@ -1,5 +1,5 @@
 #!/bin/bash
-src_dir="${alces_SRC_DIR:-$(mktemp -d /tmp/adminware)}"
+src_dir="${alces_SRC_DIR:-$(mktemp -d /tmp/adminware.xxx)}"
 src_url="${alces_SRC_URL:-https://github.com/alces-software/adminware}"
 ins_dir="${alces_INS_DIR:-/opt/adminware}"
 ins_opt="${alces_INS:-install}"
