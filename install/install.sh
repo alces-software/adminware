@@ -4,7 +4,7 @@ src_url="${alces_SRC_URL:-https://github.com/alces-software/adminware}"
 ins_dir="${alces_INS_DIR:-/opt/adminware}"
 ins_opt="${alces_INS:-install}"
 
-deps="ruby bundler"
+deps="libyaml ruby bundler"
 
 install_adminware() {
   yum -y install git 
