@@ -4,7 +4,7 @@ detect_ruby() {
 
 fetch_ruby() {
   title "Fetching Ruby"
-  curl -L https://cache.ruby-lang.org/pub/ruby/2.4.1.tar.gz > /tmp/ruby-source.tar.gz
+  curl -L https://cache.ruby-lang.org/pub/ruby/2.5/ruby-2.5.0.tar.gz > /tmp/ruby-source.tar.gz
 }
 
 install_ruby() {
