@@ -18,7 +18,7 @@ install_adminware() {
   say_done $?
 
   for dep in ${deps}; do
-    source "${src_dir}/install/${dep}.sh"
+    source "${ins_dir}/install/${dep}.sh"
     if ! detect_${dep}; then
       fetch_${dep}
     fi
@@ -32,7 +32,7 @@ install_adminware() {
 
   title "Installing profile hooks"
   doing 'Install'
-  cp "${src_dir}/install/alces-adminware.sh" /etc/profile.d
+  cp "${ins_dir}/install/alces-adminware.sh" /etc/profile.d
   say_done $?
 
   cd $ins_dir/opt/ruby/bin
