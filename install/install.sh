@@ -1,10 +1,9 @@
 #!/bin/bash
-source=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 src_dir="${alces_SRC_DIR:-$(mktemp -d /tmp/adminware.XXX)}"
 src_url="${alces_SRC_URL:-https://github.com/alces-software/adminware}"
 ins_dir="${alces_INS_DIR:-/opt/adminware}"
 ins_opt="${alces_INS:-install}"
-source $source/install/ui.functions.sh
+source "${src_dir}/install/ui.functions.sh"
 
 deps="libyaml ruby bundler"
 
@@ -24,7 +23,7 @@ install_adminware() {
   say_done $?
 
   for dep in ${deps}; do
-    source "${source}/install/${dep}.sh"
+    source "${src_dir}/install/${dep}.sh"
     if ! detect_${dep}; then
       fetch_${dep}
     fi
@@ -38,7 +37,7 @@ install_adminware() {
 
   title "Installing profile hooks"
   doing 'Install'
-  source "${source}/install/bash.sh"
+  source "${src_dir}/install/bash.sh"
   say_done $?
 
   bundle install --path="vendor"
