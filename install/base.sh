@@ -2,10 +2,10 @@ admin() {
   (cd /opt/adminware && PATH="/opt/adminware/opt/ruby/bin:$PATH" bin/adminware "$@")
 }
 
-if [ "$ZSH_VERSION" ]; THEN
+if [ "$ZSH_VERSION" ]; then 
   export admin
 else
-  export -f metal
+  export -f admin
 fi
 alias adm=admin
 
