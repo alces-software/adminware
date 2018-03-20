@@ -10,4 +10,5 @@ fetch_bundler() {
 install_bundler() {
   title "Installing Bundler"
   "/opt/adminware/opt/ruby/bin/gem" install bundler
+  say_done $?
 }
