@@ -10,7 +10,7 @@ fi
 alias adm=admin
 
 if [ "$BASH_VERSION" ]; then
-  _metal() {
+  _admin() {
     local cur="$2" cmds input cur_ruby
 
     if [[ -z "$cur" ]]; then

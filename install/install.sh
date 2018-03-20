@@ -14,12 +14,7 @@ install_adminware() {
   git clone $src_url $src_dir
 
   title "Installing necessary files"
-  dirs_to_copy=("bin/" "etc/" "jobs/" "lib/" "logs" "var/" "Gemfile" "Gemfile.lock")
-  for i in "${dirs_to_copy[@]}"
-  do
-    :
-    copy_dir $i $ins_dir/
-  done
+  cp -R $src_dir/* $ins_dir/.
   say_done $?
 
   for dep in ${deps}; do
@@ -42,10 +37,6 @@ install_adminware() {
 
   cd $ins_dir/opt/ruby/bin
   ./bundle install --path="vendor"
-}
-
-copy_dir() {
-  cp -R $src_dir/$1 $2
 }
 
 uninstall_adminware() {
