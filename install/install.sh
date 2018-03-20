@@ -37,11 +37,11 @@ install_adminware() {
 
   title "Installing profile hooks"
   doing 'Install'
-  source "${src_dir}/install/base.sh"
+  cp "${src_dir}/install/alces-adminware.sh" /etc/profile.d
   say_done $?
 
-  cd $ins_dir/opt/ruby
-  bundle install --path="vendor"
+  cd $ins_dir/opt/ruby/bin
+  ./bundle install --path="vendor"
 }
 
 copy_dir() {
