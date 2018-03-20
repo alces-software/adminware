@@ -1,8 +1,10 @@
 #!/bin/bash
+source=$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. && pwd)
 src_dir="${alces_SRC_DIR:-$(mktemp -d /tmp/adminware.XXX)}"
 src_url="${alces_SRC_URL:-https://github.com/alces-software/adminware}"
 ins_dir="${alces_INS_DIR:-/opt/adminware}"
 ins_opt="${alces_INS:-install}"
+source $source/install/ui.functions.sh
 
 deps="libyaml ruby bundler"
 
@@ -12,17 +14,17 @@ install_adminware() {
   cd $src_dir
   git clone $src_url $src_dir
 
-  echo "Installing necessary files..."
-
+  title "Installing necessary files"
   dirs_to_copy=("bin/" "etc/" "jobs/" "lib/" "logs" "var/" "Gemfile" "Gemfile.lock")
   for i in "${dirs_to_copy[@]}"
   do
     :
     copy_dir $i $ins_dir/
   done
+  say_done $?
 
   for dep in ${deps}; do
-    source "${src_dir}/install/${dep}.sh"
+    source "${source}/install/${dep}.sh"
     if ! detect_${dep}; then
       fetch_${dep}
     fi
@@ -34,7 +36,11 @@ install_adminware() {
     fi
   done
 
-  cd $ins_dir
+  title "Installing profile hooks"
+  doing 'Install'
+  source "${source}/install/bash.sh"
+  say_done $?
+
   bundle install --path="vendor"
 }
 
