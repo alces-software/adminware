@@ -37,9 +37,10 @@ install_adminware() {
 
   title "Installing profile hooks"
   doing 'Install'
-  source "${src_dir}/install/bash.sh"
+  source "${src_dir}/install/base.sh"
   say_done $?
 
+  cd $ins_dir/opt/ruby
   bundle install --path="vendor"
 }
 
