@@ -8,7 +8,7 @@ deps="libyaml ruby bundler"
 
 install_adminware() {
   yum -y install git zlib-devel openssl-devel readline-devel libffi-devel 
-  mkdir -p $src_dir $ins_dir
+  mkdir -p $src_dir $ins_dir /tmp/logs
   cd $src_dir
   git clone $src_url $src_dir
   
