@@ -9,6 +9,6 @@ fetch_bundler() {
 
 install_bundler() {
   title "Installing Bundler"
-  "/opt/adminware/opt/ruby/bin/gem" install bundler
+  "/opt/adminware/opt/ruby/bin/gem" install bundler &> /tmp/logs/bundler-install.log
   say_done $?
 }

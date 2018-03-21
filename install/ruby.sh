@@ -18,14 +18,15 @@ install_ruby() {
 
   doing 'Configure'
   ./configure --prefix="${ins_dir}/opt/ruby" --enable-shared -disable-install-doc \
-    --with-libyaml --with-opt-dir="/opt/adminware/opt/lib"
+    --with-libyaml --with-opt-dir="/opt/adminware/opt/lib" \
+    &> /tmp/logs/ruby-configure.log
   say_done $?
 
   doing 'Compile'
-  make
+  make &> /tmp/logs/ruby-compile.log
   say_done $?
 
   doing 'Install'
-  make install
+  make install &> /tmp/logs/ruby-install.log
   say_done $?
 }

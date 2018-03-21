@@ -18,14 +18,14 @@ install_libyaml() {
   cd /tmp/build/yaml*
   
   doing 'Configure'
-  ./configure --prefix="/opt/adminware/opt/lib"
+  ./configure --prefix="/opt/adminware/opt/lib" &> /tmp/logs/libyaml-configure.log
   say_done $?
 
   doing 'Compile'
-  make
+  make &> /tmp/logs/libyaml-compile.log
   say_done $?
 
   doing 'Install'
-  make install  
+  make install &> /tmp/logs/libyaml-install.log  
   say_done $?
 }
