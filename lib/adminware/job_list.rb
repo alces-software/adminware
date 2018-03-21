@@ -51,7 +51,11 @@ module Adminware
  
       #Figure out which output to use 
       def output
-        @plain ? plain_output : table_output
+        if @jobs.empty? 
+          puts "\t> There are no jobs to list"
+        else
+          @plain ? plain_output : table_output
+        end
       end
      
       #Output in tab delimited form
@@ -76,12 +80,22 @@ module Adminware
       #Search a remote host for jobs
       def search_remote_host
         @jobs = []
-        add_jobs_from(@config.central_jobdir)
+        
+        #Check the for the central job directory on remote host
+        stdout, stderr, status = Open3.capture3("ssh #{@host} ls #{@config.central_jobdir}")
+        if status.success? && !stdout.empty?
+          add_jobs_from(@config.central_jobdir)
+        elsif status.inspect.include? '255'
+          puts "\t> Couldn't connect to #{@host}"
+          exit 1
+        elsif status.inspect.include? '2'
+          puts "\t> The central job directory (#{@config.central_jobdir}) could not be found on #{@host}"
+        end
 
         job_names = []
         stdout, stderr, status = Open3.capture3("ssh #{@host} ls #{@config.local_jobdir}")
         if status.success?
-          #Grab the local job names from @host
+          #Grab the local job names from remote host
           start = 0
           (0..(stdout.length-1)).each do |i|
             if stdout[i+1] == "\n"
@@ -101,17 +115,11 @@ module Adminware
             hash = { :job => job, :description => description }
             @jobs.push(hash)
           end
-
-          output
-        else
-          stdout, stderr, status = Open3.capture3("ssh #{@host} ls #{@config.central_jobdir}")
-          if status.success?
-            output
-          else
-            puts "\t> Couldn't connect to #{@host} or the job directories do not exist there"
-            exit 1
-          end
+        elsif status.inspect.include? '2'
+          puts "\t> The local job directory (#{@config.local_jobdir}) could not be found on #{@host}"
         end
+ 
+        output
       end 
     end
   end
