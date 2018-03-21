@@ -8,6 +8,7 @@ else
   export -f admin
 fi
 alias adm=admin
+alias adminware=admin
 
 if [ "$BASH_VERSION" ]; then
   _admin() {
