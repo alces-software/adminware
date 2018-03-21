@@ -104,8 +104,13 @@ module Adminware
 
           output
         else
-          puts "\t> #{@host} is not a valid host name"
-          exit 1
+          stdout, stderr, status = Open3.capture3("ssh #{@host} ls #{@config.central_jobdir}")
+          if status.success?
+            output
+          else
+            puts "\t> Couldn't connect to #{@host} or the job directories do not exist there"
+            exit 1
+          end
         end
       end 
     end
