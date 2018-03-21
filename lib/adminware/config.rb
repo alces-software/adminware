@@ -42,7 +42,7 @@ module Adminware
     
     #Sorts out whether or not the path is absolute
     def resolve_path(path)
-      File.exist?(path) ? path : File.expand_path(path)
+      File.exist?(path) ? File.expand_path(path) : File.expand_path(path)
     end
   end
 end
