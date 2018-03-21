@@ -7,11 +7,12 @@ ins_opt="${alces_INS:-install}"
 deps="libyaml ruby bundler"
 
 install_adminware() {
-  source "${src_dir}/install/ui.functions.sh"
   yum -y install git zlib-devel openssl-devel readline-devel libffi-devel 
   mkdir -p $src_dir $ins_dir
   cd $src_dir
   git clone $src_url $src_dir
+  
+  source "${src_dir}/install/ui.functions.sh"
 
   title "Installing necessary files"
   cp -R $src_dir/* $ins_dir/.
@@ -42,6 +43,8 @@ install_adminware() {
 uninstall_adminware() {
   echo "Uninstalling Adminware..."
   rm -rf $ins_dir
+  rm -rf /tmp/build
+  rm -rf /etc/profile.d/alces-adminware.sh
 }
 
 reinstall_adminware() {
