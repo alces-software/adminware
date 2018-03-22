@@ -23,7 +23,7 @@ module Adminware
       def schedule_exists?
         @schedule = File.join(Adminware.root, 'var', "#{@host}_schedule.yaml")
         if File.exist?(@schedule)
-          return true
+          true
         else
           puts "\t> There is no schedule for #{@host}"
           exit 1
@@ -39,11 +39,12 @@ module Adminware
       def plain_output
         @file = Schedule.new(@host)
         @schedule = @file.load_array
-        puts "Host\tJob\tStatus\tExit Code\tQueued\tSchedule Date\tRun Date"
+        puts "Host\tID\tJob\tStatus\tExit Code\tQueued\tSchedule Date\tRun Date"
         (0..(@schedule.length-1)).each do |i|
           s = @schedule[i]
           if s[:scheduled] or @show_all
             print "#{@host}"
+            print i+1
             print "\t#{s[:job]}"
             print "\t#{s[:status]}"
             print "\t#{s[:exit]}"
@@ -61,21 +62,16 @@ module Adminware
       def table_output
         @file = Schedule.new(@host)
         @schedule = @file.load_array
+        no_queued_jobs = true
         table = Terminal::Table.new :title => 'Scheduled Jobs' do |rows|
-          rows.headings = ['Host', 'Job', 'Status', 'Exit Code', 'Queued', 'Schedule Date', 'Run Date']
+          rows.headings = ['Host', 'ID', 'Job', 'Status', 'Exit Code', 'Queued', 'Schedule Date', 'Run Date']
           (0..(@schedule.length-1)).each do |i|
             s = @schedule[i]
             
-            #Separate queued and unqueued jobs
-            if @show_all
-              if s[:scheduled] and !@schedule[i-1][:scheduled]
-                rows.add_separator
-              end
-            end
-
             if s[:scheduled] or @show_all 
-              rows << [@host, s[:job], s[:status], s[:exit], s[:scheduled], s[:schedule_date], s[:run_date]]
-            elsif i == (@schedule.length-1)
+              rows << [@host, i+1, s[:job], s[:status], s[:exit], s[:scheduled], s[:schedule_date], s[:run_date]]
+              no_queued_jobs = false if no_queued_jobs
+            elsif i == (@schedule.length-1) && no_queued_jobs
               puts "\t> There are no scheduled jobs to list. Use adminware schedule-list --all to see history"
               exit 1
             end
