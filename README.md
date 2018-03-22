@@ -13,7 +13,7 @@ The install scripts handle the installation of all required packages and will in
 One line installation - 
 
 ```bash
-curl https://raw.githubusercontent.com/alces-software/adminware/develop/install/install.sh | /bin/bash
+curl https://git.io/adminware-installer | /bin/bash
 ```
 
 ### Basic Installation
@@ -28,13 +28,13 @@ Adminware is a system-lvel package and must be installed by the `root` user.
 2. Invoke installation by piping the output from `curl` to `bash`
 
   ```bash
-  curl https://raw.githubusercontent.com/alces-software/adminware/develop/install/install.sh | /bin/bash
+  curl https://git.io/adminware-installer | /bin/bash
   ```
 
   Alternatively you can download the script so you can inspect what it will do before installing
 
   ```bash
-  curl https://raw.githubusercontent.com/alces-software/adminware/develop/install/install.sh > /tmp/install.sh
+  curl https://git.io/adminware-installer > /tmp/install.sh
   less /tmp/install.sh
   bash /tmp/install.sh
   ```
