@@ -48,8 +48,8 @@ module Adminware
         c.example 'List all states for a specific job', 'adminware state-list --name NAME'
         c.example 'List all states for a specific host', 'adminware state-list --host HOST'
         c.option '-n', '--name NAME', String, 'Filter for a specific job'
-        c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '-H', '--host HOST', String, 'Filter for a specific host'
+        c.option '-p', '--plain', 'Output in a tab delimited format'
         c.action do |args, options|
           Commands::ListCommands.state(args, options)
         end
@@ -67,6 +67,19 @@ module Adminware
           Commands::ScheduleCommands.add(args, options)
         end
       end
+      
+      command :'schedule-remove' do |c|
+        c.syntax = 'adminware schedule-remove [options]'
+        c.description = 'Remove job(s) from the schedule'
+        c.option '-n', '--name NAME', String, 'Specify the job to remove'
+        c.option '-H', '--host HOST', String, 'Specify the host to remove job(s) from'
+        c.option '-i', '--id ID', Numeric, 'Specify the ID of the job to remove'
+        c.option '-a', '--all', 'Clear the schedule for HOST'
+        c.option '--force', 'Clear the schedule without a prompt'
+        c.action do |args, options|
+          Commands::ScheduleCommands.remove(args, options)
+        end
+      end
 
       command :'schedule-apply' do |c|
         c.syntax = 'adminware schedule-apply [options]'
@@ -78,17 +91,6 @@ module Adminware
         end
       end
       
-      command :'schedule-clear' do |c|
-        c.syntax = 'adminware schedule-clear [options]'
-        c.description = 'Clear the schedule for a host'
-        c.example 'Clear the schedule without a prompt', 'adminware schedule-clear --host HOST --force'
-        c.option '-H', '--host HOST', String, 'Specify a host to clear the schedule for'
-        c.option '--force', 'Clear the schedule without a prompt'
-        c.action do |args, options|
-          Commands::ScheduleCommands.clear(args, options)    
-        end
-      end
-
       command :'schedule-list' do |c|
         c.syntax = 'adminware schedule-list [options]'
         c.description = 'List the schedule for a host'
