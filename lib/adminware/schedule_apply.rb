@@ -35,13 +35,15 @@ module Adminware
           (@job_number..(@schedule.length-1)).each do |n|
             @job_name = @schedule[n][:job]
             @status = @schedule[n][:status]
-            
-            #Stop further jobs in schedule if current fails
-            unless execute_job
-              save_schedule_values(n, false) 
-              break
-            else
-              save_schedule_values(n, true)
+           
+            if @schedule[n][:scheduled] 
+              #Stop further jobs in schedule if current fails
+              unless execute_job
+                save_schedule_values(n, false) 
+                break
+              else
+                save_schedule_values(n, true)
+              end
             end
           end
         end

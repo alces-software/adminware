@@ -1,4 +1,5 @@
 require 'adminware/schedule_apply'
+require 'adminware/schedule_remove'
 require 'adminware/schedule'
 require 'highline'
 
@@ -39,6 +40,26 @@ module Adminware
           if schedule.valid?(name, command)
             schedule.add_job(name, command)
             schedule.save!
+          end
+        end
+        
+        def remove(args, options)
+          name = options.name
+          host = options.host
+          id = options.id
+
+          if options.all 
+            clear(args, options)
+          elsif host.nil?
+            puts "\t> Please enter a host to remove from the schedule of"
+            exit 1
+          elsif name.nil? && id.nil?
+            puts "\t> Please enter the name or ID of job(s) to remove from the schedule" 
+            exit 1
+          elsif !name.nil? && !id.nil?
+           puts "\t> Please enter either the name or the ID of the job(s) you wish to remove from the schedule" 
+          else
+            ScheduleRemove.run(name, host, id) 
           end
         end
         
