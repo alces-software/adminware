@@ -51,6 +51,7 @@ module Adminware
           set_job_values
         else
           @logger.log('error', "Failed to execute #{@job}")
+          @state.set_exit(@name, 1)
           @state.save!
           false
         end
