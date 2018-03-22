@@ -25,7 +25,7 @@ module Adminware
       #Creates an array of hosts and sends them to be output to console
       def list_all_states
         hosts = []
-        Dir["#{@config.statedir}*state.yaml"].each do |file|
+        Dir["#{@config.statedir}/*state.yaml"].each do |file|
           host = File.basename(file, '_state.yaml')
           hosts << host
         end

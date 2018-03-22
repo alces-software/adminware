@@ -10,7 +10,7 @@ module Adminware
     def run
       program :name, 'adminware'
       program :version, '0.0.1'
-      program :description, 'adminware'
+      program :description, 'Set of tools for running and scheduliing jobs'
 
       command :'job-run' do |c|
         c.syntax = 'adminware job-run [options]'
