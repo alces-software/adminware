@@ -52,6 +52,11 @@ reinstall_adminware() {
   install_adminware
 }
 
+update_adminware() {
+  git clone $src_url $src_dir
+  rsync -hvrPt $src_dir $ins_dir
+}
+
 case $ins_opt in
   'install')
     install_adminware
@@ -62,8 +67,11 @@ case $ins_opt in
   'reinstall')
     reinstall_adminware
     ;;
+  'update')
+    update_adminware
+    ;;
   *)
-    echo "'$ins_opt' - Unknown option. Available options are 'install', 'uninstall' or 'reinstall'"
+    echo "'$ins_opt' - Unknown option. Available options are 'install', 'uninstall', 'reinstall' and 'update'"
     exit 1
     ;;
 esac
