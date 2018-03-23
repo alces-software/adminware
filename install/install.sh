@@ -41,7 +41,7 @@ install_adminware() {
 }
 
 uninstall_adminware() {
-  echo "Uninstalling Adminware..."
+  echo "Uninstalling Adminware"
   rm -rf $ins_dir
   rm -rf /tmp/build
   rm -rf /etc/profile.d/alces-adminware.sh
@@ -50,6 +50,16 @@ uninstall_adminware() {
 reinstall_adminware() {
   uninstall_adminware
   install_adminware
+}
+
+update_adminware() {
+  git clone $src_url $src_dir
+  source "${src_dir}/install/ui.functions.sh"
+
+  title "Updating Adminware"
+  doing 'Update'
+  rsync -hvrPt $src_dir $ins_dir &> /tmp/adminware-update.log
+  say_done $?
 }
 
 case $ins_opt in
@@ -62,8 +72,11 @@ case $ins_opt in
   'reinstall')
     reinstall_adminware
     ;;
+  'update')
+    update_adminware
+    ;;
   *)
-    echo "'$ins_opt' - Unknown option. Available options are 'install', 'uninstall' or 'reinstall'"
+    echo "'$ins_opt' - Unknown option. Available options are 'install', 'uninstall', 'reinstall' and 'update'"
     exit 1
     ;;
 esac
