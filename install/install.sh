@@ -41,7 +41,7 @@ install_adminware() {
 }
 
 uninstall_adminware() {
-  echo "Uninstalling Adminware..."
+  echo "Uninstalling Adminware"
   rm -rf $ins_dir
   rm -rf /tmp/build
   rm -rf /etc/profile.d/alces-adminware.sh
@@ -54,7 +54,12 @@ reinstall_adminware() {
 
 update_adminware() {
   git clone $src_url $src_dir
-  rsync -hvrPt $src_dir $ins_dir
+  source "${src_dir}/install/ui.functions.sh"
+
+  title "Updating Adminware"
+  doing 'Update'
+  rsync -hvrPt $src_dir $ins_dir &> /tmp/adminware-update.log
+  say_done $?
 }
 
 case $ins_opt in
