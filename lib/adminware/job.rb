@@ -38,8 +38,8 @@ module Adminware
 
       #Prevents the running of commands that match the requested job's status
       if status_matches_command?
-        @logger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
-        @state.set_exit(@name, 1)
+        @logger.log('error', "Can't execute #{@command} script for #{@name} on #{@host} as it is already set to true")
+        @state.set_exit(@name, 'Skipped')
         @state.save!
       else
         @logger.log('info', "Attempting to execute #{@job}")
