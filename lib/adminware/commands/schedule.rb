@@ -12,13 +12,14 @@ module Adminware
           host = options.host 
           forward = options.forward
           rewind = options.rewind
+          group = options.group
 
           if name.nil?
             puts "\t> Please enter a job to schedule. See adminware schedule-add --help for more info"
             exit 1
           end
  
-          if host.nil?
+          if host.nil? && group.nil?
             puts "\t> Please enter a host to schedule for. See adminware schedule-add --help for more info"
             exit 1
           end
@@ -35,11 +36,14 @@ module Adminware
             exit 1
           end
           
-          schedule = Schedule.new(host)
-
+          schedule = Schedule.new(host, group)
           if schedule.valid?(name, command)
-            schedule.add_job(name, command)
-            schedule.save!
+            if group.nil?
+              schedule.add_job(name, command)
+              schedule.save!
+            else
+              schedule.add_to_individual_schedules(name, command)
+            end
           end
         end
         
@@ -47,48 +51,54 @@ module Adminware
           name = options.name
           host = options.host
           id = options.id
+          group = options.group
 
           if options.all 
             clear(args, options)
-          elsif host.nil?
-            puts "\t> Please enter a host to remove from the schedule of"
+          elsif host.nil? && group.nil?
+            puts "\t> Please enter a host or group to remove from the schedule of"
             exit 1
           elsif name.nil? && id.nil?
             puts "\t> Please enter the name or ID of job(s) to remove from the schedule" 
             exit 1
           elsif !name.nil? && !id.nil?
-           puts "\t> Please enter either the name or the ID of the job(s) you wish to remove from the schedule" 
+            puts "\t> Please enter either the name or the ID of the job(s) you wish to remove from the schedule" 
           else
-            ScheduleRemove.run(name, host, id) 
+            ScheduleRemove.run(host, group, name, id)
           end
         end
         
         def apply(args, options)
           host = options.host
-      
-          if host.nil?
-            puts "\t> Please enter a host to apply the schedule for"
+          group = options.group 
+
+          if host.nil? && group.nil?
+            puts "\t> Please enter a host or group to apply the schedule for"
             exit 1
-          end 
+          elsif !host.nil? && !group.nil?
+            puts "\t> Please enter either a host or a group to apply the schedule for"
+            exit 1 
+          end
           
-          ScheduleApply.run(host)
+          ScheduleApply.run(host, group)
         end
         
         def clear(args, options)
           host = options.host
+          group = options.group
           cli = HighLine.new
  
-          if host.nil?
-            puts "\t> Please enter a host to clear the schedule for"
+          if host.nil? && group.nil?
+            puts "\t> Please enter a host or group to clear the schedule for"
             exit 1
           end
           
           unless options.force
-            exit unless cli.agree("\t> Clear schedule for #{host}? (y/n)")
+            exit unless cli.agree("\t> Clear schedule for #{host.nil? ? ('group: ' + group) : host}? (y/n)")
           end
-
-          file = Schedule.new(host)
-          file.clear_schedule
+         
+          schedule = Schedule.new(host, group) 
+          group.nil? ? schedule.clear_schedule : schedule.clear_group
         end
       end
     end

@@ -61,6 +61,7 @@ module Adminware
         c.example 'Add a job to the schedule', 'adminware schedule-add --host HOST --name NAME --forward'
         c.option '-n', '--name NAME', String, 'Specify the job to add'
         c.option '-H', '--host HOST', String, 'Specify the host to schedule jobs for'
+        c.option '-g', '--group GROUP', String, 'Specify the group to schedule jobs for'
         c.option '-f', '--forward', 'Schedule the forward script for <name> on <host>'
         c.option '-r', '--rewind', 'Schedule the rewind script for <name> on <host>'
         c.action do |args, options|
@@ -73,6 +74,7 @@ module Adminware
         c.description = 'Remove job(s) from the schedule'
         c.option '-n', '--name NAME', String, 'Specify the job to remove'
         c.option '-H', '--host HOST', String, 'Specify the host to remove job(s) from'
+        c.option '-g', '--group GROUP', String, 'Specify the group to remove job(s) from'
         c.option '-i', '--id ID', Numeric, 'Specify the ID of the job to remove'
         c.option '-a', '--all', 'Clear the schedule for HOST'
         c.option '--force', 'Clear the schedule without a prompt'
@@ -86,6 +88,7 @@ module Adminware
         c.description = 'Apply the schedule for a host'
         c.example 'Apply the schedule for a given host', 'adminware schedule-apply --host HOST'
         c.option '-H', '--host HOST', String, 'Specify a host to apply the schedule for'
+        c.option '-g', '--group GROUP', String, 'Specify the group to apply the schedule for'
         c.action do |args, options|
           Commands::ScheduleCommands.apply(args, options)
         end
@@ -96,6 +99,8 @@ module Adminware
         c.description = 'List the schedule for a host'
         c.example 'List all items in the schedule', 'adminware schedule-list --host HOST --all'
         c.option '-H', '--host HOST', String, 'Specify a host to list the schedule for'
+        c.option '-g', '--group GROUP', String, 'Specify the group to list the schedule for'
+        c.option '-e', '--exit CODE', String, 'Filter the schedule by exit code'
         c.option '-a', '--all', 'Show all jobs in the schedule, history included'
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.action do |args, options|

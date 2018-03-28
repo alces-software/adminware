@@ -7,6 +7,7 @@ require 'open3'
 module Adminware
   class Job
     attr_accessor :state
+    attr_accessor :id
 
     def initialize(name, command, host)
       @path = Adminware.root 
@@ -38,10 +39,11 @@ module Adminware
 
       #Prevents the running of commands that match the requested job's status
       if status_matches_command?
-        @logger.log('error', "Can't execute #{@command} script for #{@name} as it is already set to true")
-        @state.set_exit(@name, 1)
+        @logger.log('error', "Can't execute #{@command} script for #{@name} on #{@host} as it is already set to true")
+        @state.set_exit(@name, 'Skipped')
         @state.save!
       else
+        @job << " (ID ##{@id})" if @id
         @logger.log('info', "Attempting to execute #{@job}")
         stdout, stderr, status = Open3.capture3(@script)
         @logger.log('debug', stderr.chomp) if !stderr.empty? 
