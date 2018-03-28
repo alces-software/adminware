@@ -61,8 +61,7 @@ module Adminware
       if @group.nil?
         Job.new(name, command, @host).valid?
       else
-        group_path = File.join(Adminware.root, 'var/groups.yaml')
-        @groups = YAML.load_file(group_path)
+        get_groups
         @groups[@group].each do |host|
           Job.new(name, command, host).valid?
         end
@@ -75,11 +74,27 @@ module Adminware
    
     #Deletes the schedule file 
     def clear_schedule
+      @file = File.join(Adminware.root, 'var', "#{@host}_schedule.yaml") if @file.nil?
       if File.exist?(@file) 
         FileUtils.rm(@file) 
-        puts "\t> Successfully cleared schedule for #{@host}"
+        puts "\t> Successfully cleared schedule for #{@host}" if @group.nil? 
+        true
       else
         puts "\t> No schedule to clear for #{@host}"
+        false
+      end
+    end
+    
+    def clear_group
+      get_groups
+      schedules_cleared = 0
+      @groups[@group].each do |host|
+        schedule = Schedule.new(host, @group)
+        schedule.clear_schedule ? schedules_cleared += 1 : 0
+      end
+
+      if schedules_cleared == @groups[@group].count
+        puts "\t> Successfully cleared all schedules for #{@group} (#{schedules_cleared})"
       end
     end
 
@@ -95,8 +110,12 @@ module Adminware
     end
   
     def increment_index
-      @index.empty? ? (@index[:index] = 1) : (@index[:index] = @index[:index]+1 unless @share_index)
+      @index.empty? ? (@index[:index] = 1) : (@index[:index] += 1 unless @share_index)
       File.write(File.join(Adminware.root, 'var/cache.yaml'), @index.to_yaml)
+    end
+    
+    def get_groups
+      @groups = YAML.load_file(File.join(Adminware.root, 'var/groups.yaml'))
     end
   end
 end

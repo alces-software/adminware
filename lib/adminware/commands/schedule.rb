@@ -85,19 +85,20 @@ module Adminware
         
         def clear(args, options)
           host = options.host
+          group = options.group
           cli = HighLine.new
  
-          if host.nil?
-            puts "\t> Please enter a host to clear the schedule for"
+          if host.nil? && group.nil?
+            puts "\t> Please enter a host or group to clear the schedule for"
             exit 1
           end
           
           unless options.force
-            exit unless cli.agree("\t> Clear schedule for #{host}? (y/n)")
+            exit unless cli.agree("\t> Clear schedule for #{host.nil? ? ('group: ' + group) : host}? (y/n)")
           end
-
-          file = Schedule.new(host, nil)
-          file.clear_schedule
+         
+          schedule = Schedule.new(host, group) 
+          group.nil? ? schedule.clear_schedule : schedule.clear_group
         end
       end
     end
