@@ -37,10 +37,13 @@ module Adminware
           end
           
           schedule = Schedule.new(host, group)
-
           if schedule.valid?(name, command)
-            schedule.add_job(name, command)
-            schedule.save!
+            if group.nil?
+              schedule.add_job(name, command)
+              schedule.save!
+            else
+              schedule.add_to_individual_schedules(name, command)
+            end
           end
         end
         
