@@ -58,7 +58,7 @@ module Adminware
  
             if @schedule[n][:scheduled] 
               #Stop further jobs in schedule if current fails
-              unless execute_job
+              unless execute_job(@schedule[n][:id])
                 save_schedule_values(n, false) 
                 break
               else
@@ -101,10 +101,11 @@ module Adminware
       end
 
       #Creates a job instance and attempts to run the job from the schedule
-      def execute_job
+      def execute_job(id)
         job = Job.new(@job_name, @status, @host)
         job.state = @state
-        
+        job.id = id
+ 
         job.valid? 
           job.run ? true : false
       end
