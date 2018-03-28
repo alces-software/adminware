@@ -95,6 +95,8 @@ module Adminware
 
       if schedules_cleared == @groups[@group].count
         puts "\t> Successfully cleared all schedules for #{@group} (#{schedules_cleared})"
+      else
+        puts "\t> Cleared #{schedules_cleared}/#{@group[@group].count} schedule for #{@group}"
       end
     end
 
