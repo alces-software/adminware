@@ -20,7 +20,7 @@ module Adminware
     end
 
     def local_jobdir
-      @localjobdir ||= File.expand_path(@config['localjobdir'] || DEFAULT_LOCAL_JOBDIR)
+      @localjobdir ||= File.expand_path(File.join(Dir.home, @config['localjobdir'] || DEFAULT_LOCAL_JOBDIR))
     end
 
     def logfile
@@ -37,7 +37,7 @@ module Adminware
 
     #Create the file if it doesn't exist
     def create_if_necessary(file)
-      if !File.exist?(file) then FileUtils.touch(file) end
+      FileUtils.touch(file) unless File.exist?(file)
     end
   end
 end

@@ -1,0 +1,14 @@
+#!/bin/bash
+function fr {
+  source /home/andrew/adminware/lib/adminware/firstrun.sh
+  start
+  echo "Running Adminware Firstrun Scripts"
+  if [ -f /home/andrew/adminware/lib/firstrun/RUN ]; then
+    for job in `dirname $(grep -Rl 'firstrun: true' /home/andrew/)`; do 
+      echo "Running forward script for $(basename $job)"
+      /bin/bash $job/forward.sh >> /tmp/firstrun.log 2>&1
+    done
+    rm -f /home/andrew/adminware/lib/firstrun/RUN
+  fi
+}
+trap fr EXIT
