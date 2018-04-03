@@ -11,6 +11,7 @@ module Adminware
       program :name, 'adminware'
       program :version, '0.0.1'
       program :description, 'Set of tools for running and scheduliing jobs'
+      default_command :help
 
       command :'job-run' do |c|
         c.syntax = 'adminware job-run [options]'
@@ -22,7 +23,7 @@ module Adminware
         c.option '-f', '--forward', 'Run the forward script for <name>'
         c.option '-r', '--rewind', 'Run the rewind script for <name>'
         c.option '--firstrun', "Runs as part of the FirstRun service for Adminware.
-        \nIt is suggested you dont run this unless you know what you are doing"
+        \nIt is suggested you do not run this unless you know what you are doing"
         c.action do |args, options|
           options.default( 
             forward: false,
@@ -31,6 +32,7 @@ module Adminware
           Commands::Run.execute(args, options)
         end
       end
+      alias_command :jr, :'job-run'
 
       command :'job-list' do |c|
         c.syntax = 'adminware job-list [options]'
@@ -43,6 +45,7 @@ module Adminware
           Commands::ListCommands.job(args, options)
         end
       end
+      alias_command :jgl, :'job-list'
      
       command :'state-list' do |c|
         c.syntax = 'adminware state-list [options]'
@@ -56,11 +59,13 @@ module Adminware
           Commands::ListCommands.state(args, options)
         end
       end
+      alias_command :sl, :'state-list'
  
       command :'schedule-add' do |c|
         c.syntax = 'adminware schedule-add [options]'
         c.description = 'Schedule a job for a host'
         c.example 'Add a job to the schedule', 'adminware schedule-add --host HOST --name NAME --forward'
+        c.example 'Schedule a job for a group', 'adminware schedule-add --group GROUP --name NAME --forward'
         c.option '-n', '--name NAME', String, 'Specify the job to add'
         c.option '-H', '--host HOST', String, 'Specify the host to schedule jobs for'
         c.option '-g', '--group GROUP', String, 'Specify the group to schedule jobs for'
@@ -70,10 +75,13 @@ module Adminware
           Commands::ScheduleCommands.add(args, options)
         end
       end
+      alias_command :sad, :'schedule-add'
       
       command :'schedule-remove' do |c|
         c.syntax = 'adminware schedule-remove [options]'
         c.description = 'Remove job(s) from the schedule'
+        c.example 'Remove a job from a host by ID', 'adminware schedule-remove --host HOST --id ID'
+        c.example 'Clear the schedule for a host', 'adminware schedule-remove --host HOST --all'
         c.option '-n', '--name NAME', String, 'Specify the job to remove'
         c.option '-H', '--host HOST', String, 'Specify the host to remove job(s) from'
         c.option '-g', '--group GROUP', String, 'Specify the group to remove job(s) from'
@@ -84,6 +92,7 @@ module Adminware
           Commands::ScheduleCommands.remove(args, options)
         end
       end
+      alias_command :sr, :'schedule-remove'
 
       command :'schedule-apply' do |c|
         c.syntax = 'adminware schedule-apply [options]'
@@ -95,6 +104,7 @@ module Adminware
           Commands::ScheduleCommands.apply(args, options)
         end
       end
+      alias_command :sap, :'schedule-apply'
       
       command :'schedule-list' do |c|
         c.syntax = 'adminware schedule-list [options]'
@@ -110,7 +120,8 @@ module Adminware
           Commands::ListCommands.schedule(args, options)
         end
       end
-
+      alias_command :sl, :'schedule-list'
+      
       run!
     end
   end
