@@ -3,7 +3,7 @@ cat << EOF > /opt/adminware/lib/firstrun/bin/firstrun
 function fr {
   source /etc/profile.d/alces-adminware.sh
   echo "Running Adminware Firstrun Scripts"
-  `adminware job-run --firstrun`
+  admin job-run --firstrun
   rm -f /opt/adminware/lib/firstrun/RUN
 }
 trap fr EXIT
