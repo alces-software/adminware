@@ -37,6 +37,8 @@ module Adminware
           if schedule_exists?(host)
             schedule = Schedule.new(host, nil).load_array
             schedules << schedule
+          else
+            @hosts.delete(host)
           end
         end
 
