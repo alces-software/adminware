@@ -15,8 +15,8 @@ module Adminware
         @jobs = []
         
         file.log('info', '-- FirstRun: Start  --') 
-        get_firstrun_jobs(config.central_jobdir)
-        get_firstrun_jobs(config.local_jobdir)
+        get_firstrun_jobs(config.central_jobdir) if Dir.exist?(config.central_jobdir)
+        get_firstrun_jobs(config.local_jobdir) if Dir.exist?(config.local_jobdir)
         run_jobs
         file.log('info', '-- FirstRun: Finish --')
       end
