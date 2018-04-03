@@ -21,6 +21,8 @@ module Adminware
         c.option '-H', '--host HOST', String, 'Specify the host to run the job on'
         c.option '-f', '--forward', 'Run the forward script for <name>'
         c.option '-r', '--rewind', 'Run the rewind script for <name>'
+        c.option '--firstrun', "Runs as part of the FirstRun service for Adminware.
+        \nIt is suggested you dont run this unless you know what you are doing"
         c.action do |args, options|
           options.default( 
             forward: false,
