@@ -18,7 +18,7 @@ curl -sL https://git.io/adminware-installer | /bin/bash
 
 ### Basic Installation
 
-Adminware is a system-lvel package and must be installed by the `root` user.
+Adminware is a system-level package and must be installed by the `root` user.
 
 1. Make yourself root
   
