@@ -25,19 +25,15 @@ else
   puts ""
   puts "Subcommands"
   puts ""
-  puts "  diag"
-  puts "    top - Run the top command. ARG/OPTIONS will be passed as"
-  puts "          arguments to the top command"
-  puts "    iotop - Run the iotop command. ARG/OPTIONS will be passed as"
-  puts "            arguments to the iotop command"
-  puts "    ps - Run the ps command. ARG/OPTIONS will be passed as"
-  puts "         arguments to the ps command"
-  puts "    view_log - View a log file. If full path isn't provided it"
-  puts "               will be searched for under /var/log"
+  puts "  Diag:"
+  Diag.new.allowed_commands.each do |cmd|
+    puts "    - #{cmd}"
+  end
   puts "" 
-  puts "  manage"
-  puts "    kill - Run the kill command on process ARG. OPTIONS will"
-  puts "           be passed to the kill command"
+  puts "  Manage:"
+  Manage.new.allowed_commands.each do |cmd|
+    puts "    - #{cmd}" 
+  end
   puts ""
   puts "Examples"
   puts ""

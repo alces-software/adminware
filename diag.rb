@@ -1,9 +1,13 @@
 
 class Diag 
 
-  def run(command, arg, options)
-    # Ensure command allowed to be run
+  attr_reader :allowed_commands
+
+  def initialize
     @allowed_commands = ["top", "iotop", "ps", "view_log", "dmidecode", "dmesg", "lsof"]
+  end
+
+  def run(command, arg, options)
     @arg = arg
     @options = options
     self._check_valid(command)

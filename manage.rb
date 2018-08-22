@@ -1,9 +1,13 @@
 
 class Manage
 
-  def run(command, arg, options)
-    # Ensure command allowed to be run
+  attr_reader :allowed_commands
+
+  def initialize
     @allowed_commands = ["kill", "pkill"]
+  end
+
+  def run(command, arg, options)
     @disallowed_users = ["root", "alces", "alces-cluster"]
     @arg = arg
     @options = options
