@@ -4,7 +4,7 @@ class Manage
   attr_reader :allowed_commands
 
   def initialize
-    @allowed_commands = ["kill", "pkill"]
+    @allowed_commands = ["kill", "pkill", "mount", "umount"]
   end
 
   def run(command, arg, options)
@@ -55,6 +55,16 @@ class Manage
 
   def pkill
     puts "pkill is currently not supported"
+  end
+
+  def mount
+    args = [@arg, *@options.split(' ')]
+    exec('mount', *args.compact)
+  end
+
+  def umount
+    args = [@arg, *@options.split(' ')]
+    exec('umount', *args.compact)
   end
 
 end
