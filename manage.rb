@@ -4,7 +4,7 @@ class Manage
   attr_reader :allowed_commands
 
   def initialize
-    @allowed_commands = ["kill", "pkill", "mount", "umount", "limits", "motd"]
+    @allowed_commands = Adminware.config['manage'].keys
   end
 
   def run(command, arg, options)

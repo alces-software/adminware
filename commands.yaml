@@ -1,0 +1,28 @@
+diag:
+  top:
+    description: "Launch top"
+  iotop:
+    description: "Launch iotop"
+  ps:
+    description: "Run ps"
+  view_log:
+    description: "Launch less on a log file"
+  dmidecode:
+    description: "Run dmidecode"
+  dmesg:
+    description: "Run dmesg"
+  lsof:
+    description: "Run lsof"
+manage:
+  kill:
+    description: "Kill a process by ID"
+  pkill:
+    description: "Kill a process by name"
+  mount:
+    description: "Mount a filesystem"
+  umount:
+    description: "Unmount a filesystem"
+  limits:
+    description: "Update /etc/security/limits.conf"
+  motd:
+    description: "Update the message of the day"

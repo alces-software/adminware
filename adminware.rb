@@ -5,6 +5,15 @@ $LOAD_PATH << File.dirname(__FILE__)
 require 'cli'
 require 'diag'
 require 'manage'
+require 'yaml'
+
+module Adminware
+  
+  def self.config
+    @config ||= YAML.load_file("#{File.dirname(__FILE__)}/commands.yaml")
+  end
+
+end
 
 # Setup args
 command = ARGV.shift
@@ -25,14 +34,11 @@ else
   puts ""
   puts "Subcommands"
   puts ""
-  puts "  Diag:"
-  Diag.new.allowed_commands.each do |cmd|
-    puts "    - #{cmd}"
-  end
-  puts "" 
-  puts "  Manage:"
-  Manage.new.allowed_commands.each do |cmd|
-    puts "    - #{cmd}" 
+  Adminware.config.each do |mode, subcommands|
+    puts "  #{mode}"
+    subcommands.each do |mode_cmd, details|
+      puts "    - #{mode_cmd}: #{details['description']}"
+    end
   end
   puts ""
   puts "Examples"

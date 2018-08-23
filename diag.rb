@@ -4,7 +4,7 @@ class Diag
   attr_reader :allowed_commands
 
   def initialize
-    @allowed_commands = ["top", "iotop", "ps", "view_log", "dmidecode", "dmesg", "lsof"]
+    @allowed_commands = Adminware.config['diag'].keys
   end
 
   def run(command, arg, options)
