@@ -22,3 +22,12 @@ sudeoedit /etc/sudoers
 ```
 
 - Set permissions to 744 and ownership of root:root for `/PATH/TO/adminware/`
+
+- Update and copy profile.d file into place
+
+```
+# Ensure the allowed group-name (currently siteadmin) and the path to the adminware installation are correct
+vim /PATH/TO/adminware/etc/profile.d/alces-adminware.sh
+
+cp /PATH/TO/adminware/etc/profile.d/alces-adminware.sh /etc/profile.d/
+```

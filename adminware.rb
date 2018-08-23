@@ -44,13 +44,13 @@ else
   puts "Examples"
   puts ""
   puts "  View log file /var/log/messages"
-  puts "    sudo /opt/adminware/adminware.rb diag view_log messages"
+  puts "    admin diag view_log messages"
   puts ""
   puts "  Kill process normally"
-  puts "    sudo /opt/adminware/adminware.rb manage kill 1234"
+  puts "    admin manage kill 1234"
   puts ""
   puts "  Kill process forcefully"
-  puts "    sudo /opt/adminware/adminware.rb manage kill -9 1234"
+  puts "    admin manage kill -9 1234"
   puts ""
   exit 1
 end
