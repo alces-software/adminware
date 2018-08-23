@@ -3,7 +3,7 @@
 $LOAD_PATH << File.dirname(__FILE__)
 
 require 'cli'
-require 'diag'
+require 'command'
 require 'manage'
 require 'yaml'
 
@@ -16,19 +16,16 @@ module Adminware
 end
 
 # Setup args
-command = ARGV.shift
+command = Command.new
+
 subcommand = ARGV.shift
 arg = ARGV.shift
 options = ARGV.join(' ')
 
 # Run command
-case command
-when "diag"
-  cmd = Diag.new
-when "manage"
-  cmd = Manage.new
+if command.valid?(subcommand)
+  command.run(subcommand, arg, options)
 else
-  puts "Invalid command: #{command}"
   puts "Usage"
   puts "  adminware diag/manage SUBCOMMAND [ARG] [OPTIONS]"
   puts ""
@@ -44,13 +41,13 @@ else
   puts "Examples"
   puts ""
   puts "  View log file /var/log/messages"
-  puts "    admin diag view_log messages"
+  puts "    admin view_log messages"
   puts ""
   puts "  Kill process normally"
-  puts "    admin manage kill 1234"
+  puts "    admin kill 1234"
   puts ""
   puts "  Kill process forcefully"
-  puts "    admin manage kill -9 1234"
+  puts "    admin kill -9 1234"
   puts ""
   exit 1
 end
