@@ -42,19 +42,13 @@ class Manage
   end
 
   def kill
-    if @arg.nil?
-      puts "Must provide a process ID"
-      exit 1
-    end
-
-    self._check_process_valid(@arg)
     args = [@arg, *@options.split(' ')]
     exec('kill', *args.compact) 
-
   end
 
   def pkill
-    puts "pkill is currently not supported"
+    args = [@arg, *@options.split(' ')]
+    exec('pkill', *args.compact)
   end
 
   def mount
