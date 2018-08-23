@@ -26,7 +26,7 @@ if command.valid?(subcommand)
   command.run(subcommand, arg, options)
 else
   puts "Usage"
-  puts "  adminware diag/manage SUBCOMMAND [ARG] [OPTIONS]"
+  puts "  admin SUBCOMMAND [ARG] [OPTIONS]"
   puts ""
   puts "Subcommands"
   puts ""
