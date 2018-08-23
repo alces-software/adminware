@@ -37,11 +37,14 @@ else
   puts ""
   puts "Examples"
   puts ""
+  puts "  View log file /var/log/messages"
+  puts "    sudo /opt/adminware/adminware.rb diag view_log messages"
+  puts ""
   puts "  Kill process normally"
-  puts "    /opt/adminware/adminware.rb manage kill 1234"
+  puts "    sudo /opt/adminware/adminware.rb manage kill 1234"
   puts ""
   puts "  Kill process forcefully"
-  puts "    /opt/adminware/adminware.rb manage kill 1234 -4"
+  puts "    sudo /opt/adminware/adminware.rb manage kill -9 1234"
   puts ""
   exit 1
 end
