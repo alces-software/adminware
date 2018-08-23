@@ -4,7 +4,7 @@ class Manage
   attr_reader :allowed_commands
 
   def initialize
-    @allowed_commands = ["kill", "pkill", "mount", "umount"]
+    @allowed_commands = ["kill", "pkill", "mount", "umount", "limits", "motd"]
   end
 
   def run(command, arg, options)
@@ -65,6 +65,34 @@ class Manage
   def umount
     args = [@arg, *@options.split(' ')]
     exec('umount', *args.compact)
+  end
+
+  def _sudoedit(file)
+    tmpfile = "/tmp/#{File.basename(file)}.#{('a'..'z').to_a.shuffle[0,8].join}"
+
+    # Create copy of file
+    system("cp #{file} #{tmpfile}")
+    # Set ownership to SUDO_USER
+    system("chown #{ENV['SUDO_USER']} #{tmpfile}")
+    # Open for editing by SUDO_USER
+    system("su - #{ENV['SUDO_USER']} -c 'vim #{tmpfile}'")
+    # Replace if diff
+    unless system("diff -q #{file} #{tmpfile} >> /dev/null")
+      system("cp -f --no-preserve=mode,ownership #{tmpfile} #{file}")
+    else
+      puts "No changes made"
+    end
+
+    # Remove tmpfile
+    system("rm -f #{tmpfile}")
+  end
+
+  def limits
+    self._sudoedit('/etc/security/limits.conf')
+  end
+
+  def motd
+    self._sudoedit('/opt/clusterware/etc/motd')
   end
 
 end
