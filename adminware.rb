@@ -50,5 +50,3 @@ else
   puts ""
   exit 1
 end
-
-cmd.run(subcommand, arg, options)
