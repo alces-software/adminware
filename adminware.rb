@@ -4,7 +4,6 @@ $LOAD_PATH << File.dirname(__FILE__)
 
 require 'cli'
 require 'command'
-require 'manage'
 require 'yaml'
 
 module Adminware
