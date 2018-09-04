@@ -10,15 +10,15 @@ module Adminware
       def run(group, exit_code, show_all, plain)
         @group = group
         @show_all = show_all
-        @plain = plain  
-        @exit_code = exit_code 
+        @plain = plain
+        @exit_code = exit_code
         @groups = YAML.load_file(File.join(Adminware.root, 'var/groups.yaml'))
-        
+
         get_hosts
         get_schedules
         list_schedule
-      end 
-        
+      end
+
       def get_hosts
         @hosts = []
         if @groups[@group]
@@ -30,7 +30,7 @@ module Adminware
           exit 1
         end
       end
-      
+
       def get_schedules
         schedules = []
         @hosts.each do |host|
@@ -59,7 +59,7 @@ module Adminware
       end
 
       def list_schedule
-        filter_by_exit_code if @exit_code 
+        filter_by_exit_code if @exit_code
         output
       end
 
@@ -70,11 +70,11 @@ module Adminware
 
       def filter_by_exit_code
         (0..(@jobs.length-1)).each do |i|
-          if @jobs[i][:exit].to_s.downcase == @exit_code.downcase 
-            next 
+          if @jobs[i][:exit].to_s.downcase == @exit_code.downcase
+            next
           else
-            @jobs.delete_at(i) 
-            filter_by_exit_code 
+            @jobs.delete_at(i)
+            filter_by_exit_code
             break
           end
         end

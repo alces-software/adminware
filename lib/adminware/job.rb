@@ -10,7 +10,7 @@ module Adminware
     attr_accessor :id
 
     def initialize(name, command, host)
-      @path = Adminware.root 
+      @path = Adminware.root
       @config = Adminware.config
       @logger = Adminware.log
       @name = name
@@ -20,7 +20,7 @@ module Adminware
 
     def valid?
       #Check if the directory and file exist
-      if dir_exist? && file_exist? 
+      if dir_exist? && file_exist?
         true
       else
         @logger.log('error', "Failed to validate")
@@ -46,7 +46,7 @@ module Adminware
         @job << " (ID ##{@id})" if @id
         @logger.log('info', "Attempting to execute #{@job}")
         stdout, stderr, status = Open3.capture3(@script)
-        @logger.log('debug', stderr.chomp) if !stderr.empty? 
+        @logger.log('debug', stderr.chomp) if !stderr.empty?
         @logger.log('debug', status)
         if status.success?
           @logger.log('info', "Successfully executed #{@job}")
@@ -71,7 +71,7 @@ module Adminware
         set_file_path(central)
       elsif Dir.exist?(local) || exist_remotely?(local)
         set_file_path(local)
-      else  
+      else
         @logger.log('error', "The job directory for #{@name} on #{@host} does not exist")
         false
       end
@@ -86,12 +86,12 @@ module Adminware
         false
       end
     end
-  
-    #Sets the path for the file to be run 
+
+    #Sets the path for the file to be run
     def set_file_path(directory)
       @file = File.join(directory, @command + '.sh')
     end
-  
+
     #Checks if the job's status matches the entered command
     def status_matches_command?
       if @state.status(@name) == @command then true end
@@ -101,13 +101,13 @@ module Adminware
     def running_locally?
       @host == 'local' ? true : false
     end
-   
-    #Checks the remote host for a given path 
+
+    #Checks the remote host for a given path
     def exist_remotely?(path)
       stdout, stderr, status = Open3.capture3("ssh #{@host} find #{path}")
       status.success?
     end
-    
+
     #Sets the command for running the script
     def set_script(command)
       @script = command

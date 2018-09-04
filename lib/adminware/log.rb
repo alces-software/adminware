@@ -29,7 +29,7 @@ module Adminware
         $stderr.puts "\t> #{message}"
       when 'debug'
         @logger.debug message
-      end  
+      end
     end
   end
 end

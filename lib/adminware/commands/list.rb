@@ -7,15 +7,15 @@ require 'adminware/group_list'
 
 module Adminware
   module Commands
-    module ListCommands 
+    module ListCommands
       class << self
-        #Handles command: adminware job-list 
+        #Handles command: adminware job-list
         def job(args, options)
           JobList.run(options.name, options.host, options.plain)
         end
 
         #Handles command: adminware state-list
-        def state(args, options) 
+        def state(args, options)
           StateList.run(options.name, options.host, options.plain)
         end
 

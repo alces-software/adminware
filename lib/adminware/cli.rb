@@ -6,7 +6,7 @@ require 'adminware/commands/schedule'
 module Adminware
   class CLI
     include Commander::Methods
-      
+
     def run
       program :name, 'adminware'
       program :version, '0.0.1'
@@ -25,7 +25,7 @@ module Adminware
         c.option '--firstrun', "Runs as part of the FirstRun service for Adminware.
         \nIt is suggested you do not run this unless you know what you are doing"
         c.action do |args, options|
-          options.default( 
+          options.default(
             forward: false,
             rewind:  false
           )
@@ -41,12 +41,12 @@ module Adminware
         c.option '-p', '--plain', 'Output in a tab delimited format'
         c.option '-H', '--host HOST', String, 'Specify the host you wish to view the jobs for'
         c.action do |args, options|
-          options.default(host: 'local') 
+          options.default(host: 'local')
           Commands::ListCommands.job(args, options)
         end
       end
       alias_command :jgl, :'job-list'
-     
+
       command :'state-list' do |c|
         c.syntax = 'adminware state-list [options]'
         c.description = 'List the state values for all run jobs'
@@ -60,7 +60,7 @@ module Adminware
         end
       end
       alias_command :sl, :'state-list'
- 
+
       command :'schedule-add' do |c|
         c.syntax = 'adminware schedule-add [options]'
         c.description = 'Schedule a job for a host'
@@ -76,7 +76,7 @@ module Adminware
         end
       end
       alias_command :sad, :'schedule-add'
-      
+
       command :'schedule-remove' do |c|
         c.syntax = 'adminware schedule-remove [options]'
         c.description = 'Remove job(s) from the schedule'
@@ -105,7 +105,7 @@ module Adminware
         end
       end
       alias_command :sap, :'schedule-apply'
-      
+
       command :'schedule-list' do |c|
         c.syntax = 'adminware schedule-list [options]'
         c.description = 'List the schedule for a host'
@@ -121,7 +121,7 @@ module Adminware
         end
       end
       alias_command :sl, :'schedule-list'
-      
+
       run!
     end
   end

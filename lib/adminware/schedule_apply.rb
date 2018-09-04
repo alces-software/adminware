@@ -17,7 +17,7 @@ module Adminware
 
         if group.nil?
           find_next_job
-          run_schedule        
+          run_schedule
         else
           get_hosts
           run_each_schedule
@@ -43,7 +43,7 @@ module Adminware
           if @schedule[n][:scheduled]
             @job_number = n
             break
-          end 
+          end
         end
       end
 
@@ -55,11 +55,11 @@ module Adminware
           (@job_number..(@schedule.length-1)).each do |n|
             @job_name = @schedule[n][:job]
             @status = @schedule[n][:status]
- 
-            if @schedule[n][:scheduled] 
+
+            if @schedule[n][:scheduled]
               #Stop further jobs in schedule if current fails
               unless execute_job(@schedule[n][:id])
-                save_schedule_values(n, false) 
+                save_schedule_values(n, false)
                 break
               else
                 save_schedule_values(n, true)
@@ -74,7 +74,7 @@ module Adminware
           ScheduleApply.run(host, nil)
         end
       end
-      
+
       def save_schedule_values(n, success)
         if success
           #If ran successfully flag as no longer scheduled
@@ -82,11 +82,11 @@ module Adminware
         end
 
         state = YAML.load_file(File.join(@config.statedir, "#{@host}_state.yaml"))
-        @schedule[n][:run_date] = get_time 
+        @schedule[n][:run_date] = get_time
         @schedule[n][:exit] = state[@job_name][:exit]
         @file.save!
       end
-      
+
       def find_job_in_schedule(schedule)
         (0..(schedule.length-1)).each do |n|
           if schedule[n][:id] == @id
@@ -105,8 +105,8 @@ module Adminware
         job = Job.new(@job_name, @status, @host)
         job.state = @state
         job.id = id
- 
-        job.valid? 
+
+        job.valid?
           job.run ? true : false
       end
     end

@@ -9,11 +9,11 @@ module Adminware
     class << self
       def run(name, host, boolean)
         @name = name
-        @host = host 
+        @host = host
         @state = State.new(host)
         @config = Adminware.config
         @plain = boolean
-        
+
         if @host.nil?
           list_all_states
         else
@@ -21,7 +21,7 @@ module Adminware
           output(host)
         end
       end
-      
+
       #Creates an array of hosts and sends them to be output to console
       def list_all_states
         hosts = []
@@ -36,12 +36,12 @@ module Adminware
           output(hosts)
         end
       end
-      
+
       #Checks if the -p option has been selected and outputs accordingly
       def output(hosts)
         @plain ? plain_output(hosts) : table_output(hosts)
       end
-      
+
       #Outputs state data in a tab delimited format
       def plain_output(hosts)
         puts "Host\tJob\tDescription\tStatus\tExit Code"
@@ -59,8 +59,8 @@ module Adminware
             end
           end
         end
-      end 
-      
+      end
+
       #Outputs state data in a table
       def table_output(hosts)
         table = Terminal::Table.new do |rows|
@@ -73,7 +73,7 @@ module Adminware
                 rows << [hosts[i], key, get_description(hosts[i], key), s[:status], s[:exit]]
               else
                 next
-              end 
+              end
             end
             if hosts[i+1] != nil && @name.nil? then rows.add_separator end
             rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
@@ -83,7 +83,7 @@ module Adminware
       end
 
       def get_description(host, key)
-        file = File.join(find_directory(key), 'job.yaml') rescue file = '' 
+        file = File.join(find_directory(key), 'job.yaml') rescue file = ''
         if File.exist?(file)
           file = YAML.load_file(file)
           file['description']

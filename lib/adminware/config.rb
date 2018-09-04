@@ -24,7 +24,7 @@ module Adminware
     end
 
     def logfile
-      @logfile = File.expand_path(@config['logfile'] || DEFAULT_LOGFILE) 
+      @logfile = File.expand_path(@config['logfile'] || DEFAULT_LOGFILE)
       create_if_necessary(@logfile)
       @logfile
     end

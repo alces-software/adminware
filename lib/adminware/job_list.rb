@@ -15,13 +15,13 @@ module Adminware
         @plain = boolean
         @description = nil
 
-        if @host == 'local' 
+        if @host == 'local'
           list_job_values
         else
           search_remote_host
         end
       end
-      
+
       #Lists the values of a job within the state file
       def list_job_values
         @jobs = []
@@ -29,7 +29,7 @@ module Adminware
         add_jobs_from(@config.local_jobdir)
         @jobs.empty? ? (puts "\t> No jobs to list") : output
       end
-     
+
       def add_jobs_from(directory)
         if Dir.exist?(directory)
           Dir.foreach(directory) do |item|
@@ -38,8 +38,8 @@ module Adminware
             file = File.join(directory, item, 'job.yaml')
             if File.exist?(file)
               file = YAML.load_file(file)
-              description = file['description'] 
-            else 
+              description = file['description']
+            else
               description = 'No description available'
             end
 
@@ -48,16 +48,16 @@ module Adminware
           end
         end
       end
- 
-      #Figure out which output to use 
+
+      #Figure out which output to use
       def output
-        if @jobs.empty? 
+        if @jobs.empty?
           puts "\t> There are no jobs to list"
         else
           @plain ? plain_output : table_output
         end
       end
-     
+
       #Output in tab delimited form
       def plain_output
         puts "Host\tJob\tDescription"
@@ -65,7 +65,7 @@ module Adminware
           puts "#{@host}\t#{@jobs[i][:job]}\t#{@jobs[i][:description]}"
         end
       end
-     
+
       def table_output
         table = Terminal::Table.new do |rows|
           rows.headings = ['Host', 'Job', 'Description']
@@ -75,12 +75,12 @@ module Adminware
         rows.style = {:alignment => :center, :padding_left => 2, :padding_right => 2}
         end
         puts "\n#{table}"
-      end 
-      
+      end
+
       #Search a remote host for jobs
       def search_remote_host
         @jobs = []
-        
+
         #Check the for the central job directory on remote host
         stdout, stderr, status = Open3.capture3("ssh #{@host} ls #{@config.central_jobdir}")
         if status.success? && !stdout.empty?
@@ -103,12 +103,12 @@ module Adminware
               start = i + 2
             end
           end
-          
+
           #Where possible get the descriptions for the jobs
           job_names.each do |job|
             stdout, stderr, status = Open3.capture3("ssh #{@host} cat #{@config.local_jobdir}/#{job}/job.yaml")
             if status.success?
-              description = stdout[18..-3] 
+              description = stdout[18..-3]
             else
               description = 'No description available'
             end
@@ -118,9 +118,9 @@ module Adminware
         elsif status.inspect.include? '2'
           puts "\t> The local job directory (#{@config.local_jobdir}) could not be found on #{@host}"
         end
- 
+
         output
-      end 
+      end
     end
   end
 end

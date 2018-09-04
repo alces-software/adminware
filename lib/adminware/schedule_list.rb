@@ -10,18 +10,18 @@ module Adminware
         @host = host
         @show_all = show_all
         @plain = plain
-     
+
         list_schedule
       end
 
       def list_schedule
         if schedule_exists?
-          @file = Schedule.new(@host, nil)          
+          @file = Schedule.new(@host, nil)
           @schedule = @file.load_array
         end
         output
       end
- 
+
       #Check if a schedule exists for the host
       def schedule_exists?
         @schedule = File.join(Adminware.root, 'var', "#{@host}_schedule.yaml")
@@ -32,13 +32,13 @@ module Adminware
           exit 1
         end
       end
-     
-      #Figure out which output to use 
+
+      #Figure out which output to use
       def output
-        @plain ? plain_output : table_output 
+        @plain ? plain_output : table_output
       end
-     
-      #Output schedule data in a tab delimited format 
+
+      #Output schedule data in a tab delimited format
       def plain_output
         no_queued_jobs = true
         puts "Host\tID\tJob\tStatus\tExit Code\tQueued\tSchedule Date\tRun Date"
@@ -58,7 +58,7 @@ module Adminware
             puts "\t> There are no scheduled jobs to list. Use the 'all' option to see history"
             exit 1
           end
-        end 
+        end
       end
 
       #Output the schedule in a table for the given host
@@ -70,7 +70,7 @@ module Adminware
             s = @schedule[i]
 
             if s[:scheduled] or @show_all
-              rows << [@host, s[:id], s[:job], s[:status], 
+              rows << [@host, s[:id], s[:job], s[:status],
                 s[:exit], s[:scheduled], s[:schedule_date], s[:run_date]]
               no_queued_jobs = false if no_queued_jobs
             elsif i == (@schedule.length-1) && no_queued_jobs

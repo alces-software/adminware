@@ -21,7 +21,7 @@ module Adminware
     def toggle(name, command)
       jobstate(name)[:status] = command
     end
-    
+
     #Set the exit code of the job
     def set_exit(name, code)
       jobstate(name)[:exit] = code
@@ -31,7 +31,7 @@ module Adminware
     def save!
       File.write(@statefile, @state.to_yaml)
     end
-    
+
     #Return the state file
     def file
       @state
@@ -42,7 +42,7 @@ module Adminware
     def jobstate(name)
       @state[name] ||= {}
     end
-    
+
     #Loads the state file
     def load_state
       @state = YAML.load_file(@statefile) rescue {}

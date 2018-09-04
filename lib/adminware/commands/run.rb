@@ -12,7 +12,7 @@ module Adminware
           forward = options.forward
           rewind = options.rewind
           state = State.new(host)
-           
+
           if options.firstrun
             FirstRun.start
           else
@@ -22,7 +22,7 @@ module Adminware
               exit 1
             end
 
-            #Check a host name has been given         
+            #Check a host name has been given
             if host.nil?
               puts "\t> Please enter a host to run the job on. See adminware job-run --help for more info"
               exit 1
@@ -40,7 +40,7 @@ module Adminware
               puts "\t> Please enter an option for the job. See adminware job-run --help for more info"
               exit 1
             end
-            
+
             #Initialise the job
             job = Job.new(name, command, host)
             job.state = state
