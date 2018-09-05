@@ -17,7 +17,7 @@ ipa sudorule-add-option RULENAME --sudooption '!authenticate'
 ipa sudorule-add-host RULENAME --hostgroups=HOSTGROUP
 
 # On systems without IPA
-sudeoedit /etc/sudoers
+sudoedit /etc/sudoers
     USERNAME ALL=NOPASSWD: /PATH/TO/adminware/adminware.rb
 ```
 
