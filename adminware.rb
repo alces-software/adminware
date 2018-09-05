@@ -7,7 +7,7 @@ require 'command'
 require 'yaml'
 
 module Adminware
-  
+
   def self.config
     @config ||= YAML.load_file("#{File.dirname(__FILE__)}/commands.yaml")
   end

@@ -1,13 +1,13 @@
 # Adminware Diagnostics
 
-This is a prototype tool for allowing various management tools to non-root users. 
+This is a prototype tool for allowing various management tools to non-root users.
 
 ## Setup
 
 - Add a sudo rule for adminware for user siteadmin
 
 ```
-# On system with IPA 
+# On system with IPA
 ipa sudocmd-add "/PATH/TO/adminware/adminware.rb"
 ipa sudorule-add RULENAME
 ipa sudorule-add-user --groups=USERGROUP RULENAME
