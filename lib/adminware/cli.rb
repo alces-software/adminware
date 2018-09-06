@@ -27,5 +27,17 @@ module Adminware
       puts "v#{Adminware::VERSION}"
     end
     map %w(--version -v) => :version
+
+    desc 'run TOOL...', 'Command description...'
+    method_option :help, aliases: '-h', type: :boolean,
+                         desc: 'Display usage information'
+    def run(*tool)
+      if options[:help]
+        invoke :help, ['run']
+      else
+        require_relative 'commands/run'
+        Adminware::Commands::Run.new(tool, options).execute
+      end
+    end
   end
 end
