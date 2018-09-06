@@ -7,8 +7,8 @@ Gem::Specification.new do |spec|
   spec.name          = "adminware"
   spec.license       = "MIT"
   spec.version       = Adminware::VERSION
-  spec.authors       = ["Bob Whitelock"]
-  spec.email         = ["bob.whitelock1@gmail.com"]
+  spec.authors       = ["Alces Software"]
+  spec.email         = ["dev@alces-software.com"]
 
   spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
   spec.description   = %q{TODO: Write a longer description or delete this line.}

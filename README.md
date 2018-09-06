@@ -40,4 +40,4 @@ Everyone interacting in the Adminware project’s codebases, issue trackers, cha
 
 ## Copyright
 
-Copyright (c) 2018 Bob Whitelock. See [MIT License](LICENSE.txt) for further details.
+Copyright (c) 2018 Alces Software. See [AGPL License](LICENSE.txt) for further details.
