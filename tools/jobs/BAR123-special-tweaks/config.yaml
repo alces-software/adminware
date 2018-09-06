@@ -1,0 +1,6 @@
+
+command: './special-tweaks.rb'
+reverse: './undo-special-tweaks.rb' # undo the main command
+
+rerunnable: false # `command` cannot be run twice in a row
+# in this particular case would need to run `reverse` first
