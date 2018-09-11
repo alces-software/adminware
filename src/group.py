@@ -9,8 +9,7 @@ def add_commands(appliance):
         pass
 
     @group.command(help='TODO')
-    @click.argument('group_name')
-    def list(group_name):
+    def list():
         pass
 
     @group.command(help='TODO')
