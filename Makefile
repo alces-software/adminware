@@ -26,6 +26,7 @@ watch-rsync:
 		--name 'Flight Appliance CLI' \
 		--pattern '**/*' \
 		--exit \
+		--no-notify \
 		make rsync IP=${IP}
 
 # Note: need to become root to run ipa commands; -t option allows coloured
