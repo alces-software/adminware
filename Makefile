@@ -7,10 +7,7 @@ REMOTE_DIR='/tmp/adminware'
 unit-test:
 	. venv/bin/activate && pytest src/ --ignore=src/nagios_interface/venv
 
-functional-test:
-	. venv/bin/activate && bats --pretty tests/
-
-test: unit-test functional-test
+test: unit-test
 
 setup:
 	bin/setup

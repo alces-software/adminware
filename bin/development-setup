@@ -13,10 +13,6 @@ set +u
 set -u
 pip install -r requirements.dev.txt
 
-# Install bats.
-sudo yum install -y epel-release
-sudo yum install -y bats
-
 # Run any child development setup scripts.
 if test -n "$(shopt -s nullglob; echo src/**/bin/development-setup)"; then
   for script in src/**/bin/development-setup; do
