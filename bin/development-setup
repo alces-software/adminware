@@ -1,10 +1,16 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
 # Needed for ipython.
 yum install -y -e0 python-devel
 
 # Install development dependencies.
+# Note: Virtualenv uses unset variables, so toggle aborting on this while we
+# source it.
+set +u
 . venv/bin/activate
+set -u
 pip install -r requirements.dev.txt
 
 # Install bats.

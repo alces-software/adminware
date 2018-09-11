@@ -1,7 +1,14 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
 # Install Python 3 and Virtualenv.
+# For some reason the following will error (something to do with installing RPM
+# directly?) when it's already been installed, so toggle exiting on error for
+# this install to make this script idempotent.
+set +e
 sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+set -e
 sudo yum install -y python35u python35u-pip
 sudo pip3.5 install virtualenv
 
@@ -11,7 +18,11 @@ if [ ! -d venv ]; then
 fi
 
 # Install dependencies.
+# Note: Virtualenv uses unset variables, so toggle aborting on this while we
+# source it.
+set +u
 . venv/bin/activate
+set -u
 pip install -r requirements.txt
 
 # Run any child setup scripts.
