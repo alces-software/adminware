@@ -38,6 +38,7 @@
 9. Initially we want to support 3 types of tools:
 
     a. 'exit code scripts' - which I will call a `job`
+      - call `batch` now, and combined with `batch` below (see question below)
       - run across many nodes and make a change
       - report which nodes the change worked for, possibly in a similar way to
         `batch` tools (see below)
@@ -54,14 +55,20 @@
         requirement)? If we do need this, may want to also allow specifying a
         `reverse` command to undo the change, so can then rerun the original
         command if needed.
+	  - `rerunnable`/`reverse` not required initially
 
       - @question: should the nodes this is run across be able to be limited to
         those of a particular type, e.g. a tool can specify that it is only for
         `compute` nodes and then cannot be run on a `login` node?
+        - not required initially
 
     b. 'batch/report scripts' - which I will call a `batch` tool (as this is more
     general, e.g. `pkill` across many nodes isn't really a report and changes the
     state of the cluster)
+      - following is mostly relevant for reference of the kinds of use cases
+        we'll have for some tool types, but 'batch' and 'job' tool types are
+        now being combined (see question below)
+
       - run across many nodes
       - should give you informative output which makes it easy to tell at a
         glance which nodes the command succeeded/failed on, what exit code each
@@ -83,12 +90,15 @@
         allow us to inspect what people have done later to e.g. tell them that a
         process died on a node because they ran a `pkill` across all nodes which
         killed it.
+        - not key distinction initially
 
     c. 'interactive scripts' - which I will call `interactive`
       - run interactively on any single node, including potentially the machine
         Adminware is running on
       - take over the terminal and let the user interact fully with the tool
         being run, then hand back control to Adminware when they exit
+
+      - call `open` now
 
 10. Adminware should allow arguments to be passed to tools, e.g. a pattern to
     be `pkill`ed (across many nodes) would need to be passed to a `pkill` batch
@@ -106,6 +116,7 @@
    @question: should groups/other custom groupings be able to be included in a
    custom grouping (so e.g. adding a node to a group at one level could cascade
    to other levels depending on this)?
+     - nope, not initially
 
    @question: do we need some support for specifying that a group should have
    some commands run on it (e.g. the custom grouping `slurm_nodes` should have
@@ -113,12 +124,19 @@
    to the user in some way)? Either way possibly simpler to get other things
    implemented before considering this in detail.
 
+     - not important for now
+
 @question: any core/additional requirements not covered?
+- make sure getting list of nodes in group isn't tightly coupled to looking in
+  genders file - do in just one place etc. - so can swap out later
 
 @question: Do we need to have commands in Adminware for displaying available
 nodes/groups, so users can target these? Since, in particular in `sandbox`
 mode, they won't necessarily be able to know what's available. How will we know
 what nodes are available?
+- yes, `group list` (don't show all nodes in groups), `group show` (show nodes
+  in group)
+  - come from genders but don't tell anyone this in case we want to change it
 
 # Implementation
 
@@ -144,9 +162,11 @@ Python/Click for implementation, as it makes this sort of very nested and
 dynamic structure much simpler than any Ruby CLI library I've used):
 
 - `admin`
-  - `job`
-    - `run [--node|--group|--all|--local|--exclude-node|etc.] [NAMESPACES...]
-      JOB [JOB_ARGS]` - example jobs, will all be dynamic in reality:
+  - `batch`
+    - `run [--node|--group] [NAMESPACES...] TOOL [TOOL_ARGS]` - example jobs,
+      will all be dynamic in reality:
+      - `TOOL_ARGS` should just be passed straight through to tool command, no
+        need for any validation around these initially
 
       - `enable-slurm`
 
@@ -157,35 +177,60 @@ dynamic structure much simpler than any Ruby CLI library I've used):
         - `bar123 FOO [--baz]` (args/options to be accepted at Adminware
           level and passed through to underlying tool)
 
-    - `status [same as job run]` - provide status report table of jobs run on
-      given nodes, command run, time, last run exit code, `job_id` (saved for
-      each job run along with the output, so we can later refer to this), user
-      running it (once we can get access to this in Adminware, which may not be
-      the case initially)
+    - `history [--node|--group|--job-id|possibly other things in future]`
+      - gives pageable output with time-ordered table of all past jobs and
+        nodes run on
+      - row of table displayed for every JOB_ID and NODE combination, i.e.
+        running a batch command across a group of 20 nodes will cause 20 new
+        rows to appear in the table, with same JOB_ID and different NODE for
+        each
 
-    - `history` - provide table of all past jobs and nodes run on; each line
-      has same columns as for `status` except that rows are shown time-ordered
-      for every job run, rather than only for last run of particular job on
-      particular node.
+      - columns of table:
+        - full command run, e.g. `batch run --group mynodes pkill myjob` (will
+          be same for each node job affects)
+        - date and time
+        - exit code
+        - `job_id` (saved and incremented for each job run, allows us to later
+          refer to this, used in `admin batch view` etc.)
+        - node name
+        each line has same columns as for `status` except that
+        rows are shown time-ordered for every job run, rather than only for
+        last run of particular job on particular node.
+      - combine `status` and `history` (call it `history`), build up query to
+        be run from args
+      - user running command (not required for MVP, probably not available
+        initially)
+
+      - options allow table rows shown to be filtered, will probably be used to
+        construct underlying query for table rows (unless we need to do the
+        filtering in Python rather than SQL for some reason, but that's an
+        implementation detail). E.g.:
+        - `admin job history --node node05` - gives table of all batch jobs
+          recorded for `node05`
+        - `admin job history --job-id 4` - gives table with rows for all nodes
+          effected by batch job with ID 4
+        - `admin job history --group mynodes --job-id 3` - gives table with
+          rows for all nodes in group mynodes effected by batch job with ID 3
 
     - `view JOB_ID NODE` - display output for job with given `job_id` on given
       node. Could display `stdout` and `stdout` intermingled, with `stderr` a
       different colour like red, possibly with exit code displayed at end in
       another colour (to indicate not output); and/or could have options to
       only show some of these.
+      - not too bothered about how output is, whether `stdout`/`stderr` in one
+        command, whether SSH will actually give useful `stderr` etc.
 
     - @question: are these commands for viewing job output all necessary and
       sufficient for use cases we want to cover?
+      - yes, probably, for now
 
-  - `batch`
-    - `run [same as job run]`
-    - possibly some commands for inspecting last output - @question: what's
-      important here? If `batch`s and `job`s are merged then same commands
-      could be used for inspecting all.
+  - `open --node NODE [NAMESPACES...] TOOL [TOOL_ARGS]`
 
-  - `interactive`
-    - `run [--node|--local|etc.]` - same as job run, but can only target single
-      node
+  - `group`
+    - `list` - list all groups from genders file; do not show nodes in groups
+    - `show GROUP` - list nodes in given group
+    - groups come from genders file for now but don't tell anyone this in case
+      we later want to change the implementation
 
 For each command there will also be help available via the `--help` option
 (automatically provided by Click). To be consistent with other appliance CLIs
@@ -196,7 +241,7 @@ https://github.com/alces-software/userware/blob/54144eb828c5940a839f9d20a495c266
 Using help will also provide us with a logical place to provide info on the
 available tools at each level, and full details on each tool, e.g.:
 
-- `admin help job run change-request` - will list all available jobs within the
+- `admin help batch run change-request` - will list all available jobs within the
   `change-request` job namespace, along with their short help (from each of
   their `config.yaml`s; see below)
 
@@ -211,6 +256,8 @@ initially this does not seem required though.
 think `--node`, `--group`, `--all`, `--local`  should be sufficient (`--node`
 and `--group` can be provided any number of times and are cumulative). Later as
 needed we can add `--collection` (see below), `--exclude-*` options etc.
+- just `--node` and `--group` - cumulative-ness not needed for MVP, though
+  nice-to-have if simple
 
 
 ## Tool directory hierarchy
@@ -261,9 +308,14 @@ allowed_groups: [group1, group2]
 options for jobs
 - for MVP?
 - at all?
+- not important for now
 
 @question: Anything you think should be configurable which isn't covered?
-
+- add `published:` flag to config, default false, have to explicitly set to
+  true for tool to be published
+  - things which aren't published don't show up when in `sandbox`
+  - when not in `sandbox`, things which aren't published give warning `WARNING:
+    This tool is not published`.
 
 ## Running tools
 
@@ -364,5 +416,7 @@ Possible commands for manipulating these:
 
 @question: does this cover the initial use cases we want to support for user
 groupings?
+- maybe, not important for now
 
 @question: importance of collection support?
+- not important
