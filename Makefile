@@ -16,7 +16,14 @@ development-setup: setup
 	bin/development-setup
 
 rsync:
-	rsync --rsh='sshpass -p ${PASSWORD} ssh -l root' -r --copy-links --perms . ${IP}:${REMOTE_DIR}
+	rsync \
+		--rsh='sshpass -p ${PASSWORD} ssh -l root' \
+		-r \
+		--delete \
+		--exclude=venv/ \
+		--copy-links \
+		--perms \
+		. ${IP}:${REMOTE_DIR}
 
 watch-rsync:
 	rerun \
