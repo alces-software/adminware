@@ -2,9 +2,9 @@
 import click
 
 from appliance_cli.commands import command_modules as standard_command_modules
-import group
-import batch
-import open_command
+from commands import group
+from commands import batch
+from commands import open_command
 
 
 @click.group(help='Perform Flight Adminware management tasks.')
