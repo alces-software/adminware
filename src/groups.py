@@ -8,4 +8,8 @@ def list():
     groups.remove('')
     return groups
 
+def nodes_in(group_name):
+    nodes = __nodeattr('-n', group_name).split("\n")
+    nodes.remove('')
+    return nodes
 

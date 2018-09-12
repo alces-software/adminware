@@ -15,4 +15,4 @@ def add_commands(appliance):
     @group.command(help='TODO')
     @click.argument('group_name')
     def show(group_name):
-        pass
+        click.echo("\n".join(groups.nodes_in(group_name)))
