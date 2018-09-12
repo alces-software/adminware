@@ -5,7 +5,7 @@ import os
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
     for action in sorted(actions):
-        def _temp_f():
+        def _temp_f(action=action):
             print(action)
         _temp_f.__name__ = action
         locals()[action] = _temp_f

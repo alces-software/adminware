@@ -24,7 +24,7 @@ def add_commands(appliance):
     @batch.group(help='TODO')
     @click.option('--node', '-n')
     @click.option('--group', '-g')
-    def run():
+    def run(**kwargs):
         # XXX Add dynamic subcommands pulled from
         # `/var/lib/adminware/tools/batch/` to this group
         pass
