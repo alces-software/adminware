@@ -1,6 +1,6 @@
 
 import click
-
+import groups
 
 def add_commands(appliance):
 
@@ -10,7 +10,7 @@ def add_commands(appliance):
 
     @group.command(help='TODO')
     def list():
-        pass
+        click.echo("\n".join(groups.list()))
 
     @group.command(help='TODO')
     @click.argument('group_name')
