@@ -1,6 +1,6 @@
 
 import click
-
+import action
 
 def add_commands(appliance):
 
@@ -28,3 +28,5 @@ def add_commands(appliance):
         # XXX Add dynamic subcommands pulled from
         # `/var/lib/adminware/tools/batch/` to this group
         pass
+    action.add_actions(run, 'batch')
+
