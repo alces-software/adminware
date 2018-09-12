@@ -1,7 +1,7 @@
 
 from plumbum import local
 
-__nodeattr = local['nodeattr']
+__nodeattr = local['nodeattr']['-f', '/var/lib/adminware/genders']
 
 def list():
     groups = __nodeattr('-l').split("\n")
