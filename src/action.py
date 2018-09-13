@@ -15,8 +15,6 @@ class Action:
         action_func.__name__ = self.__name__()
         action_func = self.__click_func(action_func, click_group)
 
-    # This method must be called after `create` to ensure the local
-    # function has been defined
     def __click_func(self, func, click_group):
         return click_group.command(help='TODO')(func)
 
