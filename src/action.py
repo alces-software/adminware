@@ -13,9 +13,9 @@ class Action:
         def action_func(self=self):
             print(self.name())
         action_func.__name__ = self.__name__()
-        action_func = self.__click_func(action_func, click_group)
+        action_func = self.__click_command(action_func, click_group)
 
-    def __click_func(self, func, click_group):
+    def __click_command(self, func, click_group):
         return click_group.command(help='TODO')(func)
 
 def add_actions(click_group, namespace):
