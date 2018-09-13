@@ -42,7 +42,6 @@ class Action:
             remote = plumbum.machines.SshMachine(node)
             result = self.__run_remote_command(remote)
             remote.close()
-            return result
 
     def __run_remote_command(self, remote):
         def __mktemp_d():
