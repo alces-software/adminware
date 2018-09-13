@@ -33,7 +33,7 @@ class Action:
 
     def command(self):
         n = self.__name__()
-        default = 'echo "No command given for: {}" >&2'.format(n)
+        default = 'echo "No command given for: {}"'.format(n)
         self.data.setdefault('command', default)
         return self.data['command']
 
