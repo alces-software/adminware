@@ -17,8 +17,7 @@ class Action:
 
     def create(self, click_group):
         def action_func(ctx, self=self):
-            print(ctx.obj)
-            print(self.command())
+            return self.run_command(ctx)
         action_func.__name__ = self.__name__()
         action_func = click.pass_context(action_func)
         action_func = self.__click_command(action_func, click_group)
@@ -36,6 +35,10 @@ class Action:
         default = 'echo "No command given for: {}" >&2'.format(n)
         self.data.setdefault('command', default)
         return self.data['command']
+
+    def run_command(self, ctx):
+        print(ctx.obj)
+        print(self.command())
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
