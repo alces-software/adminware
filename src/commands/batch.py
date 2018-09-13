@@ -1,6 +1,7 @@
 
 import click
-
+import action
+import groups
 
 def add_commands(appliance):
 
@@ -24,7 +25,13 @@ def add_commands(appliance):
     @batch.group(help='TODO')
     @click.option('--node', '-n')
     @click.option('--group', '-g')
-    def run():
-        # XXX Add dynamic subcommands pulled from
-        # `/var/lib/adminware/tools/batch/` to this group
+    @click.pass_context
+    def run(ctx, **kwargs):
+        obj = { 'nodes' : [] }
+        if kwargs['node']: obj['nodes'].append(kwargs['node'])
+        if kwargs['group']:
+            obj['nodes'].extend(groups.nodes_in(kwargs['group']))
+        ctx.obj = { 'adminware' : obj }
         pass
+    action.add_actions(run, 'batch')
+
