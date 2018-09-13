@@ -16,7 +16,7 @@ class Action:
 
     def create(self, click_group):
         def action_func(self=self):
-            print(self.name())
+            print(self.command())
         action_func.__name__ = self.__name__()
         action_func = self.__click_command(action_func, click_group)
 
@@ -27,6 +27,12 @@ class Action:
         default = 'MISSING: Help for {}'.format(self.__name__())
         self.data.setdefault('help', default)
         return self.data['help']
+
+    def command(self):
+        n = self.__name__()
+        default = 'echo "No command given for: {}" >&2'.format(n)
+        self.data.setdefault('command', default)
+        return self.data['command']
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
