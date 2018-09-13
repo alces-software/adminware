@@ -26,10 +26,9 @@ def add_commands(appliance):
     @click.option('--group', '-g')
     @click.pass_context
     def run(ctx, **kwargs):
-        ctx.obj = {}
-        ctx.obj['test'] = 'test'
-        # XXX Add dynamic subcommands pulled from
-        # `/var/lib/adminware/tools/batch/` to this group
+        obj = { 'nodes' : [] }
+        if kwargs['node']: obj['nodes'].append(kwargs['node'])
+        ctx.obj = { 'adminware' : obj }
         pass
     action.add_actions(run, 'batch')
 
