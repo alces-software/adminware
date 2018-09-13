@@ -3,7 +3,7 @@ import glob
 import os
 import yaml
 import click
-from plumbum import SshMachine
+import plumbum
 
 class Action:
     def __init__(self, path):
@@ -39,7 +39,7 @@ class Action:
 
     def run_command(self, ctx):
         for node in ctx.obj['adminware']['nodes']:
-            remote = SshMachine(node)
+            remote = plumbum.machines.SshMachine(node)
             result = self.__run_remote_command(remote)
             remote.close()
             return result
@@ -48,6 +48,12 @@ class Action:
         def __mktemp_d():
             mktemp = remote['mktemp']
             return mktemp('-d').rstrip()
+
+        def __copy_files(dst):
+            parts = [os.path.dirname(self.path), '*']
+            for src_path in glob.glob(os.path.join(*parts)):
+                src = plumbum.local.path(src_path)
+                plumbum.path.utils.copy(src, dst)
 
         def __run_cmd():
             echo = remote['echo']
@@ -60,6 +66,7 @@ class Action:
 
         try:
             temp_dir = __mktemp_d()
+            __copy_files(remote.path(temp_dir))
             with remote.cwd(remote.cwd / temp_dir):
                 print(__run_cmd())
         finally:
