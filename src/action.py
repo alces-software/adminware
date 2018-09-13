@@ -45,10 +45,25 @@ class Action:
             return result
 
     def __run_remote_command(self, remote):
-        echo = remote['echo']
-        bash = remote['bash']
-        cmd = echo[self.command()] | bash
-        print(cmd())
+        def __mktemp_d():
+            mktemp = remote['mktemp']
+            return mktemp('-d').rstrip()
+
+        def __run_cmd():
+            echo = remote['echo']
+            bash = remote['bash']
+            cmd = echo[self.command()] | bash
+            return cmd().rstrip()
+
+        def __rm_rf(path):
+            remote['rm']['-rf'](path)
+
+        try:
+            temp_dir = __mktemp_d()
+            with remote.cwd(remote.cwd / temp_dir):
+                print(__run_cmd())
+        finally:
+            __rm_rf(temp_dir)
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
