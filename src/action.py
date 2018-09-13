@@ -6,13 +6,13 @@ class Action:
     def __init__(self, path):
         self.path = path
 
-    def name(self):
+    def __name__(self):
         return os.path.basename(os.path.dirname(self.path))
 
     def create(self, click_group):
         def action_func(self=self):
             print(self.name())
-        action_func.__name__ = self.name()
+        action_func.__name__ = self.__name__()
         action_func = self.__click_func(action_func, click_group)
 
     # This method must be called after `create` to ensure the local
