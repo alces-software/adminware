@@ -2,6 +2,7 @@
 import glob
 import os
 import yaml
+import click
 
 class Action:
     def __init__(self, path):
@@ -15,9 +16,11 @@ class Action:
         return os.path.basename(os.path.dirname(self.path))
 
     def create(self, click_group):
-        def action_func(self=self):
+        def action_func(ctx, self=self):
+            print(ctx.obj)
             print(self.command())
         action_func.__name__ = self.__name__()
+        action_func = click.pass_context(action_func)
         action_func = self.__click_command(action_func, click_group)
 
     def __click_command(self, func, click_group):
