@@ -45,7 +45,10 @@ class Action:
             return result
 
     def __run_remote_command(self, remote):
-        print(remote.cwd)
+        echo = remote['echo']
+        bash = remote['bash']
+        cmd = echo[self.command()] | bash
+        print(cmd())
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
