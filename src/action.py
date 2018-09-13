@@ -3,6 +3,7 @@ import glob
 import os
 import yaml
 import click
+from plumbum import SshMachine
 
 class Action:
     def __init__(self, path):
@@ -37,8 +38,14 @@ class Action:
         return self.data['command']
 
     def run_command(self, ctx):
-        print(ctx.obj)
-        print(self.command())
+        for node in ctx.obj['adminware']['nodes']:
+            remote = SshMachine(node)
+            result = self.__run_remote_command(remote)
+            remote.close()
+            return result
+
+    def __run_remote_command(self, remote):
+        print(remote.cwd)
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
