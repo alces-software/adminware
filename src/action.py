@@ -1,10 +1,12 @@
 
 import glob
 import os
+import yaml
 
 class Action:
     def __init__(self, path):
         self.path = path
+        self.data = yaml.load(path)
 
     def __name__(self):
         return os.path.basename(os.path.dirname(self.path))
