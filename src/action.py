@@ -29,40 +29,10 @@ class Action:
             for node in ctx.obj['adminware']['nodes']:
                 job = Job(node = node, batch = self.batch)
                 session.add(job)
-                remote = job.remote()
-                result = self.__run_remote_command(remote)
-                remote.close()
+                job.run()
         finally:
             session.commit()
             session.close()
-
-    def __run_remote_command(self, remote):
-        def __mktemp_d():
-            mktemp = remote['mktemp']
-            return mktemp('-d').rstrip()
-
-        def __copy_files(dst):
-            parts = [os.path.dirname(self.path), '*']
-            for src_path in glob.glob(os.path.join(*parts)):
-                src = plumbum.local.path(src_path)
-                plumbum.path.utils.copy(src, dst)
-
-        def __run_cmd():
-            echo = remote['echo']
-            bash = remote['bash']
-            cmd = echo[self.batch.command()] | bash
-            return cmd().rstrip()
-
-        def __rm_rf(path):
-            remote['rm']['-rf'](path)
-
-        try:
-            temp_dir = __mktemp_d()
-            __copy_files(remote.path(temp_dir))
-            with remote.cwd(remote.cwd / temp_dir):
-                print(__run_cmd())
-        finally:
-            __rm_rf(temp_dir)
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
