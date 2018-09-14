@@ -1,49 +1,30 @@
 
 import glob
-import os
-import yaml
 import click
 import plumbum
+import os
 from database import Session
 from models.batch import Batch
 
 class Action:
     def __init__(self, path):
         self.path = path
-        def __read_data():
-            with open(self.path, 'r') as stream:
-                return yaml.load(stream) or {}
-        self.data = __read_data()
-
-    def __name__(self):
-        return os.path.basename(os.path.dirname(self.path))
+        self.batch = Batch(config = self.path)
 
     def create(self, click_group):
         def action_func(ctx, self=self):
             return self.run_command(ctx)
-        action_func.__name__ = self.__name__()
+        action_func.__name__ = self.batch.__name__()
         action_func = click.pass_context(action_func)
         action_func = self.__click_command(action_func, click_group)
 
     def __click_command(self, func, click_group):
-        return click_group.command(help=self.help())(func)
-
-    def help(self):
-        default = 'MISSING: Help for {}'.format(self.__name__())
-        self.data.setdefault('help', default)
-        return self.data['help']
-
-    def command(self):
-        n = self.__name__()
-        default = 'echo "No command given for: {}"'.format(n)
-        self.data.setdefault('command', default)
-        return self.data['command']
+        return click_group.command(help=self.batch.help())(func)
 
     def run_command(self, ctx):
         session = Session()
         try:
-            batch = Batch(config = self.path)
-            session.add(batch)
+            session.add(self.batch)
         finally:
             session.commit()
             session.close()
