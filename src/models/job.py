@@ -18,6 +18,7 @@ class Job(Base):
     id = Column(Integer, primary_key=True)
     node = Column(String)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
+    stdout = Column(String)
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
@@ -46,10 +47,11 @@ class Job(Base):
             temp_dir = __mktemp_d()
             __copy_files(remote.path(temp_dir))
             with remote.cwd(remote.cwd / temp_dir):
-                return __run_cmd()
+                self.stdout = __run_cmd()
         finally:
             __rm_rf(temp_dir)
             remote.close()
+        return self.stdout
 
     def __remote(self):
         return plumbum.machines.SshMachine(self.node)
