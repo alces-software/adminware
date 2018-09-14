@@ -13,5 +13,5 @@ class Job(Base):
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
 
-    def __init__(self, config):
-        self.config = config
+    def __init__(self, **kwargs):
+        self.config = kwargs["config"]
