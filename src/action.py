@@ -29,7 +29,7 @@ class Action:
             for node in ctx.obj['adminware']['nodes']:
                 job = Job(node = node, batch = self.batch)
                 session.add(job)
-                job.run()
+                print(job.run())
         finally:
             session.commit()
             session.close()

@@ -46,7 +46,7 @@ class Job(Base):
             temp_dir = __mktemp_d()
             __copy_files(remote.path(temp_dir))
             with remote.cwd(remote.cwd / temp_dir):
-                print(__run_cmd())
+                return __run_cmd()
         finally:
             __rm_rf(temp_dir)
             remote.close()
