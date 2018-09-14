@@ -19,6 +19,8 @@ class Job(Base):
     node = Column(String)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
     stdout = Column(String)
+    stderr = Column(String)
+    exit_code = Column(Integer)
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
@@ -37,7 +39,7 @@ class Job(Base):
             echo = remote['echo']
             bash = remote['bash']
             cmd = echo[self.batch.command()] | bash
-            return cmd().rstrip()
+            return cmd.run()
 
         def __rm_rf(path):
             remote['rm']['-rf'](path)
@@ -47,7 +49,10 @@ class Job(Base):
             temp_dir = __mktemp_d()
             __copy_files(remote.path(temp_dir))
             with remote.cwd(remote.cwd / temp_dir):
-                self.stdout = __run_cmd()
+                results = __run_cmd()
+                self.exit_code = results[0]
+                self.stdout = results[1]
+                self.stderr = results[2]
         finally:
             __rm_rf(temp_dir)
             remote.close()
