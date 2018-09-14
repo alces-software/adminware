@@ -4,8 +4,8 @@ from sqlalchemy import Column, String, Integer, DateTime
 
 from database import Base
 
-class Job(Base):
-    __tablename__ = 'jobs'
+class Batch(Base):
+    __tablename__ = 'batches'
 
 
     id = Column(Integer, primary_key=True)
