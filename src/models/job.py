@@ -56,7 +56,6 @@ class Job(Base):
         finally:
             __rm_rf(temp_dir)
             remote.close()
-        return self.stdout
 
     def __remote(self):
         return plumbum.machines.SshMachine(self.node)
