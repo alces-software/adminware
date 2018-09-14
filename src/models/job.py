@@ -19,42 +19,59 @@ class Job(Base):
     node = Column(String)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
     stdout = Column(String)
+    stderr = Column(String)
+    exit_code = Column(Integer)
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
     def run(self):
-        def __mktemp_d():
+        def __with_remote(func):
+            def wrapper(*args, **kwargs):
+                remote = None
+                try:
+                    remote = plumbum.machines.SshMachine(self.node)
+                except Exception as err:
+                    self.stderr = str(err)
+                    self.exit_code = -2
+                if remote: func(remote, *args, **kwargs)
+            return wrapper
+
+        def __mktemp_d(remote):
             mktemp = remote['mktemp']
             return mktemp('-d').rstrip()
 
-        def __copy_files(dst):
+        def __copy_files(remote, dst):
             parts = [os.path.dirname(self.batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
                 src = plumbum.local.path(src_path)
                 plumbum.path.utils.copy(src, dst)
 
-        def __run_cmd():
+        def __run_cmd(remote):
             echo = remote['echo']
             bash = remote['bash']
             cmd = echo[self.batch.command()] | bash
-            return cmd().rstrip()
+            return cmd.run()
 
-        def __rm_rf(path):
+        def __rm_rf(remote, path):
             remote['rm']['-rf'](path)
 
-        remote = self.__remote()
-        try:
-            temp_dir = __mktemp_d()
-            __copy_files(remote.path(temp_dir))
-            with remote.cwd(remote.cwd / temp_dir):
-                self.stdout = __run_cmd()
-        finally:
-            __rm_rf(temp_dir)
-            remote.close()
-        return self.stdout
-
-    def __remote(self):
-        return plumbum.machines.SshMachine(self.node)
+        @__with_remote
+        def __run(remote):
+            try:
+                temp_dir = __mktemp_d(remote)
+                __copy_files(remote, remote.path(temp_dir))
+                with remote.cwd(remote.cwd / temp_dir):
+                    results = __run_cmd(remote)
+                    self.exit_code = results[0]
+                    self.stdout = results[1]
+                    self.stderr = results[2]
+            except Exception as err:
+                self.stderr = str(err)
+                self.exit_code = -1
+            finally:
+                __rm_rf(remote, temp_dir)
+                remote.close()
+        __run()
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']

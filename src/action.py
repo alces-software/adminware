@@ -29,7 +29,12 @@ class Action:
             for node in ctx.obj['adminware']['nodes']:
                 job = Job(node = node, batch = self.batch)
                 session.add(job)
-                print(job.run())
+                job.run()
+                if job.exit_code == 0:
+                    symbol = 'Pass'
+                else:
+                    symbol = 'Failed: {}'.format(job.exit_code)
+                print("{}: {}".format(job.node, symbol))
         finally:
             session.commit()
             session.close()
