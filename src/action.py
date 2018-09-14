@@ -28,13 +28,12 @@ class Action:
             session.add(self.batch)
             for node in ctx.obj['adminware']['nodes']:
                 Job(node = node, batch = self.batch)
+                remote = plumbum.machines.SshMachine(node)
+                result = self.__run_remote_command(remote)
+                remote.close()
         finally:
             session.commit()
             session.close()
-        for node in ctx.obj['adminware']['nodes']:
-            remote = plumbum.machines.SshMachine(node)
-            result = self.__run_remote_command(remote)
-            remote.close()
 
     def __run_remote_command(self, remote):
         def __mktemp_d():
@@ -50,7 +49,7 @@ class Action:
         def __run_cmd():
             echo = remote['echo']
             bash = remote['bash']
-            cmd = echo[self.command()] | bash
+            cmd = echo[self.batch.command()] | bash
             return cmd().rstrip()
 
         def __rm_rf(path):
