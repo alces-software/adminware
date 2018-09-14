@@ -27,11 +27,13 @@ class Job(Base):
     def run(self):
         def __with_remote(func):
             def wrapper(*args, **kwargs):
+                remote = None
                 try:
                     remote = plumbum.machines.SshMachine(self.node)
-                    func(remote, *args, **kwargs)
-                except:
-                    pass
+                except Exception as err:
+                    self.stderr = str(err)
+                    self.exit_code = -2
+                if remote: func(remote, *args, **kwargs)
             return wrapper
 
         def __mktemp_d(remote):
@@ -64,9 +66,10 @@ class Job(Base):
                     self.stdout = results[1]
                     self.stderr = results[2]
             except Exception as err:
-                print(err)
+                self.stderr = str(err)
+                self.exit_code = -1
             finally:
-                __rm_rf(temp_dir)
+                __rm_rf(remote, temp_dir)
                 remote.close()
         __run()
 
