@@ -4,6 +4,8 @@ import os
 import yaml
 import click
 import plumbum
+from database import Session
+from models.batch import Batch
 
 class Action:
     def __init__(self, path):
@@ -38,6 +40,13 @@ class Action:
         return self.data['command']
 
     def run_command(self, ctx):
+        session = Session()
+        try:
+            batch = Batch(config = self.path)
+            session.add(batch)
+        finally:
+            session.commit()
+            session.close()
         for node in ctx.obj['adminware']['nodes']:
             remote = plumbum.machines.SshMachine(node)
             result = self.__run_remote_command(remote)
