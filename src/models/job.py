@@ -1,4 +1,6 @@
 
+import plumbum
+
 import datetime
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
@@ -17,6 +19,8 @@ class Job(Base):
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+    def remote(self):
+        return plumbum.machines.SshMachine(self.node)
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
