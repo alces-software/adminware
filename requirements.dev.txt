@@ -2,6 +2,7 @@ appdirs==1.4.3
 autorepr==0.3.0
 click==6.7
 -e git+https://github.com/alces-software/click-repl.git@6a809b2af43054035027618f9fd37af4c31a8abc#egg=click_repl
+DateTime==4.2
 decorator==4.0.11
 ipython==5.3.0
 ipython-genutils==0.1.0
@@ -16,10 +17,13 @@ Pygments==2.2.0
 pyparsing==2.1.10
 pytest==3.0.5
 pytest-mock==1.5.0
+pytz==2018.5
 PyYAML==3.13
 requests==2.12.5
 simplegeneric==0.8.1
 six==1.10.0
+SQLAlchemy==1.2.11
 terminaltables==3.1.0
 traitlets==4.3.2
 wcwidth==0.1.7
+zope.interface==4.5.0
