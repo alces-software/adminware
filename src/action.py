@@ -27,7 +27,8 @@ class Action:
         try:
             session.add(self.batch)
             for node in ctx.obj['adminware']['nodes']:
-                Job(node = node, batch = self.batch)
+                job = Job(node = node, batch = self.batch)
+                session.add(job)
                 remote = plumbum.machines.SshMachine(node)
                 result = self.__run_remote_command(remote)
                 remote.close()
