@@ -3,6 +3,7 @@ import glob
 import os
 import yaml
 import click
+import plumbum
 
 class Action:
     def __init__(self, path):
@@ -32,13 +33,43 @@ class Action:
 
     def command(self):
         n = self.__name__()
-        default = 'echo "No command given for: {}" >&2'.format(n)
+        default = 'echo "No command given for: {}"'.format(n)
         self.data.setdefault('command', default)
         return self.data['command']
 
     def run_command(self, ctx):
-        print(ctx.obj)
-        print(self.command())
+        for node in ctx.obj['adminware']['nodes']:
+            remote = plumbum.machines.SshMachine(node)
+            result = self.__run_remote_command(remote)
+            remote.close()
+
+    def __run_remote_command(self, remote):
+        def __mktemp_d():
+            mktemp = remote['mktemp']
+            return mktemp('-d').rstrip()
+
+        def __copy_files(dst):
+            parts = [os.path.dirname(self.path), '*']
+            for src_path in glob.glob(os.path.join(*parts)):
+                src = plumbum.local.path(src_path)
+                plumbum.path.utils.copy(src, dst)
+
+        def __run_cmd():
+            echo = remote['echo']
+            bash = remote['bash']
+            cmd = echo[self.command()] | bash
+            return cmd().rstrip()
+
+        def __rm_rf(path):
+            remote['rm']['-rf'](path)
+
+        try:
+            temp_dir = __mktemp_d()
+            __copy_files(remote.path(temp_dir))
+            with remote.cwd(remote.cwd / temp_dir):
+                print(__run_cmd())
+        finally:
+            __rm_rf(temp_dir)
 
 def add_actions(click_group, namespace):
     actions = __glob_actions(namespace)
