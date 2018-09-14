@@ -5,6 +5,7 @@ import plumbum
 import os
 from database import Session
 from models.batch import Batch
+from models.job import Job
 
 class Action:
     def __init__(self, path):
@@ -25,6 +26,8 @@ class Action:
         session = Session()
         try:
             session.add(self.batch)
+            for node in ctx.obj['adminware']['nodes']:
+                Job(node = node, batch = self.batch)
         finally:
             session.commit()
             session.close()
