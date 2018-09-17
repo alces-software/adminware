@@ -24,10 +24,14 @@ def add_commands(appliance):
         session = Session()
         jobs = session.query(Job).all()
         def table_rows():
-            rows = [['Batch', 'Command', 'Date']]
+            rows = [['Batch', 'Node', 'Command', 'Exit Code', 'Date']]
             for job in jobs:
                 batch = job.batch
-                row = [batch.id, batch.__name__(), batch.created_date]
+                row = [batch.id,
+                       job.node,
+                       batch.__name__(),
+                       job.exit_code,
+                       batch.created_date]
                 rows.append(row)
             return rows
         print(AsciiTable(table_rows()).table)
