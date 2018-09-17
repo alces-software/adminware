@@ -55,11 +55,14 @@ def add_commands(appliance):
                      .filter(Job.node == node) \
                      .join(Job, Batch.jobs) \
                      .first()
-        print("Exit Code: {}".format(job.exit_code))
-        print("STDOUT:")
-        print(job.stdout)
-        print("STDERR:")
-        print(job.stderr)
+        table_data = [
+            ['Exit Code', job.exit_code],
+            ['STDOUT', job.stdout],
+            ['STDERR', job.stderr]
+        ]
+        table = AsciiTable(table_data)
+        table.inner_row_border = True
+        print(table.table)
 
     @batch.group(help='TODO')
     @click.option('--node', '-n')
