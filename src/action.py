@@ -7,6 +7,23 @@ from database import Session
 from models.batch import Batch
 from models.job import Job
 
+class ClickGlob:
+    def command(click_group, namespace):
+        def __glob_actions(namespace):
+            parts = ['/var/lib/adminware/tools',
+                     namespace, '*/config.yaml']
+            paths = glob.glob(os.path.join(*parts))
+            return list(map(lambda x: Action(x), paths))
+
+        def __command(__currently_ignored_func):
+            actions = __glob_actions(namespace)
+            for action in actions:
+                action.create(click_group)
+
+        return __command
+
+
+
 class Action:
     def __init__(self, path):
         self.path = path
@@ -40,14 +57,4 @@ class Action:
         finally:
             session.commit()
             session.close()
-
-def add_actions(click_group, namespace):
-    actions = __glob_actions(namespace)
-    for action in actions:
-        action.create(click_group)
-
-def __glob_actions(namespace):
-    parts = ['/var/lib/adminware/tools', namespace, '*/config.yaml']
-    paths = glob.glob(os.path.join(*parts))
-    return list(map(lambda x: Action(x), paths))
 

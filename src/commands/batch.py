@@ -1,6 +1,6 @@
 
 import click
-import action
+from action import ClickGlob
 import groups
 from terminaltables import AsciiTable
 
@@ -78,5 +78,8 @@ def add_commands(appliance):
     @click.pass_context
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
-    action.add_actions(run, 'batch')
+
+    @ClickGlob.command(run, 'batch')
+    def __run_batch():
+        pass
 
