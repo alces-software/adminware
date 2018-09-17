@@ -3,6 +3,9 @@ import click
 import action
 import groups
 
+from database import Session
+from models.batch import Batch
+
 def add_commands(appliance):
 
     @appliance.group(help='TODO')
@@ -14,7 +17,8 @@ def add_commands(appliance):
     @click.option('--group', '-g')
     @click.option('--job-id', '-j')
     def history(**options):
-        pass
+        session = Session()
+        print(session.query(Batch).all())
 
     @batch.command(help='TODO')
     @click.argument('job_id')
