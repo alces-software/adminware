@@ -6,7 +6,7 @@ from terminaltables import AsciiTable
 
 from cli_utils import set_nodes_context
 from database import Session
-from models.batch import Batch
+from models.job import Job
 
 def add_commands(appliance):
 
@@ -22,10 +22,11 @@ def add_commands(appliance):
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
         session = Session()
-        batches = session.query(Batch).all()
+        jobs = session.query(Job).all()
         def table_rows():
             rows = [['Batch', 'Command', 'Date']]
-            for batch in batches:
+            for job in jobs:
+                batch = job.batch
                 row = [batch.id, batch.__name__(), batch.created_date]
                 rows.append(row)
             return rows
