@@ -17,12 +17,12 @@ def add_commands(appliance):
     @batch.command(help='TODO')
     @click.option('--node', '-n')
     @click.option('--group', '-g')
-    @click.option('--job-id', '-j')
+    @click.option('--batch-id', '-i')
     @click.pass_context
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
         nodes = ctx.obj['adminware']['nodes']
-        batch_id_filter = options['job_id']
+        batch_id_filter = options['batch_id']
         session = Session()
         jobs = session.query(Job).all()
         def job_filter(job):
