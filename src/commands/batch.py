@@ -2,6 +2,7 @@
 import click
 import action
 import groups
+from terminaltables import AsciiTable
 
 from cli_utils import set_nodes_context
 from database import Session
@@ -22,7 +23,13 @@ def add_commands(appliance):
         set_nodes_context(ctx, **options)
         session = Session()
         batches = session.query(Batch).all()
-        print(batches)
+        def table_rows():
+            rows = [['Batch', 'Command', 'Date']]
+            for batch in batches:
+                row = [batch.id, batch.__name__(), batch.created_date]
+                rows.append(row)
+            return rows
+        print(AsciiTable(table_rows()).table)
 
     @batch.command(help='TODO')
     @click.argument('job_id')
