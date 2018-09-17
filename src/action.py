@@ -1,11 +1,8 @@
 
 import glob
 import click
-import plumbum
 import os
-from database import Session
 from models.batch import Batch
-from models.job import Job
 
 class ClickGlob:
     def command(click_group, namespace):
