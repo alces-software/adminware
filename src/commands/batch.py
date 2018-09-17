@@ -17,9 +17,12 @@ def add_commands(appliance):
     @click.option('--node', '-n')
     @click.option('--group', '-g')
     @click.option('--job-id', '-j')
-    def history(**options):
+    @click.pass_context
+    def history(ctx, **options):
+        set_nodes_context(ctx, **options)
         session = Session()
-        print(session.query(Batch).all())
+        batches = session.query(Batch).all()
+        print(batches)
 
     @batch.command(help='TODO')
     @click.argument('job_id')
