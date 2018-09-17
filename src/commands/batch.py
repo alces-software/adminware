@@ -80,14 +80,15 @@ def add_commands(appliance):
         set_nodes_context(ctx, **kwargs)
 
     @ClickGlob.command(run, 'batch')
-    def run_command(self, ctx):
+    def run_command(ctx):
+        batch = ctx.obj['adminware']['batch']
         session = Session()
         try:
-            session.add(self.batch)
+            session.add(batch)
             session.commit() # Saves the batch to receive and id
-            print("Batch: {}".format(self.batch.id))
+            print("Batch: {}".format(batch.id))
             for node in ctx.obj['adminware']['nodes']:
-                job = Job(node = node, batch = self.batch)
+                job = Job(node = node, batch = batch)
                 session.add(job)
                 job.run()
                 if job.exit_code == 0:

@@ -28,7 +28,9 @@ class Action:
 
     def create(self, click_group, command_func):
         def action_func(ctx):
-            return command_func(self, ctx)
+            if not ctx.obj['adminware']: ctx.obj['adminware'] = {}
+            ctx.obj['adminware']['batch'] = self.batch
+            return command_func(ctx)
         action_func.__name__ = self.batch.__name__()
         action_func = click.pass_context(action_func)
         action_func = self.__click_command(action_func, click_group)
