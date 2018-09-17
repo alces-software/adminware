@@ -56,6 +56,10 @@ def add_commands(appliance):
                      .join(Job, Batch.jobs) \
                      .first()
         table_data = [
+            ['Date', job.created_date],
+            ['Batch', job.batch.id],
+            ['Node', job.node],
+            ['Command', job.batch.__name__()],
             ['Exit Code', job.exit_code],
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
