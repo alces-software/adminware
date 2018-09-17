@@ -26,11 +26,13 @@ def add_commands(appliance):
         nodes = ctx.obj['adminware']['nodes']
         batch_id_filter = options['batch_id']
         session = Session()
-        jobs = session.query(Job).all()
+        jobs = session.query(Job) \
+                      .filter(Job.node.in_(nodes)) \
+                      .all()
         def job_filter(job):
             if batch_id_filter and int(batch_id_filter) != job.batch.id:
                 return False
-            return True if job.node in nodes else False
+            return True
         jobs = [job for job in jobs if job_filter(job)]
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
         def table_rows():
