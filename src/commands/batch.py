@@ -45,9 +45,9 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='TODO')
-    @click.argument('job_id')
+    @click.argument('batch_id')
     @click.argument('node')
-    def view(job_id, node):
+    def view(batch_id, node):
         pass
 
     @batch.group(help='TODO')
