@@ -6,7 +6,9 @@ from terminaltables import AsciiTable
 
 from cli_utils import set_nodes_context
 from database import Session
+
 from models.job import Job
+from models.batch import Batch
 
 def add_commands(appliance):
 
@@ -48,7 +50,16 @@ def add_commands(appliance):
     @click.argument('batch_id')
     @click.argument('node')
     def view(batch_id, node):
-        pass
+        session = Session()
+        job = session.query(Job) \
+                     .filter(Job.node == node) \
+                     .join(Job, Batch.jobs) \
+                     .first()
+        print("Exit Code: {}".format(job.exit_code))
+        print("STDOUT:")
+        print(job.stdout)
+        print("STDERR:")
+        print(job.stderr)
 
     @batch.group(help='TODO')
     @click.option('--node', '-n')
