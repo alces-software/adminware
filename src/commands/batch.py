@@ -30,6 +30,7 @@ def add_commands(appliance):
                 return False
             return True if job.node in nodes else False
         jobs = [job for job in jobs if job_filter(job)]
+        jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
         def table_rows():
             rows = [['Batch', 'Node', 'Command', 'Exit Code', 'Date']]
             for job in jobs:
