@@ -26,6 +26,8 @@ class Action:
         session = Session()
         try:
             session.add(self.batch)
+            session.commit() # Saves the batch to receive and id
+            print("Batch: {}".format(self.batch.id))
             for node in ctx.obj['adminware']['nodes']:
                 job = Job(node = node, batch = self.batch)
                 session.add(job)
