@@ -3,6 +3,7 @@ import click
 import action
 import groups
 
+from cli_utils import set_nodes_context
 from database import Session
 from models.batch import Batch
 
@@ -31,11 +32,6 @@ def add_commands(appliance):
     @click.option('--group', '-g')
     @click.pass_context
     def run(ctx, **kwargs):
-        obj = { 'nodes' : [] }
-        if kwargs['node']: obj['nodes'].append(kwargs['node'])
-        if kwargs['group']:
-            obj['nodes'].extend(groups.nodes_in(kwargs['group']))
-        ctx.obj = { 'adminware' : obj }
-        pass
+        set_nodes_context(ctx, **kwargs)
     action.add_actions(run, 'batch')
 
