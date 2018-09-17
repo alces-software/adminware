@@ -80,6 +80,22 @@ def add_commands(appliance):
         set_nodes_context(ctx, **kwargs)
 
     @ClickGlob.command(run, 'batch')
-    def __run_batch():
-        pass
+    def run_command(self, ctx):
+        session = Session()
+        try:
+            session.add(self.batch)
+            session.commit() # Saves the batch to receive and id
+            print("Batch: {}".format(self.batch.id))
+            for node in ctx.obj['adminware']['nodes']:
+                job = Job(node = node, batch = self.batch)
+                session.add(job)
+                job.run()
+                if job.exit_code == 0:
+                    symbol = 'Pass'
+                else:
+                    symbol = 'Failed: {}'.format(job.exit_code)
+                print("{}: {}".format(job.node, symbol))
+        finally:
+            session.commit()
+            session.close()
 

@@ -15,10 +15,10 @@ class ClickGlob:
             paths = glob.glob(os.path.join(*parts))
             return list(map(lambda x: Action(x), paths))
 
-        def __command(__currently_ignored_func):
+        def __command(command_func):
             actions = __glob_actions(namespace)
             for action in actions:
-                action.create(click_group)
+                action.create(click_group, command_func)
 
         return __command
 
@@ -29,32 +29,13 @@ class Action:
         self.path = path
         self.batch = Batch(config = self.path)
 
-    def create(self, click_group):
+    def create(self, click_group, command_func):
         def action_func(ctx, self=self):
-            return self.run_command(ctx)
+            return command_func(self, ctx)
         action_func.__name__ = self.batch.__name__()
         action_func = click.pass_context(action_func)
         action_func = self.__click_command(action_func, click_group)
 
     def __click_command(self, func, click_group):
         return click_group.command(help=self.batch.help())(func)
-
-    def run_command(self, ctx):
-        session = Session()
-        try:
-            session.add(self.batch)
-            session.commit() # Saves the batch to receive and id
-            print("Batch: {}".format(self.batch.id))
-            for node in ctx.obj['adminware']['nodes']:
-                job = Job(node = node, batch = self.batch)
-                session.add(job)
-                job.run()
-                if job.exit_code == 0:
-                    symbol = 'Pass'
-                else:
-                    symbol = 'Failed: {}'.format(job.exit_code)
-                print("{}: {}".format(job.node, symbol))
-        finally:
-            session.commit()
-            session.close()
 
