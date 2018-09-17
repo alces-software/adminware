@@ -27,7 +27,7 @@ class Action:
         self.batch = Batch(config = self.path)
 
     def create(self, click_group, command_func):
-        def action_func(ctx, self=self):
+        def action_func(ctx):
             return command_func(self, ctx)
         action_func.__name__ = self.batch.__name__()
         action_func = click.pass_context(action_func)
