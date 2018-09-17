@@ -21,8 +21,12 @@ def add_commands(appliance):
     @click.pass_context
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
+        nodes = ctx.obj['adminware']['nodes']
         session = Session()
         jobs = session.query(Job).all()
+        def job_filter(job):
+            return True if job.node in nodes else False
+        jobs = [job for job in jobs if job_filter(job)]
         def table_rows():
             rows = [['Batch', 'Node', 'Command', 'Exit Code', 'Date']]
             for job in jobs:
