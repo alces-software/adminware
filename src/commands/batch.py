@@ -54,7 +54,11 @@ def add_commands(appliance):
         job = session.query(Job) \
                      .filter(Job.node == node) \
                      .join(Job, Batch.jobs) \
+                     .filter(Batch.id == int(batch_id)) \
                      .first()
+        if job == None:
+            click.echo('No job found', err=True)
+            exit(1)
         table_data = [
             ['Date', job.created_date],
             ['Batch', job.batch.id],
