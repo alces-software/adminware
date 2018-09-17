@@ -22,9 +22,12 @@ def add_commands(appliance):
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
         nodes = ctx.obj['adminware']['nodes']
+        batch_id_filter = options['job_id']
         session = Session()
         jobs = session.query(Job).all()
         def job_filter(job):
+            if batch_id_filter and int(batch_id_filter) != job.batch.id:
+                return False
             return True if job.node in nodes else False
         jobs = [job for job in jobs if job_filter(job)]
         def table_rows():
