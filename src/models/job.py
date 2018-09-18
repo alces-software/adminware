@@ -42,7 +42,6 @@ class Job(Base):
                         connection.close()
             return wrapper
 
-
         @__with_connection
         def __runner(connection):
             def __set_result(result):
@@ -50,29 +49,33 @@ class Job(Base):
                 self.stderr = result.stderr
                 self.exit_code = result.return_code
 
-            # Creates the temporary directory to sync the files to
-            result = connection.run('mktemp -d', hide='both')
-            if not result:
-                __set_result(result)
-                return
-            temp_dir = result.stdout.rstrip()
+            def __with_tempdir(func):
+                def wrapper(*args):
+                    result = connection.run('mktemp -d', hide='both')
+                    if result:
+                        func(result.stdout.rstrip(), *args)
+                    else:
+                        __set_result(result)
+                return wrapper
 
-            # Copies the files across
-            parts = [os.path.dirname(self.batch.config), '*']
-            for src_path in glob.glob(os.path.join(*parts)):
-                result = connection.put(src_path, temp_dir)
-                if not result:
+            @__with_tempdir
+            def __run_command(temp_dir):
+                # Copies the files across
+                parts = [os.path.dirname(self.batch.config), '*']
+                for src_path in glob.glob(os.path.join(*parts)):
+                    result = connection.put(src_path, temp_dir)
+                    if not result:
+                        __set_result(result)
+                        return
+
+                # Runs the command
+                with connection.cd(temp_dir):
+                    result = connection.run(self.batch.command(), hide='both')
                     __set_result(result)
-                    return
 
-            # Runs the command
-            with connection.cd(temp_dir):
-                result = connection.run(self.batch.command(), hide='both')
-                __set_result(result)
-
-            # Removes the temp directory
-            connection.run("rm -rf {}".format(temp_dir))
-
+                # Removes the temp directory
+                connection.run("rm -rf {}".format(temp_dir))
+            __run_command()
         __runner()
 
     def __init__(self, **kwargs):
