@@ -22,5 +22,5 @@ def add_commands(appliance):
     @click.pass_context
     def run_open(ctx, batch):
         job = Job(node = ctx.obj['adminware']['node'], batch = batch)
-        print(job.batch.command())
+        job.run(interactive = True)
 
