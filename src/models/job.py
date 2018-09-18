@@ -74,11 +74,11 @@ class Job(Base):
 
                 # Runs the command
                 with connection.cd(temp_dir):
-                    kwargs = {}
+                    kwargs = { 'warn' : True }
                     if interactive:
-                        kwargs = { 'pty': True }
+                        kwargs.update({ 'pty': True })
                     else:
-                        kwargs = { 'hide': 'both' }
+                        kwargs.update({ 'hide': 'both' })
                     cmd = self.batch.command()
                     result = connection.run(cmd, **kwargs)
                     __set_result(result)
