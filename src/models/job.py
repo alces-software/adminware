@@ -26,7 +26,7 @@ class Job(Base):
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
-    def run(self):
+    def run(self, interactive=False):
         def __with_connection(func):
             def wrapper():
                 connection = Connection(self.node)
@@ -74,7 +74,13 @@ class Job(Base):
 
                 # Runs the command
                 with connection.cd(temp_dir):
-                    result = connection.run(self.batch.command(), hide='both')
+                    kwargs = {}
+                    if interactive:
+                        kwargs = { 'pty': True }
+                    else:
+                        kwargs = { 'hide': 'both' }
+                    cmd = self.batch.command()
+                    result = connection.run(cmd, **kwargs)
                     __set_result(result)
             __run_command()
         __runner()
