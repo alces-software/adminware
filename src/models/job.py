@@ -34,7 +34,7 @@ class Job(Base):
                     connection.open()
                 except NoValidConnectionsError as e:
                     self.stderr = 'Could not establish ssh connection'
-                    self.exit_code = -2
+                    self.exit_code = -1
                 if connection.is_connected:
                     try:
                         func(connection)
