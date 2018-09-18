@@ -35,11 +35,16 @@ class Job(Base):
                 except NoValidConnectionsError as e:
                     self.stderr = 'Could not establish ssh connection'
                     self.exit_code = -2
-                if connection.is_connected: func(connection)
+                if connection.is_connected:
+                    try:
+                        func(connection)
+                    finally:
+                        connection.close()
             return wrapper
 
+
         @__with_connection
-        def __legacy_runner(connection):
+        def __runner(connection):
             def __set_result(result):
                 self.stdout = result.stdout
                 self.stderr = result.stderr
@@ -68,7 +73,7 @@ class Job(Base):
             # Removes the temp directory
             connection.run("rm -rf {}".format(temp_dir))
 
-        __legacy_runner()
+        __runner()
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
