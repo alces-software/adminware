@@ -1,7 +1,9 @@
 
-import plumbum
+from fabric import Connection
 import os
 import glob
+
+from paramiko.ssh_exception import NoValidConnectionsError
 
 import datetime
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
@@ -25,53 +27,57 @@ class Job(Base):
     batch = relationship("Batch", backref="jobs")
 
     def run(self):
-        def __with_remote(func):
-            def wrapper(*args, **kwargs):
-                remote = None
+        def __with_connection(func):
+            def wrapper():
+                connection = Connection(self.node)
                 try:
-                    remote = plumbum.machines.SshMachine(self.node)
-                except Exception as err:
-                    self.stderr = str(err)
-                    self.exit_code = -2
-                if remote: func(remote, *args, **kwargs)
+                    connection.open()
+                except NoValidConnectionsError as e:
+                    self.stderr = 'Could not establish ssh connection'
+                    self.exit_code = -1
+                if connection.is_connected:
+                    try:
+                        func(connection)
+                    finally:
+                        connection.close()
             return wrapper
 
-        def __mktemp_d(remote):
-            mktemp = remote['mktemp']
-            return mktemp('-d').rstrip()
+        @__with_connection
+        def __runner(connection):
+            def __set_result(result):
+                self.stdout = result.stdout
+                self.stderr = result.stderr
+                self.exit_code = result.return_code
 
-        def __copy_files(remote, dst):
-            parts = [os.path.dirname(self.batch.config), '*']
-            for src_path in glob.glob(os.path.join(*parts)):
-                src = plumbum.local.path(src_path)
-                plumbum.path.utils.copy(src, dst)
+            def __with_tempdir(func):
+                def wrapper(*args):
+                    result = connection.run('mktemp -d', hide='both')
+                    if result:
+                        temp_dir = result.stdout.rstrip()
+                        try:
+                            func(temp_dir, *args)
+                        finally:
+                            connection.run("rm -rf {}".format(temp_dir))
+                    else:
+                        __set_result(result)
+                return wrapper
 
-        def __run_cmd(remote):
-            echo = remote['echo']
-            bash = remote['bash']
-            cmd = echo[self.batch.command()] | bash
-            return cmd.run()
+            @__with_tempdir
+            def __run_command(temp_dir):
+                # Copies the files across
+                parts = [os.path.dirname(self.batch.config), '*']
+                for src_path in glob.glob(os.path.join(*parts)):
+                    result = connection.put(src_path, temp_dir)
+                    if not result:
+                        __set_result(result)
+                        return
 
-        def __rm_rf(remote, path):
-            remote['rm']['-rf'](path)
-
-        @__with_remote
-        def __run(remote):
-            try:
-                temp_dir = __mktemp_d(remote)
-                __copy_files(remote, remote.path(temp_dir))
-                with remote.cwd(remote.cwd / temp_dir):
-                    results = __run_cmd(remote)
-                    self.exit_code = results[0]
-                    self.stdout = results[1]
-                    self.stderr = results[2]
-            except Exception as err:
-                self.stderr = str(err)
-                self.exit_code = -1
-            finally:
-                __rm_rf(remote, temp_dir)
-                remote.close()
-        __run()
+                # Runs the command
+                with connection.cd(temp_dir):
+                    result = connection.run(self.batch.command(), hide='both')
+                    __set_result(result)
+            __run_command()
+        __runner()
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
