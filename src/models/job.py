@@ -27,41 +27,48 @@ class Job(Base):
     batch = relationship("Batch", backref="jobs")
 
     def run(self):
-        connection = Connection(self.node)
-        try:
-            connection.open()
-        except NoValidConnectionsError as e:
-            self.stderr = 'Could not establish ssh connection'
-            self.exit_code = -2
-            return
+        def __with_connection(func):
+            def wrapper():
+                connection = Connection(self.node)
+                try:
+                    connection.open()
+                except NoValidConnectionsError as e:
+                    self.stderr = 'Could not establish ssh connection'
+                    self.exit_code = -2
+                if connection.is_connected: func(connection)
+            return wrapper
 
-        def __set_result(result):
-            self.stdout = result.stdout
-            self.stderr = result.stderr
-            self.exit_code = result.return_code
+        @__with_connection
+        def __legacy_runner(connection):
+            def __set_result(result):
+                self.stdout = result.stdout
+                self.stderr = result.stderr
+                self.exit_code = result.return_code
 
-        # Creates the temporary directory to sync the files to
-        result = connection.run('mktemp -d', hide='both')
-        if not result:
-            __set_result(result)
-            return
-        temp_dir = result.stdout.rstrip()
-
-        # Copies the files across
-        parts = [os.path.dirname(self.batch.config), '*']
-        for src_path in glob.glob(os.path.join(*parts)):
-            result = connection.put(src_path, temp_dir)
+            # Creates the temporary directory to sync the files to
+            result = connection.run('mktemp -d', hide='both')
             if not result:
                 __set_result(result)
                 return
+            temp_dir = result.stdout.rstrip()
 
-        # Runs the command
-        with connection.cd(temp_dir):
-            result = connection.run(self.batch.command(), hide='both')
-            __set_result(result)
+            # Copies the files across
+            parts = [os.path.dirname(self.batch.config), '*']
+            for src_path in glob.glob(os.path.join(*parts)):
+                result = connection.put(src_path, temp_dir)
+                if not result:
+                    __set_result(result)
+                    return
 
-        # Removes the temp directory
-        connection.run("rm -rf {}".format(temp_dir))
+            # Runs the command
+            with connection.cd(temp_dir):
+                result = connection.run(self.batch.command(), hide='both')
+                __set_result(result)
+
+            # Removes the temp directory
+            connection.run("rm -rf {}".format(temp_dir))
+
+        __legacy_runner()
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
