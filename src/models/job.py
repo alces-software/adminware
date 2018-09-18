@@ -1,6 +1,5 @@
 
 from fabric import Connection
-import plumbum
 import os
 import glob
 
@@ -62,41 +61,6 @@ class Job(Base):
 
         # Removes the temp directory
         connection.run("rm -rf %s".format(temp_dir))
-
-        # Code below this line uses the original plumbum ssh library
-
-        def __with_remote(func):
-            def wrapper(*args, **kwargs):
-                remote = None
-                remote = plumbum.machines.SshMachine(self.node)
-                if remote: func(remote, *args, **kwargs)
-            return wrapper
-
-        def __mktemp_d(remote):
-            pass
-
-        def __copy_files(remote, dst):
-            pass
-
-        def __run_cmd(remote):
-            echo = remote['echo']
-            bash = remote['bash']
-            cmd = echo[self.batch.command()] | bash
-            return cmd.run()
-
-        def __rm_rf(remote, path):
-            remote['rm']['-rf'](path)
-
-        @__with_remote
-        def __run(remote):
-            try:
-                __copy_files(remote, remote.path(temp_dir))
-                with remote.cwd(remote.cwd / temp_dir):
-                    results = __run_cmd(remote)
-            finally:
-                __rm_rf(remote, temp_dir)
-                remote.close()
-        __run()
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
