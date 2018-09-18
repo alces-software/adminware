@@ -80,8 +80,8 @@ def add_commands(appliance):
         set_nodes_context(ctx, **kwargs)
 
     @ClickGlob.command(run, 'batch')
-    def run_batch(ctx):
-        batch = ctx.obj['adminware']['batch']
+    @click.pass_context
+    def run_batch(ctx, batch):
         session = Session()
         try:
             session.add(batch)
