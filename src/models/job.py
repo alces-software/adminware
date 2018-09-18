@@ -53,7 +53,11 @@ class Job(Base):
                 def wrapper(*args):
                     result = connection.run('mktemp -d', hide='both')
                     if result:
-                        func(result.stdout.rstrip(), *args)
+                        temp_dir = result.stdout.rstrip()
+                        try:
+                            func(temp_dir, *args)
+                        finally:
+                            connection.run("rm -rf {}".format(temp_dir))
                     else:
                         __set_result(result)
                 return wrapper
@@ -72,9 +76,6 @@ class Job(Base):
                 with connection.cd(temp_dir):
                     result = connection.run(self.batch.command(), hide='both')
                     __set_result(result)
-
-                # Removes the temp directory
-                connection.run("rm -rf {}".format(temp_dir))
             __run_command()
         __runner()
 
