@@ -26,6 +26,7 @@ class Job(Base):
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+
     def run(self, interactive=False):
         def __with_connection(func):
             def wrapper():
