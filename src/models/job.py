@@ -4,6 +4,8 @@ import plumbum
 import os
 import glob
 
+from paramiko.ssh_exception import NoValidConnectionsError
+
 import datetime
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
@@ -27,10 +29,17 @@ class Job(Base):
 
     def run(self):
         connection = Connection(self.node)
-        if not connection.is_connected:
+        try:
+            connection.open()
+        except NoValidConnectionsError as e:
             self.stderr = 'Could not establish ssh connection'
             self.exit_code = -2
             return
+
+        def __mktemp():
+            result = connection.run('mktemp -d')
+            print(result)
+        __mktemp()
 
         # Code below this line uses the original plumbum ssh library
 
@@ -42,8 +51,7 @@ class Job(Base):
             return wrapper
 
         def __mktemp_d(remote):
-            mktemp = remote['mktemp']
-            return mktemp('-d').rstrip()
+            pass
 
         def __copy_files(remote, dst):
             parts = [os.path.dirname(self.batch.config), '*']
