@@ -1,4 +1,5 @@
 
+from fabric import Connection
 import plumbum
 import os
 import glob
@@ -25,14 +26,18 @@ class Job(Base):
     batch = relationship("Batch", backref="jobs")
 
     def run(self):
+        connection = Connection(self.node)
+        if not connection.is_connected:
+            self.stderr = 'Could not establish ssh connection'
+            self.exit_code = -2
+            return
+
+        # Code below this line uses the original plumbum ssh library
+
         def __with_remote(func):
             def wrapper(*args, **kwargs):
                 remote = None
-                try:
-                    remote = plumbum.machines.SshMachine(self.node)
-                except Exception as err:
-                    self.stderr = str(err)
-                    self.exit_code = -2
+                remote = plumbum.machines.SshMachine(self.node)
                 if remote: func(remote, *args, **kwargs)
             return wrapper
 
