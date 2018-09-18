@@ -1,6 +1,6 @@
 
 import click
-import action
+from action import ClickGlob
 import groups
 from terminaltables import AsciiTable
 
@@ -78,5 +78,25 @@ def add_commands(appliance):
     @click.pass_context
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
-    action.add_actions(run, 'batch')
+
+    @ClickGlob.command(run, 'batch')
+    @click.pass_context
+    def run_batch(ctx, batch):
+        session = Session()
+        try:
+            session.add(batch)
+            session.commit() # Saves the batch to receive and id
+            print("Batch: {}".format(batch.id))
+            for node in ctx.obj['adminware']['nodes']:
+                job = Job(node = node, batch = batch)
+                session.add(job)
+                job.run()
+                if job.exit_code == 0:
+                    symbol = 'Pass'
+                else:
+                    symbol = 'Failed: {}'.format(job.exit_code)
+                print("{}: {}".format(job.node, symbol))
+        finally:
+            session.commit()
+            session.close()
 
