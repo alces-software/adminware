@@ -54,8 +54,13 @@ def add_commands(appliance):
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
                            .limit(number)
+            rows = [['Batch', 'Name', 'Nodes', 'Date']]
             for batch in query.all():
-                print(batch.id)
+                row = [
+                    batch.id, batch.__name__(), None, batch.created_date
+                ]
+                rows.append(row)
+            print(AsciiTable(rows).table)
 
         finally:
             session.close()
