@@ -47,12 +47,13 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='TODO')
-    def list():
+    @click.option('--number', '-n', default=10, type=int)
+    def list(number):
         session = Session()
         try:
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
-                           .limit(10)
+                           .limit(number)
             for batch in query.all():
                 print(batch.id)
 
