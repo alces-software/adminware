@@ -47,6 +47,19 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='TODO')
+    def list():
+        session = Session()
+        try:
+            query = session.query(Batch) \
+                           .order_by(Batch.created_date.desc()) \
+                           .limit(10)
+            for batch in query.all():
+                print(batch.id)
+
+        finally:
+            session.close()
+
+    @batch.command(help='TODO')
     @click.argument('batch_id')
     @click.argument('node')
     def view(batch_id, node):
