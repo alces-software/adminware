@@ -17,6 +17,7 @@ def add_commands(appliance):
     open_command = appliance.group(help='TODO')(open_command)
 
     @ClickGlob.command(open_command, 'open')
-    def run_open(batch):
+    @click.pass_context
+    def run_open(ctx, batch):
         pass
 
