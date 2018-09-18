@@ -33,7 +33,7 @@ class Job(Base):
                 connection = Connection(self.node)
                 try:
                     connection.open()
-                except NoValidConnectionsError as e:
+                except:
                     self.stderr = 'Could not establish ssh connection'
                     self.exit_code = -1
                 if connection.is_connected:
