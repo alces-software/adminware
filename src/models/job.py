@@ -56,6 +56,13 @@ class Job(Base):
                 __set_result(result)
                 return
 
+        # Runs the command
+        result = connection.run(self.batch.command(), hide='both')
+        __set_result(result)
+
+        # Removes the temp directory
+        connection.run("rm -rf %s".format(temp_dir))
+
         # Code below this line uses the original plumbum ssh library
 
         def __with_remote(func):
@@ -86,12 +93,6 @@ class Job(Base):
                 __copy_files(remote, remote.path(temp_dir))
                 with remote.cwd(remote.cwd / temp_dir):
                     results = __run_cmd(remote)
-                    self.exit_code = results[0]
-                    self.stdout = results[1]
-                    self.stderr = results[2]
-            except Exception as err:
-                self.stderr = str(err)
-                self.exit_code = -1
             finally:
                 __rm_rf(remote, temp_dir)
                 remote.close()
