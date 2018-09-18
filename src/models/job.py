@@ -36,10 +36,17 @@ class Job(Base):
             self.exit_code = -2
             return
 
-        def __mktemp():
-            result = connection.run('mktemp -d')
-            print(result)
-        __mktemp()
+        def __set_result(result):
+            self.stdout = result.stdout
+            self.stderr = result.stderr
+            self.exit_code = result.return_code
+
+        # Creates the temporary directory to sync the files to
+        result = connection.run('mktemp -d', hide='both')
+        if not result:
+            __set_result(result)
+            return
+        temp_dir = result.stdout.rstrip()
 
         # Code below this line uses the original plumbum ssh library
 
@@ -71,7 +78,6 @@ class Job(Base):
         @__with_remote
         def __run(remote):
             try:
-                temp_dir = __mktemp_d(remote)
                 __copy_files(remote, remote.path(temp_dir))
                 with remote.cwd(remote.cwd / temp_dir):
                     results = __run_cmd(remote)
