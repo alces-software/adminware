@@ -56,11 +56,12 @@ class Job(Base):
                 return
 
         # Runs the command
-        result = connection.run(self.batch.command(), hide='both')
-        __set_result(result)
+        with connection.cd(temp_dir):
+            result = connection.run(self.batch.command(), hide='both')
+            __set_result(result)
 
         # Removes the temp directory
-        connection.run("rm -rf %s".format(temp_dir))
+        connection.run("rm -rf {}".format(temp_dir))
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
