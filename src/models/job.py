@@ -48,6 +48,14 @@ class Job(Base):
             return
         temp_dir = result.stdout.rstrip()
 
+        # Copies the files across
+        parts = [os.path.dirname(self.batch.config), '*']
+        for src_path in glob.glob(os.path.join(*parts)):
+            result = connection.put(src_path, temp_dir)
+            if not result:
+                __set_result(result)
+                return
+
         # Code below this line uses the original plumbum ssh library
 
         def __with_remote(func):
@@ -61,10 +69,7 @@ class Job(Base):
             pass
 
         def __copy_files(remote, dst):
-            parts = [os.path.dirname(self.batch.config), '*']
-            for src_path in glob.glob(os.path.join(*parts)):
-                src = plumbum.local.path(src_path)
-                plumbum.path.utils.copy(src, dst)
+            pass
 
         def __run_cmd(remote):
             echo = remote['echo']
