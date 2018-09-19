@@ -13,6 +13,8 @@ sudo yum install -y python35u python35u-pip
 sudo pip3.5 install virtualenv
 sudo yum remove -y ius-release
 
+sudo yum install -y genders
+
 # Setup Virtualenv.
 if [ ! -d venv ]; then
   virtualenv venv
