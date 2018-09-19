@@ -17,6 +17,22 @@ for latter viewing.
 This allows for full screen applications (e.g. `vi`, `top`, `bash`). The
 results from `open` are not logged.
 
+Commands can be added to `batch` and `open` by creating the following
+config files (respectively):
+`/var/lib/adminware/tools/{batch,open}/<command-name>/config.yaml`
+
+The config files should follow the following format:
+```
+# Could be system command like `uptime` or tool dir command like
+# `./script.rb`.
+command: command_to_run
+
+# Full help text for command, will be picked up and displayed in full when
+# `help` displayed for command, or first line displayed when `help` displayed for
+# parent command (see http://click.pocoo.org/5/documentation/#help-texts).
+help: command_help
+```
+
 # Development setup
 
 It is recommended that Adminware is developed locally (so you have all your
