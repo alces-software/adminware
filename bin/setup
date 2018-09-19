@@ -28,6 +28,9 @@ set +u
 set -u
 pip install -r requirements.txt
 
+# Creates the basic directory structure
+mkdir -p /var/lib/adminware/tools/{batch,open}
+
 # Setup the db
 python src/db_setup.py
 
