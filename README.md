@@ -1,7 +1,5 @@
 
 # Getting Started
-## Installing
-
 `adminware` must be installed within `/opt` using:
 ```
 cd /opt
@@ -9,6 +7,15 @@ git clone https://github.com/alces-software/adminware.git
 cd adminware
 make setup
 ```
+
+# Adding Commands
+Commands can added to `adminware` `batch run` and `open` features. `batch`
+commands are ran on a single or group of nodes and the results are recorded
+for latter viewing.
+
+`open` commands establishes and interactive session with a single node.
+This allows for full screen applications (e.g. `vi`, `top`, `bash`). The
+results from `open` are not logged.
 
 # Development setup
 
