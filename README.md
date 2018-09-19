@@ -9,16 +9,14 @@ make setup
 ```
 
 # Adding Commands
-Commands can added to `adminware` `batch run` and `open` features. `batch`
-commands are ran on a single or group of nodes and the results are recorded
-for latter viewing.
+Commands can bed added to `batch run` and `open` features. `batch` runs the 
+command over a single or group of nodes and stores results in a database.
+`open` establishes and interactive session with a single node.  This allows
+for full screen applications (e.g. `vi`, `top`, `bash`). `open` does not
+save the anything to the database.
 
-`open` commands establishes and interactive session with a single node.
-This allows for full screen applications (e.g. `vi`, `top`, `bash`). The
-results from `open` are not logged.
+Commands are automatically picked up from config files stored within:
 
-Commands can be added to `batch` and `open` by creating the following
-config files (respectively):
 `/var/lib/adminware/tools/{batch,open}/<command-name>/config.yaml`
 
 The config files should follow the following format:
