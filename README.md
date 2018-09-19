@@ -1,4 +1,15 @@
 
+# Getting Started
+## Installing
+
+`adminware` must be installed within `/opt` using:
+```
+cd /opt
+git clone https://github.com/alces-software/adminware.git
+cd adminware
+make setup
+```
+
 # Development setup
 
 It is recommended that Adminware is developed locally (so you have all your
