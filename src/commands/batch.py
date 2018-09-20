@@ -50,14 +50,14 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='List the recently ran batches')
-    @click.option('--number', '-n', default=10, type=int, metavar='NUM',
+    @click.option('--limit', '-l', default=10, type=int, metavar='NUM',
                   help='Return the last NUM of batches')
-    def list(number):
+    def list(limit):
         session = Session()
         try:
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
-                           .limit(number)
+                           .limit(limit)
             rows = [['ID', 'Date', 'Name', 'Nodes']]
             for batch in query.all():
                 nodes = [job.node for job in batch.jobs]
