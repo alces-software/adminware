@@ -1,5 +1,6 @@
 
 import click
+from click import ClickException
 from action import ClickGlob
 import groups
 from terminaltables import AsciiTable
@@ -82,9 +83,7 @@ def add_commands(appliance):
                      .join(Job, Batch.jobs) \
                      .filter(Batch.id == int(batch_id)) \
                      .first()
-        if job == None:
-            click.echo('No job found', err=True)
-            exit(1)
+        if job == None: raise ClickException('No job found')
         table_data = [
             ['Date', job.created_date],
             ['Batch', job.batch.id],
