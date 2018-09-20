@@ -28,13 +28,15 @@ def add_commands(appliance):
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
         nodes = ctx.obj['adminware']['nodes']
-        batch_id_filter = options['batch_id']
+        batch_id = options['batch_id']
         session = Session()
-        query = session.query(Job) \
-                       .filter(Job.node.in_(nodes))
-        if options['batch_id']:
+        query = session.query(Job)
+        if not (nodes or batch_id):
+            raise ClickException('Please specify a filter')
+        if nodes: query = query.filter(Job.node.in_(nodes))
+        if batch_id:
             query = query.join(Job, Batch.jobs) \
-                         .filter(Batch.id == int(options['batch_id']))
+                         .filter(Batch.id == int(batch_id))
         jobs = query.all()
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
         def table_rows():
