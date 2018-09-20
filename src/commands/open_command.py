@@ -1,5 +1,6 @@
 
 import click
+from click import ClickException
 from action import ClickGlob
 from models.job import Job
 from models.batch import Batch
@@ -28,4 +29,6 @@ def add_commands(appliance):
         batch = Batch(config = config.path)
         job = Job(node = ctx.obj['adminware']['node'], batch = batch)
         job.run(interactive = True)
+        # Display the error if adminware errors (e.g. failed ssh connection)
+        if job.exit_code < 0: raise ClickException(job.stderr)
 
