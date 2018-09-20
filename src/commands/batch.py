@@ -50,7 +50,8 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='List the recently ran batches')
-    @click.option('--number', '-n', default=10, type=int)
+    @click.option('--number', '-n', default=10, type=int,
+                  help='Return the last NUM of batches')
     def list(number):
         session = Session()
         try:
@@ -98,8 +99,8 @@ def add_commands(appliance):
         print(table.table)
 
     @batch.group(help='Run a command on a node or group')
-    @click.option('--node', '-n')
-    @click.option('--group', '-g')
+    @click.option('--node', '-n', help='Runs the command on the node')
+    @click.option('--group', '-g', help='Runs the command over the group')
     @click.pass_context
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
