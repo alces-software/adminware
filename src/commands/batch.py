@@ -109,13 +109,16 @@ def add_commands(appliance):
     @ClickGlob.command(run, 'batch')
     @click.pass_context
     def run_batch(ctx, config):
+        nodes = ctx.obj['adminware']['nodes']
+        if not nodes:
+            raise ClickException('Please give either --node or --group')
         batch = Batch(config = config.path)
         session = Session()
         try:
             session.add(batch)
             session.commit() # Saves the batch to receive and id
             print("Batch: {}".format(batch.id))
-            for node in ctx.obj['adminware']['nodes']:
+            for node in nodes:
                 job = Job(node = node, batch = batch)
                 session.add(job)
                 job.run()
