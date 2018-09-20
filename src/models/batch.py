@@ -1,6 +1,6 @@
 
 import datetime
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String, Integer, DateTime, orm
 
 from database import Base
 from models.config import Config
@@ -25,4 +25,11 @@ class Batch(Base):
 
     def __init__(self, **kwargs):
         self.config = kwargs['config']
+        self.__init_or_load()
+
+    @orm.reconstructor
+    def __load(self):
+        self.__init_or_load()
+
+    def __init_or_load(self):
         self.config_model = Config(self.config)

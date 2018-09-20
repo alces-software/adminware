@@ -11,13 +11,16 @@ from models.batch import Batch
 
 def add_commands(appliance):
 
-    @click.option('--node', '-n', required=True)
+    @click.option('--node', '-n', required=True, metavar='NODE',
+                  help='Runs the command on NODE')
     @click.pass_context
     def open_command(ctx, **kwargs):
         ctx.obj = { 'adminware' : { 'node' : kwargs['node'] } }
 
     open_command.__name__ = 'open'
-    open_command = appliance.group(help='TODO')(open_command)
+    open_command = appliance.group(
+                       help='Runs the command in an interactive shell'
+                   )(open_command)
 
     @ClickGlob.command(open_command, 'open')
     @click.pass_context

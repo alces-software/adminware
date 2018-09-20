@@ -12,14 +12,17 @@ from models.batch import Batch
 
 def add_commands(appliance):
 
-    @appliance.group(help='TODO')
+    @appliance.group(help='Manage running a command over the nodes')
     def batch():
         pass
 
-    @batch.command(help='TODO')
-    @click.option('--node', '-n')
-    @click.option('--group', '-g')
-    @click.option('--batch-id', '-i')
+    @batch.command(help='Retrieves the batch result summaries')
+    @click.option('--node', '-n', metavar='NODE',
+                  help='Retrieve the previous result for a node')
+    @click.option('--group', '-g', metavar='GROUP',
+                  help='Retrieve the results for all nodes in group')
+    @click.option('--batch-id', '-i', metavar='ID',
+                  help='Retrieve results for a particular batch')
     @click.pass_context
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
@@ -46,8 +49,9 @@ def add_commands(appliance):
             return rows
         print(AsciiTable(table_rows()).table)
 
-    @batch.command(help='TODO')
-    @click.option('--number', '-n', default=10, type=int)
+    @batch.command(help='List the recently ran batches')
+    @click.option('--number', '-n', default=10, type=int, metavar='NUM',
+                  help='Return the last NUM of batches')
     def list(number):
         session = Session()
         try:
@@ -68,7 +72,7 @@ def add_commands(appliance):
         finally:
             session.close()
 
-    @batch.command(help='TODO')
+    @batch.command(help='Inspect a previous batch')
     @click.argument('batch_id')
     @click.argument('node')
     def view(batch_id, node):
@@ -94,9 +98,11 @@ def add_commands(appliance):
         table.inner_row_border = True
         print(table.table)
 
-    @batch.group(help='TODO')
-    @click.option('--node', '-n')
-    @click.option('--group', '-g')
+    @batch.group(help='Run a command on a node or group')
+    @click.option('--node', '-n', metavar='NODE',
+                  help='Runs the command on the node')
+    @click.option('--group', '-g', metavar='GROUP',
+                  help='Runs the command over the group')
     @click.pass_context
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
