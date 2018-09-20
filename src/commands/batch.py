@@ -84,7 +84,7 @@ def add_commands(appliance):
                      .first()
         if job == None:
             click.echo('No job found', err=True)
-            exit(1)
+            return
         table_data = [
             ['Date', job.created_date],
             ['Batch', job.batch.id],
