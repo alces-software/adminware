@@ -1,4 +1,36 @@
 
+# Getting Started
+`adminware` must be installed within `/opt` using:
+```
+cd /opt
+git clone https://github.com/alces-software/adminware.git
+cd adminware
+make setup
+```
+
+# Adding Commands
+Commands can bed added to `batch run` and `open` features. `batch` runs the 
+command over a single or group of nodes and stores results in a database.
+`open` establishes and interactive session with a single node.  This allows
+for full screen applications (e.g. `vi`, `top`, `bash`). `open` does not
+save the anything to the database.
+
+Commands are automatically picked up from config files stored within:
+
+`/var/lib/adminware/tools/{batch,open}/<command-name>/config.yaml`
+
+The config files should follow the following format:
+```
+# Could be system command like `uptime` or tool dir command like
+# `./script.rb`.
+command: command_to_run
+
+# Full help text for command, will be picked up and displayed in full when
+# `help` displayed for command, or first line displayed when `help` displayed for
+# parent command (see http://click.pocoo.org/5/documentation/#help-texts).
+help: command_help
+```
+
 # Development setup
 
 It is recommended that Adminware is developed locally (so you have all your

@@ -2,7 +2,7 @@
 import glob
 import click
 import os
-from models.batch import Batch
+from models.config import Config
 
 class ClickGlob:
     def command(click_group, namespace):
@@ -24,14 +24,14 @@ class ClickGlob:
 class Action:
     def __init__(self, path):
         self.path = path
-        self.batch = Batch(config = self.path)
+        self.config = Config(self.path)
 
     def create(self, click_group, command_func):
         def action_func():
-            return command_func(self.batch)
-        action_func.__name__ = self.batch.__name__()
+            return command_func(self.config)
+        action_func.__name__ = self.config.__name__()
         action_func = self.__click_command(action_func, click_group)
 
     def __click_command(self, func, click_group):
-        return click_group.command(help=self.batch.help())(func)
+        return click_group.command(help=self.config.help())(func)
 

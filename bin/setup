@@ -13,6 +13,8 @@ sudo yum install -y python35u python35u-pip
 sudo pip3.5 install virtualenv
 sudo yum remove -y ius-release
 
+sudo yum install -y genders git
+
 # Setup Virtualenv.
 if [ ! -d venv ]; then
   virtualenv venv
@@ -25,6 +27,12 @@ set +u
 . venv/bin/activate
 set -u
 pip install -r requirements.txt
+
+# Creates the basic directory structure
+mkdir -p /var/lib/adminware/tools/{batch,open}
+
+# Setup the db
+python src/db_setup.py
 
 # Run any child setup scripts.
 if test -n "$(shopt -s nullglob; echo src/**/bin/setup)"; then

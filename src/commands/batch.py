@@ -103,7 +103,8 @@ def add_commands(appliance):
 
     @ClickGlob.command(run, 'batch')
     @click.pass_context
-    def run_batch(ctx, batch):
+    def run_batch(ctx, config):
+        batch = Batch(config = config.path)
         session = Session()
         try:
             session.add(batch)
