@@ -17,11 +17,11 @@ def add_commands(appliance):
         pass
 
     @batch.command(help='Retrieves the batch result summaries')
-    @click.option('--node', '-n',
+    @click.option('--node', '-n', metavar='NODE',
                   help='Retrieve the previous result for a node')
-    @click.option('--group', '-g',
+    @click.option('--group', '-g', metavar='GROUP',
                   help='Retrieve the results for all nodes in group')
-    @click.option('--batch-id', '-i',
+    @click.option('--batch-id', '-i', metavar='ID',
                   help='Retrieve results for a particular batch')
     @click.pass_context
     def history(ctx, **options):
@@ -50,7 +50,7 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='List the recently ran batches')
-    @click.option('--number', '-n', default=10, type=int,
+    @click.option('--number', '-n', default=10, type=int, metavar='NUM',
                   help='Return the last NUM of batches')
     def list(number):
         session = Session()
@@ -99,8 +99,10 @@ def add_commands(appliance):
         print(table.table)
 
     @batch.group(help='Run a command on a node or group')
-    @click.option('--node', '-n', help='Runs the command on the node')
-    @click.option('--group', '-g', help='Runs the command over the group')
+    @click.option('--node', '-n', metavar='NODE',
+                  help='Runs the command on the node')
+    @click.option('--group', '-g', metavar='GROUP',
+                  help='Runs the command over the group')
     @click.pass_context
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
