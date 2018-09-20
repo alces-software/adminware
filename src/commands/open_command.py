@@ -11,7 +11,8 @@ from models.batch import Batch
 
 def add_commands(appliance):
 
-    @click.option('--node', '-n', required=True)
+    @click.option('--node', '-n', required=True, metavar='NODE',
+                  help='Runs the command on NODE')
     @click.pass_context
     def open_command(ctx, **kwargs):
         ctx.obj = { 'adminware' : { 'node' : kwargs['node'] } }
