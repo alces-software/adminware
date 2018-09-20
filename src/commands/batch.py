@@ -21,7 +21,7 @@ def add_commands(appliance):
                   help='Retrieve the previous result for a node')
     @click.option('--group', '-g', metavar='GROUP',
                   help='Retrieve the results for all nodes in group')
-    @click.option('--batch-id', '-i', metavar='ID',
+    @click.option('--batch-id', '-i', metavar='ID', type=int,
                   help='Retrieve results for a particular batch')
     @click.pass_context
     def history(ctx, **options):
@@ -50,14 +50,14 @@ def add_commands(appliance):
         print(AsciiTable(table_rows()).table)
 
     @batch.command(help='List the recently ran batches')
-    @click.option('--number', '-n', default=10, type=int, metavar='NUM',
+    @click.option('--limit', '-l', default=10, type=int, metavar='NUM',
                   help='Return the last NUM of batches')
-    def list(number):
+    def list(limit):
         session = Session()
         try:
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
-                           .limit(number)
+                           .limit(limit)
             rows = [['ID', 'Date', 'Name', 'Nodes']]
             for batch in query.all():
                 nodes = [job.node for job in batch.jobs]
@@ -73,7 +73,7 @@ def add_commands(appliance):
             session.close()
 
     @batch.command(help='Inspect a previous batch')
-    @click.argument('batch_id')
+    @click.argument('batch_id', type=int)
     @click.argument('node')
     def view(batch_id, node):
         session = Session()
