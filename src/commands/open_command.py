@@ -17,7 +17,9 @@ def add_commands(appliance):
         ctx.obj = { 'adminware' : { 'node' : kwargs['node'] } }
 
     open_command.__name__ = 'open'
-    open_command = appliance.group(help='TODO')(open_command)
+    open_command = appliance.group(
+                       help='Runs the command in an interactive shell'
+                   )(open_command)
 
     @ClickGlob.command(open_command, 'open')
     @click.pass_context
