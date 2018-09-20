@@ -21,7 +21,7 @@ def add_commands(appliance):
                   help='Retrieve the previous result for a node')
     @click.option('--group', '-g', metavar='GROUP',
                   help='Retrieve the results for all nodes in group')
-    @click.option('--batch-id', '-i', metavar='ID',
+    @click.option('--batch-id', '-i', metavar='ID', type=int,
                   help='Retrieve results for a particular batch')
     @click.pass_context
     def history(ctx, **options):
@@ -73,7 +73,7 @@ def add_commands(appliance):
             session.close()
 
     @batch.command(help='Inspect a previous batch')
-    @click.argument('batch_id')
+    @click.argument('batch_id', type=int)
     @click.argument('node')
     def view(batch_id, node):
         session = Session()
