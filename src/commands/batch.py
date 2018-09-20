@@ -16,10 +16,13 @@ def add_commands(appliance):
     def batch():
         pass
 
-    @batch.command(help='Filter the previously ran batches')
-    @click.option('--node', '-n')
-    @click.option('--group', '-g')
-    @click.option('--batch-id', '-i')
+    @batch.command(help='Retrieves the batch result summaries')
+    @click.option('--node', '-n',
+                  help='Retrieve the previous result for a node')
+    @click.option('--group', '-g',
+                  help='Retrieve the results for all nodes in group')
+    @click.option('--batch-id', '-i',
+                  help='Retrieve results for a particular batch')
     @click.pass_context
     def history(ctx, **options):
         set_nodes_context(ctx, **options)
