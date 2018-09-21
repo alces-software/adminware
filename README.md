@@ -9,7 +9,7 @@ make setup
 ```
 
 # Adding Commands
-Commands can bed added to `batch run` and `open` features. `batch` runs the 
+Commands can be added to `batch run` and `open` features. `batch` runs the 
 command over a single or group of nodes and stores results in a database.
 `open` establishes and interactive session with a single node.  This allows
 for full screen applications (e.g. `vi`, `top`, `bash`). `open` does not
