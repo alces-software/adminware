@@ -120,7 +120,7 @@ def add_commands(appliance):
         try:
             session.add(batch)
             session.commit() # Saves the batch to receive and id
-            print("Batch: {}".format(batch.id))
+            output = "Batch: {}".format(batch.id)
             for node in nodes:
                 job = Job(node = node, batch = batch)
                 session.add(job)
@@ -129,7 +129,8 @@ def add_commands(appliance):
                     symbol = 'Pass'
                 else:
                     symbol = 'Failed: {}'.format(job.exit_code)
-                print("{}: {}".format(job.node, symbol))
+                output = output + "\n{}: {}".format(job.node, symbol)
+                click.echo_via_pager(output)
         finally:
             session.commit()
             session.close()
