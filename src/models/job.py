@@ -81,6 +81,7 @@ class Job(Base):
                     else:
                         kwargs.update({ 'hide': 'both' })
                     cmd = self.batch.command()
+                    if self.batch.arguments: cmd = cmd + ' ' + self.batch.arguments
                     result = connection.run(cmd, **kwargs)
                     __set_result(result)
             __run_command()
