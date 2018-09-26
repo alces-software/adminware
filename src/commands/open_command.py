@@ -23,8 +23,8 @@ def add_commands(appliance):
 
     @ClickGlob.command(open_command, 'open')
     @click.pass_context
-    def run_open(ctx, config):
-        batch = Batch(config = config.path)
+    def run_open(ctx, config, arguments):
+        batch = Batch(config = config.path, arguments = arguments)
         job = Job(node = ctx.obj['adminware']['node'], batch = batch)
         job.run(interactive = True)
         # Display the error if adminware errors (e.g. failed ssh connection)
