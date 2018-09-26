@@ -9,11 +9,9 @@ from models.batch import Batch
 # other command modules, as this conflicts with Python's built-in `open`
 # function.
 
-
 def add_commands(appliance):
 
-    @click.option('--node', '-n', required=True, metavar='NODE',
-                  help='Runs the command on NODE')
+    @click.argument('node', nargs=1)
     @click.pass_context
     def open_command(ctx, **kwargs):
         ctx.obj = { 'adminware' : { 'node' : kwargs['node'] } }
@@ -31,4 +29,3 @@ def add_commands(appliance):
         job.run(interactive = True)
         # Display the error if adminware errors (e.g. failed ssh connection)
         if job.exit_code < 0: raise ClickException(job.stderr)
-
