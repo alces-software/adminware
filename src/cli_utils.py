@@ -4,7 +4,7 @@ from click import ClickException
 from collections import OrderedDict
 
 def set_nodes_context(ctx, **kwargs):
-    # ctx.obj with nodes
+    # populate ctx.obj with nodes
     obj = { 'nodes' : [] }
     if kwargs['node']:
         for node in kwargs['node']:
