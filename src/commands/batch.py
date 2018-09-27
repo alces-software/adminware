@@ -130,7 +130,7 @@ def add_commands(appliance):
                 else:
                     symbol = 'Failed: {}'.format(job.exit_code)
                 output = output + "\n{}: {}".format(job.node, symbol)
-                click.echo_via_pager(output)
+            click.echo_via_pager(output)
         finally:
             session.commit()
             session.close()
