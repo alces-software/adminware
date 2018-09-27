@@ -18,7 +18,7 @@ def add_commands(appliance):
 
     open_command.__name__ = 'open'
     open_command = appliance.group(
-                       help='Runs the command in an interactive shell'
+                       help='Run a command in an interactive shell'
                    )(open_command)
 
     @ClickGlob.command(open_command, 'open')

@@ -4,7 +4,7 @@ import groups
 
 def add_commands(appliance):
 
-    @appliance.group(help='View the adminware groups')
+    @appliance.group(help='View the Adminware groups')
     def group():
         pass
 
