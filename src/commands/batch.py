@@ -100,7 +100,7 @@ def add_commands(appliance):
         ]
         display_table([], table_data)
 
-    @batch.group(help='Run a command on a node or group')
+    @batch.group(help='Run a command on node(s) or group(s)')
     @click.option('--node', '-n', metavar='NODE',
                   help='Runs the command on the node')
     @click.option('--group', '-g', metavar='GROUP',
