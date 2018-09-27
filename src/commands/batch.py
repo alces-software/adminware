@@ -39,7 +39,7 @@ def add_commands(appliance):
                          .filter(Batch.id == int(batch_id))
         jobs = query.all()
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
-        headers = ['Batch', 'Node', 'Command', 'Exit Code', 'Date']
+        headers = ['Batch', 'Node', 'Command', 'Arguments', 'Exit Code', 'Date']
         def table_rows():
             rows = []
             for job in jobs:
@@ -47,6 +47,7 @@ def add_commands(appliance):
                 row = [batch.id,
                        job.node,
                        batch.__name__(),
+                       batch.arguments,
                        job.exit_code,
                        batch.created_date]
                 rows.append(row)
@@ -62,7 +63,7 @@ def add_commands(appliance):
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
                            .limit(limit)
-            headers = ['ID', 'Date', 'Name', 'Nodes']
+            headers = ['ID', 'Date', 'Name', 'Arguments', 'Nodes']
             rows = []
 
             for batch in query.all():
@@ -70,7 +71,7 @@ def add_commands(appliance):
                 nodes_str = ','.join(nodes)
                 row = [
                     batch.id, batch.created_date, batch.__name__(),
-                    nodes_str
+                    batch.arguments, nodes_str
                 ]
                 rows.append(row)
             display_table(headers, rows)
@@ -94,6 +95,7 @@ def add_commands(appliance):
             ['Batch', job.batch.id],
             ['Node', job.node],
             ['Command', job.batch.__name__()],
+            ['Arguments', job.batch.arguments],
             ['Exit Code', job.exit_code],
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
