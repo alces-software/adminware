@@ -111,11 +111,11 @@ def add_commands(appliance):
 
     @ClickGlob.command(run, 'batch')
     @click.pass_context
-    def run_batch(ctx, config):
+    def run_batch(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
         if not nodes:
             raise ClickException('Please give either --node or --group')
-        batch = Batch(config = config.path)
+        batch = Batch(config = config.path, arguments = arguments)
         session = Session()
         try:
             session.add(batch)
@@ -134,4 +134,3 @@ def add_commands(appliance):
         finally:
             session.commit()
             session.close()
-
