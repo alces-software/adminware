@@ -3,13 +3,13 @@ import click
 from click import ClickException
 from action import ClickGlob
 import groups
-from terminaltables import AsciiTable
 
 from cli_utils import set_nodes_context
 from database import Session
 
 from models.job import Job
 from models.batch import Batch
+from appliance_cli.text import display_table
 
 def add_commands(appliance):
 
@@ -39,8 +39,9 @@ def add_commands(appliance):
                          .filter(Batch.id == int(batch_id))
         jobs = query.all()
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
+        headers = ['Batch', 'Node', 'Command', 'Exit Code', 'Date']
         def table_rows():
-            rows = [['Batch', 'Node', 'Command', 'Exit Code', 'Date']]
+            rows = []
             for job in jobs:
                 batch = job.batch
                 row = [batch.id,
@@ -50,7 +51,7 @@ def add_commands(appliance):
                        batch.created_date]
                 rows.append(row)
             return rows
-        print(AsciiTable(table_rows()).table)
+        display_table(headers, table_rows())
 
     @batch.command(help='List the recently ran batches')
     @click.option('--limit', '-l', default=10, type=int, metavar='NUM',
@@ -61,7 +62,9 @@ def add_commands(appliance):
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
                            .limit(limit)
-            rows = [['ID', 'Date', 'Name', 'Nodes']]
+            headers = ['ID', 'Date', 'Name', 'Nodes']
+            rows = []
+
             for batch in query.all():
                 nodes = [job.node for job in batch.jobs]
                 nodes_str = ','.join(nodes)
@@ -70,7 +73,7 @@ def add_commands(appliance):
                     nodes_str
                 ]
                 rows.append(row)
-            print(AsciiTable(rows).table)
+            display_table(headers, rows)
 
         finally:
             session.close()
@@ -95,9 +98,7 @@ def add_commands(appliance):
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
         ]
-        table = AsciiTable(table_data)
-        table.inner_row_border = True
-        print(table.table)
+        display_table([], table_data)
 
     @batch.group(help='Run a command on a node or group')
     @click.option('--node', '-n', metavar='NODE',
@@ -119,7 +120,7 @@ def add_commands(appliance):
         try:
             session.add(batch)
             session.commit() # Saves the batch to receive and id
-            print("Batch: {}".format(batch.id))
+            output = "Batch: {}".format(batch.id)
             for node in nodes:
                 job = Job(node = node, batch = batch)
                 session.add(job)
@@ -128,7 +129,8 @@ def add_commands(appliance):
                     symbol = 'Pass'
                 else:
                     symbol = 'Failed: {}'.format(job.exit_code)
-                print("{}: {}".format(job.node, symbol))
+                output = output + "\n{}: {}".format(job.node, symbol)
+                click.echo_via_pager(output)
         finally:
             session.commit()
             session.close()

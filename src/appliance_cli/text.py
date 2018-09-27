@@ -39,8 +39,11 @@ def bold(text):
 
 
 def display_table(headers, data):
-    bolded_headers = [bold(header) for header in headers]
-    table_data = [bolded_headers] + data
+    if headers:
+        bolded_headers = [bold(header) for header in headers]
+        table_data = [bolded_headers] + data
+    else:
+        table_data = data
 
     # Issue with less displaying SingleTable so double is needed, appears NOT to be a unicode issue
     # TODO sort this ^
