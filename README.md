@@ -29,6 +29,16 @@ command: command_to_run
 # `help` displayed for command, or first line displayed when `help` displayed for
 # parent command (see http://click.pocoo.org/5/documentation/#help-texts).
 help: command_help
+
+# A list of any families that the command is in. A family is a group of commands that
+# can be executed with a single statement using `batch run-family`. Commands within a
+# family are executed in alphabetical order and each command is executed on every node
+# before the second command is executed on any.
+# This field is optional.
+families:
+ - family1
+ - family2
+ - etc..
 ```
 
 # Development setup
