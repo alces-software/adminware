@@ -38,6 +38,9 @@ class ClickGlob:
             for single_dict in dicts:
                 for k, v in single_dict.items():
                     families_dict[k].append(v)
+            # sort each command family
+            for key in families_dict:
+                families_dict[key].sort()
             return families_dict
 
         def __create_option(click_group, command_func, family, commands):
