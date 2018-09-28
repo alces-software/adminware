@@ -23,3 +23,7 @@ class Config():
         self.data.setdefault('help', default)
         return self.data['help']
 
+    def families(self):
+        default = ''
+        self.data.setdefault('families', default)
+        return self.data['families']
