@@ -120,7 +120,7 @@ def add_commands(appliance):
         try:
             session.add(batch)
             session.commit() # Saves the batch to receive and id
-            output = "Batch: {}".format(batch.id)
+            output = 'Batch: {}'.format(batch.id)
             for node in nodes:
                 job = Job(node = node, batch = batch)
                 session.add(job)
@@ -129,7 +129,48 @@ def add_commands(appliance):
                     symbol = 'Pass'
                 else:
                     symbol = 'Failed: {}'.format(job.exit_code)
-                output = output + "\n{}: {}".format(job.node, symbol)
+                output = output + '\n{}: {}'.format(job.node, symbol)
+            click.echo_via_pager(output)
+        finally:
+            session.commit()
+            session.close()
+
+    @batch.group(name='run-family', help='Run a family of commands on node(s) or group(s)')
+    @click.option('--node', '-n', metavar='NODE',
+              help='Runs the command on the node')
+    @click.option('--group', '-g', metavar='GROUP',
+              help='Runs the command over the group')
+    @click.pass_context
+    def run_family(ctx, **kwargs):
+        set_nodes_context(ctx, **kwargs)
+
+    @ClickGlob.command_family(run_family, 'batch')
+    @click.pass_context
+    def run_batch_family(ctx, family, commands):
+        nodes = ctx.obj['adminware']['nodes']
+        if not nodes:
+            raise ClickException('Please give either --node or --group')
+        batches = []
+        for command in commands:
+            #create batch w/ relevant config for command
+            batches += [Batch(config='/var/lib/adminware/tools/batch/{}/config.yaml'.format(command))]
+        session = Session()
+        output = ''
+        try:
+            for batch in batches:
+                if output: output = output + '\n'
+                session.add(batch)
+                session.commit()
+                output = output + 'Batch: {}\nExecuting {}'.format(batch.id, batch.__name__())
+                for node in nodes:
+                    job = Job(node = node, batch = batch)
+                    session.add(job)
+                    job.run()
+                    if job.exit_code == 0:
+                        symbol = 'Pass'
+                    else:
+                        symbol = 'Failed: {}'.format(job.exit_code)
+                    output = output + '\n{}: {}'.format(job.node, symbol)
             click.echo_via_pager(output)
         finally:
             session.commit()
