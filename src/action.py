@@ -3,6 +3,8 @@ import glob
 import click
 import os
 from models.config import Config
+from collections import defaultdict
+from itertools import chain
 
 class ClickGlob:
     def glob_actions(namespace):
@@ -25,14 +27,22 @@ class ClickGlob:
             actions = ClickGlob.glob_actions(namespace)
             families = []
             for action in actions:
-                if action.get_families(): families += action.get_families()
-            families = list(set(families))
-            for family in families:
-                __create_option(click_group, command_func, family)
+                if action.get_families(): families += [action.get_families()]
+            families_dict = __combine_dicts(families)
+            for key in families_dict.keys():
+                __create_option(click_group, command_func, key, families_dict[key])
 
-        def __create_option(click_group, command_func, family):
+        # when want to combine the family dictionaries - while concatenating duplicate values
+        def __combine_dicts(dicts):
+            families_dict = defaultdict(list)
+            for single_dict in dicts:
+                for k, v in single_dict.items():
+                    families_dict[k].append(v)
+            return families_dict
+
+        def __create_option(click_group, command_func, family, commands):
             def action_family_func():
-                return command_func(family)
+                return command_func(family, commands)
             action_family_func.__name__ = (family)
             action_family_func = click_group.command(
                     help='Run the command family \'{}\''.format(family)
@@ -46,7 +56,12 @@ class Action:
         self.config = Config(self.path)
 
     def get_families(self):
-        return self.config.families()
+        # return a dict of each family this action is in, pointing to this action's name
+        families = self.config.families()
+        family_dict = {}
+        for family in families:
+            family_dict[family] = self.config.__name__()
+        return family_dict
 
     def create(self, click_group, command_func):
         def action_func(arguments):
