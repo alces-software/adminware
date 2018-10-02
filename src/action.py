@@ -7,7 +7,7 @@ from collections import defaultdict
 from itertools import chain
 
 class ClickGlob:
-    def glob_actions(namespace):
+    def __glob_actions(namespace):
         parts = ['/var/lib/adminware/tools',
                  namespace, '*/config.yaml']
         paths = glob.glob(os.path.join(*parts))
@@ -16,7 +16,7 @@ class ClickGlob:
     def command(click_group, namespace):
         # command_func is either run_open or run_batch, what this is decorating
         def __command(command_func):
-            actions = ClickGlob.glob_actions(namespace)
+            actions = ClickGlob.__glob_actions(namespace)
             for action in actions:
                 action.create(click_group, command_func)
 
@@ -24,7 +24,7 @@ class ClickGlob:
 
     def command_family(click_group, namespace):
         def __command_family(command_func):
-            actions = ClickGlob.glob_actions(namespace)
+            actions = ClickGlob.__glob_actions(namespace)
             families = []
             for action in actions:
                 if action.get_families(): families += [action.get_families()]
