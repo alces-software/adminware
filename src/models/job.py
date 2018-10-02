@@ -6,6 +6,7 @@ import glob
 from paramiko.ssh_exception import NoValidConnectionsError
 
 import datetime
+from shlex import quote
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -81,7 +82,7 @@ class Job(Base):
                     else:
                         kwargs.update({ 'hide': 'both' })
                     cmd = self.batch.command()
-                    if self.batch.arguments: cmd = cmd + ' ' + self.batch.arguments
+                    if self.batch.arguments: cmd = cmd + ' ' + quote(self.batch.arguments)
                     result = connection.run(cmd, **kwargs)
                     __set_result(result)
             __run_command()
