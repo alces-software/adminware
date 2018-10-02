@@ -74,3 +74,4 @@ class Action:
 
     def __click_command(self, func, click_group):
         return click.argument('arguments', nargs=-1)(click_group.command(help=self.config.help())(func))
+
