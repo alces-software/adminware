@@ -15,8 +15,8 @@ def nodes_in(group_name):
 
 def expand_nodes(node_list):
     tmp_file = NamedTemporaryFile(dir='/tmp/')
-    with open(tmp_file.name, 'w') as fil:
-        fil.write('\n'.join(node_list))
+    with open(tmp_file.name, 'w') as f:
+        f.write('\n'.join(node_list))
     nodes = __nodeattr(file_path=tmp_file.name)('--expand').split("\n")
     # above split adds trailing empty string in array so
     del nodes[-1]
