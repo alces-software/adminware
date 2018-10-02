@@ -22,6 +22,5 @@ def expand_nodes(node_list):
     del nodes[-1]
     return nodes
 
-def __nodeattr(file_path=None):
-    if file_path: return local['nodeattr']['-f', file_path]
-    else: return local['nodeattr']['-f', '/var/lib/adminware/genders']
+def __nodeattr(file_path='/var/lib/adminware/genders'):
+    return local['nodeattr']['-f', file_path]
