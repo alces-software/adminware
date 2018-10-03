@@ -115,15 +115,8 @@ def add_commands(appliance):
         nodes = ctx.obj['adminware']['nodes']
         if not nodes:
             raise ClickException('Please give either --node or --group')
-        batch = Batch(config = config.path, arguments = arguments)
-        session = Session()
-        output = ''
-        try:
-            output = execute_batch(session, batch, nodes, output)
-        finally:
-            session.commit()
-            session.close()
-            click.echo_via_pager(output)
+        batch = [Batch(config = config.path, arguments = arguments)]
+        execute_batch(batch, nodes)
 
     @batch.group(name='run-family', help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', metavar='NODE',
@@ -144,28 +137,28 @@ def add_commands(appliance):
         for command in commands:
             #create batch w/ relevant config for command
             batches += [Batch(config='/var/lib/adminware/tools/batch/{}/config.yaml'.format(command))]
+        execute_batch(batches, nodes)
+
+    def execute_batch(batches, nodes):
         session = Session()
         output = ''
         try:
             for batch in batches:
-                output = execute_batch(session, batch, nodes, output)
+                if output: output = output + '\n'
+                session.add(batch)
+                session.commit()
+                output = output + 'Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__())
+                for node in nodes:
+                    job = Job(node = node, batch = batch)
+                    session.add(job)
+                    job.run()
+                    if job.exit_code == 0:
+                        symbol = 'Pass'
+                    else:
+                        symbol = 'Failed: {}'.format(job.exit_code)
+                    output = output + '\n{}: {}'.format(job.node, symbol)
         finally:
             session.commit()
             session.close()
             click.echo_via_pager(output)
 
-    def execute_batch(session, batch, nodes, output):
-        if output: output = output + '\n'
-        session.add(batch)
-        session.commit()
-        output = output + 'Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__())
-        for node in nodes:
-            job = Job(node = node, batch = batch)
-            session.add(job)
-            job.run()
-            if job.exit_code == 0:
-                symbol = 'Pass'
-            else:
-                symbol = 'Failed: {}'.format(job.exit_code)
-            output = output + '\n{}: {}'.format(job.node, symbol)
-        return output
