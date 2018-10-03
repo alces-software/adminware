@@ -129,14 +129,14 @@ def add_commands(appliance):
 
     @ClickGlob.command_family(run_family, 'batch')
     @click.pass_context
-    def run_batch_family(ctx, family, commands):
+    def run_batch_family(ctx, family, command_configs):
         nodes = ctx.obj['adminware']['nodes']
         if not nodes:
             raise ClickException('Please give either --node or --group')
         batches = []
-        for command in commands:
+        for config in command_configs:
             #create batch w/ relevant config for command
-            batches += [Batch(config='/var/lib/adminware/tools/batch/{}/config.yaml'.format(command))]
+            batches += [Batch(config=config.path)]
         execute_batch(batches, nodes)
 
     def execute_batch(batches, nodes):
