@@ -15,6 +15,9 @@ def nodes_in(group_name):
     return nodes
 
 def expand_nodes(node_list):
+    if any(map(lambda x: '.' in x, node_list)):
+        raise ClickException('Invalid nodename - cannot contain \'.\'')
+
     tmp_file = NamedTemporaryFile(dir='/tmp/')
     with open(tmp_file.name, 'w') as f:
         f.write('\n'.join(node_list))
