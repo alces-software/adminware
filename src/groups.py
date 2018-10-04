@@ -27,4 +27,4 @@ def __nodeattr(file_path='/var/lib/adminware/genders', arguments=[], split_char=
     try:
         return local['nodeattr']['-f', file_path](arguments).split(split_char)
     except ProcessExecutionError as e:
-        raise ClickException('Unable to process genders file -- {}'.format(e.stderr))
+        raise ClickException('Unable to process genders file -- {}'.format(e.stderr.rstrip()))
