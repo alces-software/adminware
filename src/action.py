@@ -9,8 +9,8 @@ from itertools import chain
 class ClickGlob:
     def __glob_configs(namespace):
         parts = ['/var/lib/adminware/tools',
-                 namespace, '*/config.yaml']
-        paths = glob.glob(os.path.join(*parts))
+                 namespace, '**/config.yaml']
+        paths = glob.glob(os.path.join(*parts), recursive=True)
         return list(map(lambda x: Config(x), paths))
 
     def command(click_group, namespace):
