@@ -13,7 +13,7 @@ def add_commands(appliance):
 
     @tool.command(help='List all available tools')
     def list():
-        headers = ['Namespace', 'Name', 'Help']
+        headers = ['Namespace', 'Name', 'Help', 'Families']
         def table_rows():
             paths = glob.glob('/var/lib/adminware/tools/**/config.yaml', recursive=True)
             # this line was getting mardy so did it manually temporarily
@@ -31,7 +31,7 @@ def add_commands(appliance):
                 row = [namespace,
                         config.__name__(),
                         config.help(),
-                        #add families when they're implemented
+                        ', '.join(config.families()),
                         ]
                 rows.append(row)
             return rows
