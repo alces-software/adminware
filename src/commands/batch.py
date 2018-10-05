@@ -1,12 +1,16 @@
 
 import click
+import glob
+
 from click import ClickException
 import explore_tools
 import groups
 
+from models.config import Config
 from cli_utils import set_nodes_context
 from database import Session
 
+from os.path import dirname, relpath
 from models.job import Job
 from models.batch import Batch
 from appliance_cli.text import display_table
@@ -139,6 +143,34 @@ def add_commands(appliance):
             #create batch w/ relevant config for command
             batches += [Batch(config=config.path)]
         execute_batch(batches, nodes)
+
+    @batch.command(help='List all available batch tools')
+    def tool():
+        headers = ['Namespace', 'Name', 'Help', 'Families']
+        def table_rows():
+            #TODO DRY this up when action.py gets modified for nested-namespaces
+            paths = glob.glob('/var/lib/adminware/tools/batch/**/config.yaml', recursive=True)
+            # this line was getting mardy so did it manually temporarily
+            #configs = list(map(lambda x: Config(x), paths))
+            configs = []
+            for path in paths:
+                config = Config(path)
+                configs += [config]
+            rows = []
+            for config in configs:
+                # should be forward compatable with recursive namespaces
+                # calls dirname twice to discard <command_name>/config.yaml
+                #   then gets path realtive to tools dir
+                namespace = relpath(dirname(dirname(config.path)),'/var/lib/adminware/tools/batch')
+                row = [namespace,
+                        config.__name__(),
+                        config.help(),
+                        ', '.join(config.families()),
+                        ]
+                rows.append(row)
+            return rows
+        display_table(headers, table_rows())
+
 
     def execute_batch(batches, nodes):
         session = Session()
