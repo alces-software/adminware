@@ -15,8 +15,10 @@ def nodes_in(group_name):
     return nodes
 
 def expand_nodes(node_list):
-    if any(map(lambda x: '.' in x, node_list)):
-        raise ClickException('Invalid nodename - cannot contain \'.\'')
+    # intercept for to generate more useful error message
+    #   before invalid nodenames are caught generically in __nodeattr
+    if any(map(lambda x: '.' in x or x.endswith('@'), node_list)):
+        raise ClickException('Invalid nodename - cannot contain \'.\' or end in \'@\'')
 
     tmp_file = NamedTemporaryFile(dir='/tmp/')
     with open(tmp_file.name, 'w') as f:
