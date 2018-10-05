@@ -3,6 +3,7 @@
 from plumbum import local, ProcessExecutionError
 from tempfile import NamedTemporaryFile
 from click import ClickException
+from re import search
 
 def list():
     groups = __nodeattr(arguments=['-l'])
@@ -15,11 +16,15 @@ def nodes_in(group_name):
     return nodes
 
 def expand_nodes(node_list):
-    # intercept for to generate more useful error message
+    # intercept to generate a more useful error message
     #   before invalid nodenames are caught generically in __nodeattr
-    if any(map(lambda x: '.' in x or x.endswith('@'), node_list)):
-        raise ClickException('Invalid nodename - cannot contain \'.\' or end in \'@\'')
+    for node in node_list:
+        if search(r'[^A-z0-9,\[\]]',node):
+            raise ClickException(
+                    "Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'"
+                    .format(node))
 
+    # build and parse a genders file of the nodes
     tmp_file = NamedTemporaryFile(dir='/tmp/')
     with open(tmp_file.name, 'w') as f:
         f.write('\n'.join(node_list))
