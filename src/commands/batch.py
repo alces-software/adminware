@@ -39,15 +39,15 @@ def add_commands(appliance):
                          .filter(Batch.id == int(batch_id))
         jobs = query.all()
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
-        headers = ['Batch', 'Node', 'Command', 'Exit Code', 'Date']
+        headers = ['Batch', 'Node', 'Exit Code', 'Command', 'Date']
         def table_rows():
             rows = []
             for job in jobs:
                 batch = job.batch
                 row = [batch.id,
                        job.node,
-                       batch.__name__(),
                        job.exit_code,
+                       batch.__name__(),
                        batch.created_date]
                 rows.append(row)
             return rows
