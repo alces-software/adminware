@@ -1,30 +1,56 @@
-
 import glob
 import click
-import os
+import re
+from os.path import join, dirname, relpath, isfile
 from models.config import Config
 from collections import defaultdict
 from itertools import chain
 
 class ClickGlob:
-    def __glob_configs(namespace):
+    #TODO possibly combine __glob_all_configs & __glob_dirs into one method to
+    # ensure consistent results are generated.
+    # likely with a decorator for __glob_dirs
+    def __glob_all_configs(namespace):
+        #TODO DRY up the file leader - only define '/var/lib/adminware/tools' once
         parts = ['/var/lib/adminware/tools',
                  namespace, '**/config.yaml']
-        paths = glob.glob(os.path.join(*parts), recursive=True)
+        paths = glob.glob(join(*parts), recursive=True)
         return list(map(lambda x: Config(x), paths))
+
+    def __glob_dirs(namespace):
+        parts = ['/var/lib/adminware/tools', namespace, '*']
+        paths = glob.glob(join(*parts))
+        return paths
 
     def command(click_group, namespace):
         # command_func is either run_open or run_batch, what this is decorating
         def __command(command_func):
-            actions = list(map(lambda x: Action(x), ClickGlob.__glob_configs(namespace)))
-            for action in actions:
-                action.create(click_group, command_func)
+            __command_helper(click_group, namespace, command_func)
+
+        def __command_helper(cur_group, cur_namespace, command_func):
+            paths = ClickGlob.__glob_dirs(cur_namespace) # will generate a list of paths at level 'namespace'
+            for path in paths:
+                if isfile('{}/config.yaml'.format(path)):
+                    action = Action(Config('{}/config.yaml'.format(path)))
+                    action.create(cur_group, command_func)
+                else:
+                    regex_expr = r'\/var\/lib\/adminware\/tools\/' + re.escape(cur_namespace) + r'\/(.*$)'
+                    new_namespace_bottom = re.search(regex_expr, path).group(1)
+                    new_namespace = cur_namespace + '/' + new_namespace_bottom
+
+                    @cur_group.group(new_namespace_bottom,
+                             help="Descend into the {} namespace".format(new_namespace_bottom)
+                             )
+                    def new_group():
+                        pass
+
+                    __command_helper(new_group, new_namespace, command_func)
 
         return __command
 
     def command_family(click_group, namespace):
         def __command_family(command_func):
-            configs = ClickGlob.__glob_configs(namespace)
+            configs = ClickGlob.__glob_all_configs(namespace)
             family_names = []
             for config in configs:
                 if config.families(): family_names += config.families()
