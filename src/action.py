@@ -2,26 +2,38 @@
 import glob
 import click
 import re
+
 from os import listdir
 from os.path import join, dirname, relpath, isfile, isdir
 from models.config import Config
 from collections import defaultdict
 from itertools import chain
 
+#TODO DRY up the file leader - only define '/var/lib/adminware/tools' once
 class ClickGlob:
-    #TODO possibly combine __glob_all_configs & __glob_dirs into one method to
-    # ensure consistent results are generated. Likely with a decorator for __glob_dirs.
-    def __glob_all_configs(namespace):
-        #TODO DRY up the file leader - only define '/var/lib/adminware/tools' once
-        parts = ['/var/lib/adminware/tools',
-                 namespace, '**/config.yaml']
-        paths = glob.glob(join(*parts), recursive=True)
-        return list(map(lambda x: Config(x), paths))
-
     def __glob_dirs(namespace):
         parts = ['/var/lib/adminware/tools', namespace, '*']
         paths = glob.glob(join(*parts))
         return paths
+
+    # decorator for __glob_dir to get all valid paths (ending in config.yaml) at once
+    def __glob_all(globbing_func):
+        def __wrapper(*args, **kwargs):
+            def __sub_wrapper(*args, **kwargs):
+                paths = globbing_func(*args)
+                for path in paths:
+                    if isfile('{}/config.yaml'.format(path)):
+                        kwargs['all_paths'] += [join(path, 'config.yaml')]
+                    else:
+                        namespace = path[len('/var/lib/adminware/tools/'):]
+                        __sub_wrapper(namespace, **kwargs)
+                return kwargs['all_paths']
+
+            kwargs['all_paths']=[]
+            all_paths = __sub_wrapper(*args, **kwargs)
+            return all_paths
+
+        return __wrapper
 
     def command(click_group, namespace):
         # command_func is either run_open or run_batch, what this is decorating
@@ -58,7 +70,8 @@ class ClickGlob:
 
     def command_family(click_group, namespace):
         def __command_family(command_func):
-            configs = ClickGlob.__glob_all_configs(namespace)
+            __glob_all_dirs = ClickGlob.__glob_all(ClickGlob.__glob_dirs)
+            configs = list(map(lambda x: Config(x), __glob_all_dirs(namespace)))
             family_names = []
             for config in configs:
                 if config.families(): family_names += config.families()
