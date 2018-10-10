@@ -120,9 +120,9 @@ def add_commands(appliance):
         execute_batch(batch, nodes)
 
     @batch.group(name='run-family', help='Run a family of commands on node(s) or group(s)')
-    @click.option('--node', '-n', metavar='NODE',
+    @click.option('--node', '-n', multiple=True, metavar='NODE',
               help='Runs the command on the node')
-    @click.option('--group', '-g', metavar='GROUP',
+    @click.option('--group', '-g', multiple=True, metavar='GROUP',
               help='Runs the command over the group')
     @click.pass_context
     def run_family(ctx, **kwargs):
