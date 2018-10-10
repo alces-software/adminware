@@ -1,7 +1,8 @@
 import glob
 import click
 import re
-from os.path import join, dirname, relpath, isfile
+from os import listdir
+from os.path import join, dirname, relpath, isfile, isdir
 from models.config import Config
 from collections import defaultdict
 from itertools import chain
@@ -31,12 +32,17 @@ class ClickGlob:
             paths = ClickGlob.__glob_dirs(cur_namespace) # will generate a list of paths at level 'namespace'
             for path in paths:
                 if isfile('{}/config.yaml'.format(path)):
+                    # if there exists a sibling dir to any config.yaml this is currently an error
+                    # TODO this will be removed with closure of issue #49 but more validation may be needed
+                    if any(map(lambda x: isdir(join(path, x)), listdir(path))):
+                        raise RuntimeError("Directory detected sibling to a config.yaml file at {}\n".format(path)
+                                + "This is invalid, please rectify it before continuing")
                     action = Action(Config('{}/config.yaml'.format(path)))
                     action.create(cur_group, command_func)
                 else:
                     regex_expr = r'\/var\/lib\/adminware\/tools\/' + re.escape(cur_namespace) + r'\/(.*$)'
                     new_namespace_bottom = re.search(regex_expr, path).group(1)
-                    new_namespace = cur_namespace + '/' + new_namespace_bottom
+                    new_namespace = join(cur_namespace, new_namespace_bottom)
 
                     @cur_group.group(new_namespace_bottom,
                              help="Descend into the {} namespace".format(new_namespace_bottom)
