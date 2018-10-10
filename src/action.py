@@ -1,3 +1,4 @@
+
 import glob
 import click
 import re
@@ -9,8 +10,7 @@ from itertools import chain
 
 class ClickGlob:
     #TODO possibly combine __glob_all_configs & __glob_dirs into one method to
-    # ensure consistent results are generated.
-    # likely with a decorator for __glob_dirs
+    # ensure consistent results are generated. Likely with a decorator for __glob_dirs.
     def __glob_all_configs(namespace):
         #TODO DRY up the file leader - only define '/var/lib/adminware/tools' once
         parts = ['/var/lib/adminware/tools',
@@ -37,6 +37,7 @@ class ClickGlob:
                     if any(map(lambda x: isdir(join(path, x)), listdir(path))):
                         raise RuntimeError("Directory detected sibling to a config.yaml file at {}\n".format(path)
                                 + "This is invalid, please rectify it before continuing")
+
                     action = Action(Config('{}/config.yaml'.format(path)))
                     action.create(cur_group, command_func)
                 else:
