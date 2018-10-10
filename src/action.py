@@ -3,6 +3,7 @@ import glob
 import click
 import re
 
+from sys import exit
 from os import listdir
 from os.path import join, dirname, relpath, isfile, isdir
 from models.config import Config
@@ -47,8 +48,9 @@ class ClickGlob:
                     # if there exists a sibling dir to any config.yaml this is currently an error
                     # TODO this will be removed with closure of issue #49 but more validation may be needed
                     if any(map(lambda x: isdir(join(path, x)), listdir(path))):
-                        raise RuntimeError("Directory detected sibling to a config.yaml file at {}\n".format(path)
-                                + "This is invalid, please rectify it before continuing")
+                        print('config.yaml file with directory as sibling detected at {}\n'.format(path)
+                                + 'This is invalid, please rectify it before continuing')
+                        exit(1)
 
                     action = Action(Config('{}/config.yaml'.format(path)))
                     action.create(cur_group, command_func)
