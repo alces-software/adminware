@@ -14,7 +14,7 @@ class Config():
 
     def command(self):
         n = self.__name__()
-        default = ''
+        default = 'No command set'
         self.data.setdefault('command', default)
         return self.data['command']
 
