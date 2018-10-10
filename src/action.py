@@ -44,13 +44,14 @@ class ClickGlob:
                     new_namespace_bottom = re.search(regex_expr, path).group(1)
                     new_namespace = join(cur_namespace, new_namespace_bottom)
 
-                    @cur_group.group(new_namespace_bottom,
-                             help="Descend into the {} namespace".format(new_namespace_bottom)
-                             )
-                    def new_group():
-                        pass
+                    if isdir(path):
+                        @cur_group.group(new_namespace_bottom,
+                                 help="Descend into the {} namespace".format(new_namespace_bottom)
+                                 )
+                        def new_group():
+                            pass
 
-                    __command_helper(new_group, new_namespace, command_func)
+                        __command_helper(new_group, new_namespace, command_func)
 
         return __command
 
