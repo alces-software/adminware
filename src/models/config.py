@@ -14,7 +14,7 @@ class Config():
 
     def command(self):
         n = self.__name__()
-        default = 'echo "No command given for: {}"'.format(n)
+        default = ''
         self.data.setdefault('command', default)
         return self.data['command']
 
