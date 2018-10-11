@@ -2,6 +2,7 @@
 import glob
 import click
 import re
+import config
 
 from sys import exit
 from os import listdir
@@ -10,10 +11,9 @@ from models.config import Config
 from collections import defaultdict
 from itertools import chain
 
-#TODO DRY up the file leader - only define '/var/lib/adminware/tools' once
 class ClickGlob:
     def __glob_dirs(namespace):
-        parts = ['/var/lib/adminware/tools', namespace, '*']
+        parts = [config.LEADER, config.TOOL_LOCATION, namespace, '*']
         paths = glob.glob(join(*parts))
         return paths
 
@@ -26,7 +26,7 @@ class ClickGlob:
                     if isfile('{}/config.yaml'.format(path)):
                         kwargs['all_paths'] += [join(path, 'config.yaml')]
                     else:
-                        namespace = path[len('/var/lib/adminware/tools/'):]
+                        namespace = path[len(config.LEADER + config.TOOL_LOCATION):]
                         __sub_wrapper(namespace, **kwargs)
                 return kwargs['all_paths']
 
@@ -54,13 +54,16 @@ class ClickGlob:
                     action.create(cur_group, command_func)
                 else:
                     if isdir(path):
-                        regex_expr = r'\/var\/lib\/adminware\/tools\/' + re.escape(cur_namespace) + r'\/(.*$)'
+                        regex_expr = re.escape(config.LEADER) + \
+                                re.escape(config.TOOL_LOCATION) + \
+                                re.escape(cur_namespace) + \
+                                r'\/(.*$)'
                         new_namespace_bottom = re.search(regex_expr, path).group(1)
                         new_namespace = join(cur_namespace, new_namespace_bottom)
 
                         @cur_group.group(new_namespace_bottom,
-                                 help="Descend into the {} namespace".format(new_namespace_bottom)
-                                 )
+                                help="Descend into the {} namespace".format(new_namespace_bottom)
+                                )
                         def new_group():
                             pass
 

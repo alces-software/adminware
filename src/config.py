@@ -13,3 +13,7 @@ _APPLIANCE_TYPE = 'adminware'
 _STANDARD_CONFIG = appliance_cli.config.create_config_dict(_APPLIANCE_TYPE)
 
 CONFIG = appliance_cli.config.finalize_config(_STANDARD_CONFIG)
+
+LEADER = '/var/lib/adminware/'
+
+TOOL_LOCATION = 'tools/'
