@@ -30,9 +30,7 @@ class ClickGlob:
                         __sub_wrapper(namespace, **kwargs)
                 return kwargs['all_paths']
 
-            kwargs['all_paths']=[]
-            all_paths = __sub_wrapper(*args, **kwargs)
-            return all_paths
+            return __sub_wrapper(*args, **kwargs)
 
         return __wrapper
 
@@ -55,11 +53,11 @@ class ClickGlob:
                     action = Action(Config('{}/config.yaml'.format(path)))
                     action.create(cur_group, command_func)
                 else:
-                    regex_expr = r'\/var\/lib\/adminware\/tools\/' + re.escape(cur_namespace) + r'\/(.*$)'
-                    new_namespace_bottom = re.search(regex_expr, path).group(1)
-                    new_namespace = join(cur_namespace, new_namespace_bottom)
-
                     if isdir(path):
+                        regex_expr = r'\/var\/lib\/adminware\/tools\/' + re.escape(cur_namespace) + r'\/(.*$)'
+                        new_namespace_bottom = re.search(regex_expr, path).group(1)
+                        new_namespace = join(cur_namespace, new_namespace_bottom)
+
                         @cur_group.group(new_namespace_bottom,
                                  help="Descend into the {} namespace".format(new_namespace_bottom)
                                  )
@@ -73,7 +71,7 @@ class ClickGlob:
     def command_family(click_group, namespace):
         def __command_family(command_func):
             __glob_all_dirs = ClickGlob.__glob_all(ClickGlob.__glob_dirs)
-            configs = list(map(lambda x: Config(x), __glob_all_dirs(namespace)))
+            configs = list(map(lambda x: Config(x), __glob_all_dirs(namespace, all_paths=[])))
             family_names = []
             for config in configs:
                 if config.families(): family_names += config.families()
