@@ -13,7 +13,7 @@ from itertools import chain
 
 class ClickGlob:
     def __glob_dirs(namespace):
-        new_dir = join(config.LEADER, config.TOOL_LOCATION, namespace)
+        new_dir = config.join_with_tool_location(namespace)
         if isdir(new_dir):
             parts = listdir(new_dir)
             paths = list(map(lambda x: join(new_dir, x), parts))
@@ -79,10 +79,7 @@ class ClickGlob:
         return __command_family
 
     def __make_group(path, cur_group, cur_namespace):
-        regex_expr = re.escape(config.LEADER) + \
-                re.escape(config.TOOL_LOCATION) + \
-                re.escape(cur_namespace) + \
-                r'\/(.*$)'
+        regex_expr = re.escape(config.join_with_tool_location(cur_namespace)) + r'\/(.*$)'
         new_namespace_bottom = re.search(regex_expr, path).group(1)
         new_namespace = join(cur_namespace, new_namespace_bottom)
 
