@@ -13,9 +13,13 @@ from itertools import chain
 
 class ClickGlob:
     def __glob_dirs(namespace):
-        parts = [config.LEADER, config.TOOL_LOCATION, namespace, '*']
-        paths = glob.glob(join(*parts))
-        return paths
+        new_dir = join(config.LEADER, config.TOOL_LOCATION, namespace)
+        if isdir(new_dir):
+            parts = listdir(new_dir)
+            paths = list(map(lambda x: join(new_dir, x), parts))
+            return paths
+        else:
+            return []
 
     # decorator for __glob_dir to get all valid paths (ending in config.yaml) at once
     def __glob_all(globbing_func):
