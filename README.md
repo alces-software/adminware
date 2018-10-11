@@ -17,7 +17,7 @@ save the anything to the database.
 
 Commands are automatically picked up from config files stored within:
 
-`/var/lib/adminware/tools/{batch,open}/[optional-other-directories/]<command-name>/config.yaml`
+`/var/lib/adminware/tools/{batch,open}/[<optional-namespace>/].../<command-name>/config.yaml`
 
 The config.yaml files cannot have directories as their siblings, although
 there can be other files in the same directories.
