@@ -58,20 +58,7 @@ class ClickGlob:
                     action.create(cur_group, command_func)
                 else:
                     if isdir(path):
-                        regex_expr = re.escape(config.LEADER) + \
-                                re.escape(config.TOOL_LOCATION) + \
-                                re.escape(cur_namespace) + \
-                                r'\/(.*$)'
-                        new_namespace_bottom = re.search(regex_expr, path).group(1)
-                        new_namespace = join(cur_namespace, new_namespace_bottom)
-
-                        @cur_group.group(new_namespace_bottom,
-                                help="Descend into the {} namespace".format(new_namespace_bottom)
-                                )
-                        def new_group():
-                            pass
-
-                        __command_helper(new_group, new_namespace, command_func)
+                        __command_helper(*ClickGlob.__make_group(path, cur_group, cur_namespace), command_func)
 
         return __command
 
@@ -90,6 +77,23 @@ class ClickGlob:
                 family.create(click_group, command_func)
 
         return __command_family
+
+    def __make_group(path, cur_group, cur_namespace):
+        regex_expr = re.escape(config.LEADER) + \
+                re.escape(config.TOOL_LOCATION) + \
+                re.escape(cur_namespace) + \
+                r'\/(.*$)'
+        new_namespace_bottom = re.search(regex_expr, path).group(1)
+        new_namespace = join(cur_namespace, new_namespace_bottom)
+
+        @cur_group.group(new_namespace_bottom,
+                help="Descend into the {} namespace".format(new_namespace_bottom)
+                )
+        def new_group():
+            pass
+
+        return (new_group, new_namespace)
+
 
 class Action:
     def __init__(self, config):
