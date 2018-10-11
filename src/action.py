@@ -27,8 +27,8 @@ class ClickGlob:
             def __sub_wrapper(*args, **kwargs):
                 paths = globbing_func(*args)
                 for path in paths:
-                    if isfile('{}/config.yaml'.format(path)):
-                        kwargs['all_paths'] += [join(path, 'config.yaml')]
+                    if isfile(ClickGlob.join_config(path)):
+                        kwargs['all_paths'] += [ClickGlob.join_config(path)]
                     else:
                         namespace = path[len(config.LEADER + config.TOOL_LOCATION):]
                         __sub_wrapper(namespace, **kwargs)
@@ -46,7 +46,7 @@ class ClickGlob:
         def __command_helper(cur_group, cur_namespace, command_func):
             paths = ClickGlob.__glob_dirs(cur_namespace) # will generate a list of paths at level 'namespace'
             for path in paths:
-                if isfile('{}/config.yaml'.format(path)):
+                if isfile(ClickGlob.join_config(path)):
                     # if there exists a sibling dir to any config.yaml this is currently an error
                     # TODO this will be removed with closure of issue #49 but more validation may be needed
                     if any(map(lambda x: isdir(join(path, x)), listdir(path))):
@@ -54,7 +54,7 @@ class ClickGlob:
                                 + 'This is invalid, please rectify it before continuing')
                         exit(1)
 
-                    action = Action(Config('{}/config.yaml'.format(path)))
+                    action = Action(Config(ClickGlob.join_config(path)))
                     action.create(cur_group, command_func)
                 else:
                     if isdir(path):
@@ -90,6 +90,9 @@ class ClickGlob:
             pass
 
         return (new_group, new_namespace)
+
+    def join_config(path):
+        return join(path, 'config.yaml')
 
 
 class Action:
