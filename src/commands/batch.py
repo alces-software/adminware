@@ -17,7 +17,7 @@ def add_commands(appliance):
     def batch():
         pass
 
-    @batch.command(help='Retrieves the batch result summaries')
+    @batch.command(help='Retrieves batch result summaries')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
                   help='Retrieve the previous result for a node')
     @click.option('--group', '-g', multiple=True, metavar='GROUP',
@@ -25,7 +25,7 @@ def add_commands(appliance):
     @click.option('--batch-id', '-i', metavar='ID', type=int,
                   help='Retrieve results for a particular batch')
     @click.pass_context
-    def history(ctx, **options):
+    def filter(ctx, **options):
         set_nodes_context(ctx, **options)
         nodes = ctx.obj['adminware']['nodes']
         batch_id = options['batch_id']
@@ -53,24 +53,24 @@ def add_commands(appliance):
             return rows
         display_table(headers, table_rows())
 
-    @batch.command(help='List the recently ran batches')
+    @batch.command(help='Retrieves the most recently ran batches')
     @click.option('--limit', '-l', default=10, type=int, metavar='NUM',
                   help='Return the last NUM of batches')
-    def list(limit):
+    def history(limit):
         session = Session()
         try:
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
                            .limit(limit)
-            headers = ['ID', 'Date', 'Command', 'Arguments', 'Nodes']
+            headers = ['ID', 'Nodes', 'Command', 'Arguments', 'Date']
             rows = []
 
             for batch in query.all():
                 nodes = [job.node for job in batch.jobs]
                 nodes_str = ','.join(nodes)
                 row = [
-                    batch.id, batch.created_date, batch.__name__(),
-                    batch.arguments, nodes_str
+                    batch.id, nodes_str, batch.__name__(),
+                    batch.arguments, batch.created_date
                 ]
                 rows.append(row)
             display_table(headers, rows)
