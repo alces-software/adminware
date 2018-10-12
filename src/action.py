@@ -48,7 +48,6 @@ class ClickGlob:
             for path in paths:
                 if isfile(ClickGlob.join_config(path)):
                     # if there exists a sibling dir to any config.yaml this is currently an error
-                    # TODO this will be removed with closure of issue #49 but more validation may be needed
                     if any(map(lambda x: isdir(join(path, x)), listdir(path))):
                         click.echo('config.yaml file with directory as sibling detected at {}\n'.format(path)
                                 + 'This is invalid, please rectify it before continuing')
