@@ -17,7 +17,7 @@ def add_commands(appliance):
     def batch():
         pass
 
-    @batch.command(help='Retrieves batch result summaries')
+    @batch.command(help='Retrieves batches\' result summaries')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
                   help='Retrieve the previous result for a node')
     @click.option('--group', '-g', multiple=True, metavar='GROUP',
