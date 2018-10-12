@@ -21,22 +21,20 @@ class ClickGlob:
         else:
             return []
 
-    # decorator for __glob_dir to get all valid paths (ending in config.yaml) at once
-    def __glob_all(globbing_func):
-        def __wrapper(*args, **kwargs):
-            def __sub_wrapper(*args, **kwargs):
-                paths = globbing_func(*args)
-                for path in paths:
-                    if isfile(ClickGlob.join_config(path)):
-                        kwargs['all_paths'] += [ClickGlob.join_config(path)]
-                    else:
-                        namespace = path[len(config.LEADER + config.TOOL_LOCATION):]
-                        __sub_wrapper(namespace, **kwargs)
-                return kwargs['all_paths']
+    # repeats __glob_dirs to get all valid paths (ending in config.yaml) at once
+    def __glob_all(namespace):
+        def __glob_recur(namespace, all_paths=[]):
+            paths = ClickGlob.__glob_dirs(namespace)
+            for path in paths:
+                if isfile(ClickGlob.join_config(path)):
+                    all_paths += [ClickGlob.join_config(path)]
+                else:
+                    namespace = path[len(config.LEADER + config.TOOL_LOCATION):]
+                    __glob_recur(namespace, all_paths)
+            return all_paths
 
-            return __sub_wrapper(*args, **kwargs)
+        return __glob_recur(namespace)
 
-        return __wrapper
 
     def command(click_group, namespace):
         # command_func is either run_open or run_batch, what this is decorating
@@ -63,8 +61,7 @@ class ClickGlob:
 
     def command_family(click_group, namespace):
         def __command_family(command_func):
-            __glob_all_dirs = ClickGlob.__glob_all(ClickGlob.__glob_dirs)
-            configs = list(map(lambda x: Config(x), __glob_all_dirs(namespace, all_paths=[])))
+            configs = list(map(lambda x: Config(x), ClickGlob.__glob_all(namespace)))
             family_names = []
             for config in configs:
                 if config.families(): family_names += config.families()
