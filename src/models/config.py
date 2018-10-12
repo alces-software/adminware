@@ -1,8 +1,6 @@
 import yaml
 import os
 
-from click import ClickException
-
 class Config():
     def __init__(self, path):
         self.path = path
@@ -15,8 +13,6 @@ class Config():
         return os.path.basename(os.path.dirname(self.path))
 
     def command(self):
-        if 'command' not in self.data:
-            raise ClickException('{} has no valid command'.format(self.__name__()))
         return self.data['command']
 
     def help(self):
@@ -28,3 +24,6 @@ class Config():
         default = ''
         self.data.setdefault('families', default)
         return self.data['families']
+
+    def command_exists(self):
+        return 'command' in self.data
