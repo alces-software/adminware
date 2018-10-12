@@ -45,11 +45,6 @@ class ClickGlob:
             paths = ClickGlob.__glob_dirs(cur_namespace) # will generate a list of paths at level 'namespace'
             for path in paths:
                 if isfile(ClickGlob.join_config(path)):
-                    # if there exists a sibling dir to any config.yaml this is currently an error
-                    if any(map(lambda x: isdir(join(path, x)), listdir(path))):
-                        click.echo('config.yaml file with directory as sibling detected at {}\n'.format(path)
-                                + 'This is invalid, please rectify it before continuing')
-                        exit(1)
 
                     action = Action(Config(ClickGlob.join_config(path)))
                     action.create(cur_group, command_func)
