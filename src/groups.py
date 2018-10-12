@@ -27,7 +27,7 @@ def expand_nodes(node_list):
                     .format(node))
 
     # build and parse a genders file of the nodes
-    tmp_file = NamedTemporaryFile(dir='/tmp/')
+    tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
     with open(tmp_file.name, 'w') as f:
         f.write('\n'.join(node_list))
     nodes = __nodeattr(file_path=tmp_file.name, arguments=['--expand'])
