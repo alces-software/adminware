@@ -17,7 +17,10 @@ save the anything to the database.
 
 Commands are automatically picked up from config files stored within:
 
-`/var/lib/adminware/tools/{batch,open}/<command-name>/config.yaml`
+`/var/lib/adminware/tools/{batch,open}/[<optional-namespace>/].../<command-name>/config.yaml`
+
+The config.yaml files cannot have directories as their siblings, although
+there can be other files in the same directories.
 
 The config files should follow the following format:
 ```
@@ -34,7 +37,7 @@ help: command_help
 # can be executed with a single statement using `batch run-family`. Commands within a
 # family are executed in alphabetical order and each command is executed on every node
 # before the second command is executed on any.
-# This field is optional.
+# This field is optional and only valid for batch commands.
 families:
  - family1
  - family2

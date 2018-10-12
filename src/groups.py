@@ -1,5 +1,7 @@
 
 # all dependancy on nodeattr is to be located in this file
+import config
+
 from plumbum import local, ProcessExecutionError
 from tempfile import NamedTemporaryFile
 from click import ClickException
@@ -33,7 +35,7 @@ def expand_nodes(node_list):
     del nodes[-1]
     return nodes
 
-def __nodeattr(file_path='/var/lib/adminware/genders', arguments=[], split_char="\n"):
+def __nodeattr(file_path='{}genders'.format(config.LEADER), arguments=[], split_char="\n"):
     try:
         return local['nodeattr']['-f', file_path](arguments).split(split_char)
     except ProcessExecutionError as e:
