@@ -18,9 +18,9 @@ def add_commands(appliance):
         pass
 
     @batch.command(help='Retrieves the batch result summaries')
-    @click.option('--node', '-n', metavar='NODE',
+    @click.option('--node', '-n', multiple=True, metavar='NODE',
                   help='Retrieve the previous result for a node')
-    @click.option('--group', '-g', metavar='GROUP',
+    @click.option('--group', '-g', multiple=True, metavar='GROUP',
                   help='Retrieve the results for all nodes in group')
     @click.option('--batch-id', '-i', metavar='ID', type=int,
                   help='Retrieve results for a particular batch')
