@@ -39,7 +39,7 @@ def add_commands(appliance):
                          .filter(Batch.id == int(batch_id))
         jobs = query.all()
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
-        headers = ['Batch', 'Node', 'Exit Code', 'Command', 'Date']
+        headers = ['Batch ID', 'Node', 'Exit Code', 'Command', 'Date']
         def table_rows():
             rows = []
             for job in jobs:
@@ -62,7 +62,7 @@ def add_commands(appliance):
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
                            .limit(limit)
-            headers = ['ID', 'Nodes', 'Command', 'Arguments', 'Date']
+            headers = ['Batch ID', 'Nodes', 'Command', 'Arguments', 'Date']
             rows = []
 
             for batch in query.all():
@@ -91,7 +91,7 @@ def add_commands(appliance):
         if job == None: raise ClickException('No job found')
         table_data = [
             ['Date', job.created_date],
-            ['Batch', job.batch.id],
+            ['Batch ID', job.batch.id],
             ['Node', job.node],
             ['Exit Code', job.exit_code],
             ['Command', job.batch.__name__()],
