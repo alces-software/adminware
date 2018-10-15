@@ -13,9 +13,6 @@ class Config():
         return os.path.basename(os.path.dirname(self.path))
 
     def command(self):
-        n = self.__name__()
-        default = 'echo "No command given for: {}"'.format(n)
-        self.data.setdefault('command', default)
         return self.data['command']
 
     def help(self):
@@ -27,3 +24,6 @@ class Config():
         default = ''
         self.data.setdefault('families', default)
         return self.data['families']
+
+    def command_exists(self):
+        return 'command' in self.data and self.data['command']

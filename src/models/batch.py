@@ -24,6 +24,9 @@ class Batch(Base):
     def command(self):
         return self.config_model.command()
 
+    def command_exists(self):
+        return self.config_model.command_exists()
+
     def __init__(self, **kwargs):
         self.config = kwargs['config']
         if 'arguments' in kwargs: self.arguments = ' '. join(kwargs['arguments'])

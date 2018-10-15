@@ -29,6 +29,15 @@ class Job(Base):
 
 
     def run(self, interactive=False):
+        def __check_command(func):
+            def wrapper():
+                if self.batch.command_exists():
+                    func()
+                else:
+                    self.stderr = 'Incorrectly conifgured command'
+                    self.exit_code = -2
+            return wrapper
+
         def __with_connection(func):
             def wrapper():
                 connection = Connection(self.node)
@@ -44,6 +53,7 @@ class Job(Base):
                         connection.close()
             return wrapper
 
+        @__check_command
         @__with_connection
         def __runner(connection):
             def __set_result(result):
