@@ -26,4 +26,4 @@ class Config():
         return self.data['families']
 
     def command_exists(self):
-        return 'command' in self.data
+        return 'command' in self.data and self.data['command']
