@@ -17,7 +17,7 @@ def add_commands(appliance):
     def batch():
         pass
 
-    @batch.command(help='Retrieves batches\' result summaries')
+    @batch.command(help="Retrieves batches' result summaries")
     @click.option('--node', '-n', multiple=True, metavar='NODE',
                   help='Retrieve the previous result for a node')
     @click.option('--group', '-g', multiple=True, metavar='GROUP',
@@ -39,7 +39,7 @@ def add_commands(appliance):
                          .filter(Batch.id == int(batch_id))
         jobs = query.all()
         jobs = sorted(jobs, key=lambda job: job.created_date, reverse=True)
-        headers = ['Batch ID', 'Node', 'Exit Code', 'Command', 'Date']
+        headers = ['ID', 'Node', 'Exit Code', 'Command', 'Date']
         def table_rows():
             rows = []
             for job in jobs:
@@ -53,16 +53,16 @@ def add_commands(appliance):
             return rows
         display_table(headers, table_rows())
 
-    @batch.command(help='Retrieves the most recently ran batches')
+    @batch.command(help='Retrieves the recently ran batches')
     @click.option('--limit', '-l', default=10, type=int, metavar='NUM',
-                  help='Return the last NUM of batches')
+                  help='Return the last NUM batches')
     def history(limit):
         session = Session()
         try:
             query = session.query(Batch) \
                            .order_by(Batch.created_date.desc()) \
                            .limit(limit)
-            headers = ['Batch ID', 'Nodes', 'Command', 'Arguments', 'Date']
+            headers = ['ID', 'Nodes', 'Command', 'Arguments', 'Date']
             rows = []
 
             for batch in query.all():
