@@ -3,8 +3,6 @@ from fabric import Connection
 import os
 import glob
 
-from paramiko.ssh_exception import NoValidConnectionsError
-
 import datetime
 from shlex import quote
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
