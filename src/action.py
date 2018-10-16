@@ -6,10 +6,9 @@ import config
 
 from sys import exit
 from os import listdir
-from os.path import join, dirname, relpath, isfile, isdir
+from os.path import join, isfile, isdir, basename
 from models.config import Config
-from collections import defaultdict
-from itertools import chain
+
 
 class ClickGlob:
     def __glob_dirs(namespace):
@@ -21,42 +20,55 @@ class ClickGlob:
         else:
             return []
 
-    # repeats __glob_dirs to get all valid paths (ending in config.yaml) at once
-    def __glob_all(namespace):
-        def __glob_recur(namespace, all_paths=[]):
-            paths = ClickGlob.__glob_dirs(namespace)
-            for path in paths:
-                if isfile(ClickGlob.join_config(path)):
-                    all_paths += [ClickGlob.join_config(path)]
-                else:
-                    namespace = path[len(config.LEADER + config.TOOL_LOCATION):]
-                    __glob_recur(namespace, all_paths)
-            return all_paths
+    # function is either command_helper to generate Action objects & click commands
+    #   or glob_helper to generate a list of all config paths (for ActionFamily & batch tools)
+    def __each_dir(namespace, function, extra_args = [], parent_value = None):
+        for dir_path in ClickGlob.__glob_dirs(namespace):
+            config_exists = ClickGlob.__has_config(dir_path)
+            child_value = function(extra_args,
+                    config_exists = config_exists,
+                    dir_path = dir_path,
+                    parent_value = parent_value
+                    )
+            if not config_exists:
+                new_namespace = dir_path[len(config.LEADER + config.TOOL_LOCATION):]
+                ClickGlob.__each_dir(new_namespace, function, extra_args, parent_value = child_value)
 
-        return __glob_recur(namespace)
+    def glob_all(namespace):
+        collector = []
+        ClickGlob.__each_dir(namespace,
+                ClickGlob.glob_helper,
+                parent_value = collector)
+        return collector
 
+    def glob_helper(extra_args, config_exists, dir_path, parent_value):
+        collector = parent_value
+        if config_exists:
+            collector += [dir_path]
+        return collector
 
     def command(click_group, namespace):
         # command_func is either run_open or run_batch, what this is decorating
         def __command(command_func):
-            __command_helper(click_group, namespace, command_func)
+            ClickGlob.__each_dir(namespace,
+                    command_helper,
+                    extra_args=[command_func],
+                    parent_value = click_group)
 
-        def __command_helper(cur_group, cur_namespace, command_func):
-            paths = ClickGlob.__glob_dirs(cur_namespace) # will generate a list of paths at level 'namespace'
-            for path in paths:
-                if isfile(ClickGlob.join_config(path)):
-
-                    action = Action(Config(ClickGlob.join_config(path)))
-                    action.create(cur_group, command_func)
-                else:
-                    if isdir(path):
-                        __command_helper(*ClickGlob.__make_group(path, cur_group, cur_namespace), command_func)
+        def command_helper(extra_args, config_exists, dir_path, parent_value):
+            #this seems a little suboptimal
+            command_func = extra_args[0]
+            if config_exists:
+                action = Action(Config(ClickGlob.__join_config(dir_path)))
+                action.create(parent_value, command_func)
+            else:
+                return ClickGlob.__make_group(dir_path, parent_value)
 
         return __command
 
     def command_family(click_group, namespace):
         def __command_family(command_func):
-            configs = list(map(lambda x: Config(x), ClickGlob.__glob_all(namespace)))
+            configs = list(map(lambda x: Config(ClickGlob.__join_config(x)), ClickGlob.glob_all(namespace)))
             family_names = []
             for config in configs:
                 if config.families(): family_names += config.families()
@@ -69,10 +81,8 @@ class ClickGlob:
 
         return __command_family
 
-    def __make_group(path, cur_group, cur_namespace):
-        regex_expr = re.escape(config.join_with_tool_location(cur_namespace)) + r'\/(.*$)'
-        new_namespace_bottom = re.search(regex_expr, path).group(1)
-        new_namespace = join(cur_namespace, new_namespace_bottom)
+    def __make_group(path, cur_group):
+        new_namespace_bottom = basename(path)
 
         @cur_group.group(new_namespace_bottom,
                 help="Descend into the {} namespace".format(new_namespace_bottom)
@@ -80,10 +90,13 @@ class ClickGlob:
         def new_group():
             pass
 
-        return (new_group, new_namespace)
+        return new_group
 
-    def join_config(path):
+    def __join_config(path):
         return join(path, 'config.yaml')
+
+    def __has_config(path):
+        return isfile(ClickGlob.__join_config(path))
 
 
 class Action:
