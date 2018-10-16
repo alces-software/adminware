@@ -1,7 +1,7 @@
 
 import click
 from click import ClickException
-from action import ClickGlob
+import explore_tools
 import groups
 
 from cli_utils import set_nodes_context
@@ -110,7 +110,7 @@ def add_commands(appliance):
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @ClickGlob.command(run, 'batch')
+    @explore_tools.command(run, 'batch')
     @click.pass_context
     def run_batch(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
@@ -128,7 +128,7 @@ def add_commands(appliance):
     def run_family(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @ClickGlob.command_family(run_family, 'batch')
+    @explore_tools.command_family(run_family, 'batch')
     @click.pass_context
     def run_batch_family(ctx, family, command_configs):
         nodes = ctx.obj['adminware']['nodes']
