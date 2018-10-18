@@ -34,7 +34,7 @@ def command_family(click_group, namespace):
     return __command_family
 
 def create_families(namespace):
-    configs = create_all_configs(namespace)
+    configs = list(map(lambda x: Config(x), __glob_all(namespace)))
     family_names = []
     for config in configs:
         if config.families(): family_names += config.families()
@@ -43,9 +43,6 @@ def create_families(namespace):
     families = list(map(lambda x: ActionFamily(x), family_names))
     ActionFamily.set_configs(configs)
     return families
-
-def create_all_configs(namespace):
-    return list(map(lambda x: Config(x), __glob_all(namespace)))
 
 def __glob_all(namespace):
     collector = []
@@ -60,6 +57,16 @@ def __glob_helper(extra_args, config_exists, dir_path, parent_value):
     if config_exists:
         collector += [dir_path]
     return collector
+
+def single_level(namespace):
+    paths = __glob_dirs(namespace)
+    dir_contents = {'configs' : [], 'dirs' : []}
+    for path in paths:
+        if __has_config(path):
+            dir_contents['configs'] += [Config(__join_config(path))]
+        elif isdir(path):
+            dir_contents['dirs'] += [path]
+    return dir_contents
 
 # function is either command_helper to generate Action objects & click commands
 #   or glob_helper to generate a list of all config paths (for ActionFamily & batch tools)

@@ -2,6 +2,7 @@
 import click
 
 from click import ClickException
+from os.path import basename, join
 import explore_tools
 import groups
 
@@ -141,18 +142,22 @@ def add_commands(appliance):
             batches += [Batch(config=config.path)]
         execute_batch(batches, nodes)
 
-    @batch.command(help='List all available batch tools')
-    def avail():
-        configs = explore_tools.create_all_configs('batch')
-        output = "\nCOMMANDS"
-        for config in configs:
-            output = output + "\n\n{}".format(config.__name__()) + \
-                     "\n Command: {}".format(config.command()) + \
-                     "\n Help: {}".format(config.help())
-            if config.additional_namespace():
-                output = output + "\n Namespaces: {}".format(config.additional_namespace())
-            if config.families():
-                output = output + "\n Families: {}".format(", ".join(config.families()))
+    @batch.command(help='List available batch tools at a namespace')
+    @click.argument('namespace', required=False)
+    def avail(namespace):
+        if not namespace: namespace = ''
+        full_namespace = join('batch', namespace)
+        dir_contents = explore_tools.single_level(full_namespace)
+        if dir_contents['configs'] or dir_contents['dirs']:
+            output = "\nCOMMANDS"
+            for config in dir_contents['configs']:
+                output = output + "\n\n{} -- {}".format(config.__name__(), config.help())
+            for directory in dir_contents['dirs']:
+                directory = basename(directory)
+                output = output + "\n\n{} -- see 'batch avail {}".format(basename(directory), join(namespace, basename(directory)))
+        else:
+            output = "No commands or subdirectories in '{}'".format(full_namespace)
+        click.echo_via_pager(output + "\n")
 
     @batch.command(name='avail-families', help='List all available batch tool families')
     def avail_families():
