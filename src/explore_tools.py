@@ -28,20 +28,26 @@ def command(click_group, namespace):
 def command_family(click_group, namespace):
     # command_func is run_batch_family, what this is decorating
     def __command_family(command_func):
-        configs = list(map(lambda x: Config(x), glob_all(namespace)))
-        family_names = []
-        for config in configs:
-            if config.families(): family_names += config.families()
-        # remove dupicates
-        familiy_names = list(set(family_names))
-        families = list(map(lambda x: ActionFamily(x), family_names))
-        ActionFamily.set_configs(configs)
-        for family in families:
+        for family in create_families(namespace):
             family.create(click_group, command_func)
 
     return __command_family
 
-def glob_all(namespace):
+def create_families(namespace):
+    configs = create_all_configs(namespace)
+    family_names = []
+    for config in configs:
+        if config.families(): family_names += config.families()
+    # remove dupicates
+    family_names = list(set(family_names))
+    families = list(map(lambda x: ActionFamily(x), family_names))
+    ActionFamily.set_configs(configs)
+    return families
+
+def create_all_configs(namespace):
+    return list(map(lambda x: Config(x), __glob_all(namespace)))
+
+def __glob_all(namespace):
     collector = []
     __each_dir(namespace,
             __glob_helper,
