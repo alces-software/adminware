@@ -153,11 +153,17 @@ def add_commands(appliance):
                 output = output + "\n Namespaces: {}".format(config.additional_namespace())
             if config.families():
                 output = output + "\n Families: {}".format(", ".join(config.families()))
+
+    @batch.command(name='avail-families', help='List all available batch tool families')
+    def avail_families():
         action_families = explore_tools.create_families('batch')
-        output = output + "\n\nCOMMAND FAMILIES"
-        for family in action_families:
-            output = output + "\n\n{}".format(family.name) + \
-                     "\n Commands: {}".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
+        if action_families:
+            output = "\nCOMMAND FAMILIES"
+            for family in action_families:
+                output = output + "\n\n{}".format(family.name) + \
+                         "\n Commands: {}".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
+        else:
+            output = "No command families have been configured"
         click.echo_via_pager(output + "\n")
 
     def execute_batch(batches, nodes):
