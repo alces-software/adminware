@@ -149,27 +149,27 @@ def add_commands(appliance):
         full_namespace = join('batch', namespace)
         dir_contents = explore_tools.single_level(full_namespace)
         if dir_contents['configs'] or dir_contents['dirs']:
-            output = "\nCOMMANDS"
+            output = ''
             for config in dir_contents['configs']:
-                output = output + "\n\n{} -- {}".format(config.__name__(), config.help())
+                output = output + "\n{} -- {}\n".format(config.__name__(), config.help())
             for directory in dir_contents['dirs']:
                 directory = basename(directory)
-                output = output + "\n\n{} -- see 'batch avail {}".format(basename(directory), join(namespace, basename(directory)))
+                output = output + "\n{} -- see 'batch avail {}'\n".format(basename(directory), join(namespace, basename(directory)))
         else:
             output = "No commands or subdirectories in '{}'".format(full_namespace)
-        click.echo_via_pager(output + "\n")
+        click.echo_via_pager(output)
 
     @batch.command(name='avail-families', help='List all available batch tool families')
     def avail_families():
         action_families = explore_tools.create_families('batch')
         if action_families:
-            output = "\nCOMMAND FAMILIES"
+            output = ''
             for family in action_families:
-                output = output + "\n\n{}".format(family.name) + \
-                         "\n{}".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
+                output = output + "\n{}".format(family.name) + \
+                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
         else:
             output = "No command families have been configured"
-        click.echo_via_pager(output + "\n")
+        click.echo_via_pager(output)
 
     def execute_batch(batches, nodes):
         session = Session()
