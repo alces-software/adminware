@@ -166,7 +166,7 @@ def add_commands(appliance):
             output = "\nCOMMAND FAMILIES"
             for family in action_families:
                 output = output + "\n\n{}".format(family.name) + \
-                         "\n Commands: {}".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
+                         "\n{}".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
         else:
             output = "No command families have been configured"
         click.echo_via_pager(output + "\n")
