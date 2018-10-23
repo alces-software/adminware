@@ -45,17 +45,17 @@ def create_families(namespace):
     return families
 
 def __glob_all(namespace):
+    def __glob_helper(extra_args, config_exists, dir_path, parent_value):
+        collector = parent_value
+        if config_exists:
+            collector += [dir_path]
+        return collector
+
     collector = []
     __each_dir(namespace,
                __glob_helper,
                parent_value = collector)
     collector = list(map(__join_config, collector))
-    return collector
-
-def __glob_helper(extra_args, config_exists, dir_path, parent_value):
-    collector = parent_value
-    if config_exists:
-        collector += [dir_path]
     return collector
 
 def single_level(namespace):
