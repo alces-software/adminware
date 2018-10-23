@@ -35,13 +35,14 @@ def command_family(click_group, namespace):
 
 def create_families(namespace):
     configs = list(map(lambda x: Config(x), __glob_all(namespace)))
+    ActionFamily.set_configs(configs)
     family_names = []
     for config in configs:
         if config.families(): family_names += config.families()
     # remove dupicates
     family_names = list(set(family_names))
+    family_names.sort()
     families = list(map(lambda x: ActionFamily(x), family_names))
-    ActionFamily.set_configs(configs)
     return families
 
 def __glob_all(namespace):
