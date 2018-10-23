@@ -1,7 +1,7 @@
 
 import click
 from click import ClickException
-import explore_tools
+import click_tools
 from models.job import Job
 from models.batch import Batch
 
@@ -21,7 +21,7 @@ def add_commands(appliance):
                        help='Run a command in an interactive shell'
                    )(open_command)
 
-    @explore_tools.command(open_command, 'open')
+    @click_tools.command(open_command, 'open')
     @click.pass_context
     def run_open(ctx, config, arguments):
         batch = Batch(config = config.path, arguments = arguments)

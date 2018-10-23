@@ -3,6 +3,8 @@ import click
 
 from click import ClickException
 from os.path import basename, join
+
+import click_tools
 import explore_tools
 import groups
 
@@ -112,7 +114,7 @@ def add_commands(appliance):
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @explore_tools.command(run, 'batch')
+    @click_tools.command(run, 'batch')
     @click.pass_context
     def run_batch(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
@@ -130,7 +132,7 @@ def add_commands(appliance):
     def run_family(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @explore_tools.command_family(run_family, 'batch')
+    @click_tools.command_family(run_family, 'batch')
     @click.pass_context
     def run_batch_family(ctx, family, command_configs):
         nodes = ctx.obj['adminware']['nodes']
@@ -161,7 +163,7 @@ def add_commands(appliance):
 
     @batch.command(name='avail-families', help='List all available batch tool families')
     def avail_families():
-        action_families = explore_tools.create_families('batch')
+        action_families = click_tools.create_families('batch')
         if action_families:
             output = ''
             for family in action_families:
