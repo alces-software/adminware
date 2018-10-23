@@ -11,9 +11,9 @@ def command(click_group, namespace):
     # command_func is either run_open or run_batch, what this is decorating
     def __command(command_func):
         __each_dir(namespace,
-                __command_helper,
-                extra_args=[command_func],
-                parent_value = click_group)
+                   __command_helper,
+                   extra_args=[command_func],
+                   parent_value = click_group)
 
     def __command_helper(extra_args, config_exists, dir_path, parent_value):
         command_func = extra_args[0]
@@ -47,8 +47,8 @@ def create_families(namespace):
 def __glob_all(namespace):
     collector = []
     __each_dir(namespace,
-            __glob_helper,
-            parent_value = collector)
+               __glob_helper,
+               parent_value = collector)
     collector = list(map(__join_config, collector))
     return collector
 
@@ -74,10 +74,9 @@ def __each_dir(namespace, function, extra_args = [], parent_value = None):
     for dir_path in __glob_dirs(namespace):
         config_exists = __has_config(dir_path)
         child_value = function(extra_args,
-                config_exists = config_exists,
-                dir_path = dir_path,
-                parent_value = parent_value
-                )
+                               config_exists = config_exists,
+                               dir_path = dir_path,
+                               parent_value = parent_value)
         if not config_exists:
             new_namespace = dir_path[len(config.LEADER + config.TOOL_LOCATION):]
             __each_dir(new_namespace, function, extra_args, parent_value = child_value)
