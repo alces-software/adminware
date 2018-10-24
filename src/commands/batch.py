@@ -108,26 +108,20 @@ def add_commands(appliance):
     # Any commands that are moved will be considered distinct.
     def node_log(node):
         session = Session()
-        job_query = session.query(Job)\
+        # returns 2-length tuples of the Job data and the amount of times the command's been run on <node>
+        job_query = session.query(Job, func.count(Batch.config))\
                            .filter(Job.node == node)\
                            .join("batch")\
                            .order_by(Job.created_date.desc())\
                            .group_by(Batch.config)\
                            .all()
         if not job_query: raise ClickException('No jobs found for node {}'.format(node))
-        #returns tuples of config_paths + the number of times that config's been run on <node>
-        commmand_count_query = session.query(Batch.config, func.count(Batch.config))\
-                                      .join(Job.batch)\
-                                      .filter(Job.node == node)\
-                                      .order_by(Job.created_date.desc())\
-                                      .group_by(Batch.config)\
-                                      .all()
         headers = ['Command', 'Last Batch ID', 'Last Exit Code', 'Date', 'Arguments', 'Times Ran']
         rows = []
-        for i in range(len(job_query)):
-            command = job_query[i]
+        for command in job_query:
+            count = command[1]
+            command = command[0]
             arguments = None if not command.batch.arguments else command.batch.arguments
-            count = commmand_count_query[i][1]
             row = [command.batch.__name__(), command.batch.id, command.exit_code,
                     command.created_date, arguments, count]
             rows += [row]
