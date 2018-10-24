@@ -6,6 +6,7 @@ import groups
 
 from cli_utils import set_nodes_context
 from database import Session
+from sqlalchemy import func
 
 from models.job import Job
 from models.batch import Batch
@@ -100,6 +101,39 @@ def add_commands(appliance):
             ['STDERR', job.stderr]
         ]
         display_table([], table_data)
+
+    @batch.command(name='node-log',help="View the execution of each command on a node")
+    @click.argument('node', type=str)
+    # note: this works on config location, not command name.
+    # Any commands that are moved will be considered distinct.
+    def node_log(node):
+        session = Session()
+        job_query = session.query(Job)\
+                           .filter(Job.node == node)\
+                           .join("batch")\
+                           .order_by(Job.created_date.desc())\
+                           .group_by(Batch.config)\
+                           .all()
+        #returns tuples of config_paths + the number of times that config's been run on <node>
+        commmand_count_query = session.query(Batch.config, func.count(Batch.config))\
+                                      .join(Job.batch)\
+                                      .filter(Job.node == node)\
+                                      .order_by(Job.created_date.desc())\
+                                      .group_by(Batch.config)\
+                                      .all()
+        headers = ['Command', 'Last Batch ID', 'Last Exit Code', 'Date', 'Arguments', 'Times Ran']
+        rows = []
+        #I'm aware this isn't particularly pythonic, any ideas?
+        for i in range(len(job_query)):
+            command = job_query[i]
+            arguments = None if not command.batch.arguments else command.batch.arguments
+            count = commmand_count_query[i][1]
+            row = [command.batch.__name__(), command.batch.id, command.exit_code,
+                    command.created_date, arguments, count]
+            rows += [row]
+            # sort by command name
+            rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
 
     @batch.group(help='Run a command on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
