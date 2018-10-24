@@ -5,7 +5,7 @@ from os.path import join, isfile, isdir
 import config
 from models.config import Config
 
-def glob_all(namespace):
+def glob_all_configs(namespace):
     def __glob_helper(extra_args, config_exists, dir_path, parent_value):
         collector = parent_value
         if config_exists:
@@ -19,7 +19,7 @@ def glob_all(namespace):
     collector = list(map(join_config, collector))
     return collector
 
-def single_level(namespace):
+def inspect_single_namespace(namespace):
     paths = __glob_dirs(namespace)
     dir_contents = {'configs' : [], 'dirs' : []}
     for path in paths:

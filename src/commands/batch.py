@@ -149,7 +149,7 @@ def add_commands(appliance):
     def avail(namespace):
         if not namespace: namespace = ''
         full_namespace = join('batch', namespace)
-        dir_contents = explore_tools.single_level(full_namespace)
+        dir_contents = explore_tools.inspect_single_namespace(full_namespace)
         if dir_contents['configs'] or dir_contents['dirs']:
             output = ''
             for config in dir_contents['configs']:

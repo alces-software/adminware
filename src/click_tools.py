@@ -2,7 +2,7 @@
 import click
 from os.path import basename
 
-from explore_tools import each_dir, glob_all, join_config
+from explore_tools import each_dir, glob_all_configs, join_config
 from models.config import Config
 
 def command(click_group, namespace):
@@ -12,7 +12,7 @@ def command(click_group, namespace):
                  extra_args=[command_func],
                  parent_value = click_group)
 
-    def __make_group(path, cur_group):
+    def __make_click_group(path, cur_group):
         new_namespace_bottom = basename(path)
 
         @cur_group.group(new_namespace_bottom,
@@ -29,7 +29,7 @@ def command(click_group, namespace):
             action = Action(Config(join_config(dir_path)))
             action.create(parent_value, command_func)
         else:
-            return __make_group(dir_path, parent_value)
+            return __make_click_group(dir_path, parent_value)
 
     return __command
 
@@ -41,7 +41,7 @@ def command_family(click_group, namespace):
     return __command_family
 
 def create_families(namespace):
-    configs = list(map(lambda x: Config(x), glob_all(namespace)))
+    configs = list(map(lambda x: Config(x), glob_all_configs(namespace)))
     ActionFamily.set_configs(configs)
     family_names = []
     for config in configs:
