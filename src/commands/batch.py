@@ -114,6 +114,7 @@ def add_commands(appliance):
                            .order_by(Job.created_date.desc())\
                            .group_by(Batch.config)\
                            .all()
+        if not job_query: raise ClickException('No jobs found for node {}'.format(node))
         #returns tuples of config_paths + the number of times that config's been run on <node>
         commmand_count_query = session.query(Batch.config, func.count(Batch.config))\
                                       .join(Job.batch)\
@@ -123,7 +124,6 @@ def add_commands(appliance):
                                       .all()
         headers = ['Command', 'Last Batch ID', 'Last Exit Code', 'Date', 'Arguments', 'Times Ran']
         rows = []
-        #I'm aware this isn't particularly pythonic, any ideas?
         for i in range(len(job_query)):
             command = job_query[i]
             arguments = None if not command.batch.arguments else command.batch.arguments
