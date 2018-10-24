@@ -6,7 +6,6 @@ from explore_tools import each_dir, glob_all, join_config
 from models.config import Config
 
 def command(click_group, namespace):
-    # command_func is either run_open or run_batch, what this is decorating
     def __command(command_func):
         each_dir(namespace,
                  __command_helper,
@@ -35,7 +34,6 @@ def command(click_group, namespace):
     return __command
 
 def command_family(click_group, namespace):
-    # command_func is run_batch_family, what this is decorating
     def __command_family(command_func):
         for family in create_families(namespace):
             family.create(click_group, command_func)
