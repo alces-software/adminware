@@ -116,14 +116,23 @@ def add_commands(appliance):
                            .group_by(Batch.config)\
                            .all()
         if not job_query: raise ClickException('No jobs found for node {}'.format(node))
-        headers = ['Command', 'Last Batch ID', 'Last Exit Code', 'Date', 'Arguments', 'Times Ran']
+        headers = ['Command',
+                   'Last Batch ID',
+                   'Last Exit Code',
+                   'Date',
+                   'Arguments',
+                   'Times Ran']
         rows = []
         for command in job_query:
             count = command[1]
             command = command[0]
             arguments = None if not command.batch.arguments else command.batch.arguments
-            row = [command.batch.__name__(), command.batch.id, command.exit_code,
-                    command.created_date, arguments, count]
+            row = [command.batch.__name__(),
+                   command.batch.id,
+                   command.exit_code,
+                   command.created_date,
+                   arguments,
+                   count]
             rows += [row]
             # sort by command name
             rows.sort(key=lambda x:x[0])
