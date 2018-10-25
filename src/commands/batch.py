@@ -125,7 +125,7 @@ def add_commands(appliance):
                    'Batch',
                    'Arguments',
                    'Date',
-                   'No. Reruns']
+                   'No. Runs']
 
         rows = []
         for command in job_query:
