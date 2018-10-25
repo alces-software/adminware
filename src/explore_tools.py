@@ -19,7 +19,7 @@ def glob_all_configs(namespace):
     collector = list(map(join_config, collector))
     return collector
 
-def inspect_single_namespace(namespace):
+def inspect_namespace(namespace):
     paths = __glob_dirs(namespace)
     dir_contents = {'configs' : [], 'dirs' : []}
     for path in paths:
