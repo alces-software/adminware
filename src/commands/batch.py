@@ -16,6 +16,8 @@ from models.job import Job
 from models.batch import Batch
 from appliance_cli.text import display_table
 
+from greenlet import greenlet
+
 def add_commands(appliance):
 
     @appliance.group(help='Manage running a command over the nodes')
@@ -212,20 +214,25 @@ def add_commands(appliance):
         click.echo_via_pager(output)
 
     def execute_batch(batches, nodes):
-        def __run_job(node, batch):
-            local_session = Session()
-            local_batch = local_session.merge(batch)
-            job = Job(node = node, batch = local_batch)
-            local_session.add(job)
-            try:
-                job.run()
-            finally:
-                local_session.commit()
-            if job.exit_code == 0:
-                symbol = 'Pass'
-            else:
-                symbol = 'Failed: {}'.format(job.exit_code)
-            click.echo('{}: {}'.format(job.node, symbol))
+        class JobRunner:
+            def __init__(self, node, batch):
+                self.node = node
+                self.batch = batch
+
+            def run(self):
+                local_session = Session()
+                local_batch = local_session.merge(self.batch)
+                job = Job(node = self.node, batch = local_batch)
+                local_session.add(job)
+                try:
+                    job.run()
+                finally:
+                    local_session.commit()
+                if job.exit_code == 0:
+                    symbol = 'Pass'
+                else:
+                    symbol = 'Failed: {}'.format(job.exit_code)
+                click.echo('{}: {}'.format(job.node, symbol))
 
         session = Session()
         try:
@@ -234,7 +241,7 @@ def add_commands(appliance):
                 session.commit()
                 click.echo('Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__()))
                 for node in nodes:
-                    __run_job(node, batch)
+                    JobRunner(node, batch).run()
         finally:
             session.commit()
             session.close()
