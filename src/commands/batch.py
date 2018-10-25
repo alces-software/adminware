@@ -213,13 +213,11 @@ def add_commands(appliance):
 
     def execute_batch(batches, nodes):
         session = Session()
-        output = ''
         try:
             for batch in batches:
-                if output: output = output + '\n'
                 session.add(batch)
                 session.commit()
-                output = output + 'Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__())
+                click.echo('Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__()))
                 for node in nodes:
                     local_session = Session()
                     local_batch = local_session.merge(batch)
@@ -233,9 +231,8 @@ def add_commands(appliance):
                         symbol = 'Pass'
                     else:
                         symbol = 'Failed: {}'.format(job.exit_code)
-                    output = output + '\n{}: {}'.format(job.node, symbol)
+                    click.echo('{}: {}'.format(job.node, symbol))
         finally:
             session.commit()
             session.close()
-            click.echo_via_pager(output)
 
