@@ -221,9 +221,14 @@ def add_commands(appliance):
                 session.commit()
                 output = output + 'Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__())
                 for node in nodes:
-                    job = Job(node = node, batch = batch)
-                    session.add(job)
-                    job.run()
+                    local_session = Session()
+                    local_batch = local_session.merge(batch)
+                    job = Job(node = node, batch = local_batch)
+                    local_session.add(job)
+                    try:
+                        job.run()
+                    finally:
+                        local_session.commit()
                     if job.exit_code == 0:
                         symbol = 'Pass'
                     else:
