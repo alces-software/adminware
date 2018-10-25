@@ -1,7 +1,11 @@
 
 import click
+
 from click import ClickException
-from action import ClickGlob
+from os.path import basename, join
+
+import click_tools
+import explore_tools
 import groups
 
 from cli_utils import set_nodes_context
@@ -110,7 +114,7 @@ def add_commands(appliance):
     def run(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @ClickGlob.command(run, 'batch')
+    @click_tools.command(run, 'batch')
     @click.pass_context
     def run_batch(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
@@ -128,7 +132,7 @@ def add_commands(appliance):
     def run_family(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @ClickGlob.command_family(run_family, 'batch')
+    @click_tools.command_family(run_family, 'batch')
     @click.pass_context
     def run_batch_family(ctx, family, command_configs):
         nodes = ctx.obj['adminware']['nodes']
@@ -139,6 +143,35 @@ def add_commands(appliance):
             #create batch w/ relevant config for command
             batches += [Batch(config=config.path)]
         execute_batch(batches, nodes)
+
+    @batch.command(help='List available batch tools at a namespace')
+    @click.argument('namespace', required=False)
+    def avail(namespace):
+        if not namespace: namespace = ''
+        full_namespace = join('batch', namespace)
+        dir_contents = explore_tools.inspect_namespace(full_namespace)
+        if dir_contents['configs'] or dir_contents['dirs']:
+            output = ''
+            for config in dir_contents['configs']:
+                output = output + "\n{} -- {}\n".format(config.__name__(), config.help())
+            for directory in dir_contents['dirs']:
+                directory = basename(directory)
+                output = output + "\n{} -- see 'batch avail {}'\n".format(basename(directory), join(namespace, basename(directory)))
+        else:
+            output = "No commands or subdirectories in '{}'".format(full_namespace)
+        click.echo_via_pager(output)
+
+    @batch.command(name='avail-families', help='List all available batch tool families')
+    def avail_families():
+        action_families = click_tools.create_families('batch')
+        if action_families:
+            output = ''
+            for family in action_families:
+                output = output + "\n{}".format(family.name) + \
+                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
+        else:
+            output = "No command families have been configured"
+        click.echo_via_pager(output)
 
     def execute_batch(batches, nodes):
         session = Session()
