@@ -5,11 +5,11 @@ from os.path import basename
 from explore_tools import each_dir, glob_all_configs, join_config
 from models.config import Config
 
-def command(click_group, namespace):
+def command(click_group, namespace = '', exclude_interactive_only = False):
     def __command(command_func):
         each_dir(namespace,
                  __command_helper,
-                 extra_args=[command_func],
+                 extra_args=[command_func, exclude_interactive_only],
                  parent_value = click_group)
 
     def __make_click_group(path, cur_group):
@@ -25,27 +25,30 @@ def command(click_group, namespace):
 
     def __command_helper(extra_args, config_exists, dir_path, parent_value):
         command_func = extra_args[0]
+        exclude_interactive_only = extra_args[1]
         if config_exists:
-            action = Action(Config(join_config(dir_path)))
-            action.create(parent_value, command_func)
+            config = Config(join_config(dir_path))
+            if not (exclude_interactive_only and config.interactive_only()):
+                action = Action(config)
+                action.create(parent_value, command_func)
         else:
             return __make_click_group(dir_path, parent_value)
 
     return __command
 
-def command_family(click_group, namespace):
+def command_family(click_group):
     def __command_family(command_func):
-        for family in create_families(namespace):
+        for family in create_families():
             family.create(click_group, command_func)
 
     return __command_family
 
-def create_families(namespace):
+def create_families(namespace=''):
     configs = list(map(lambda x: Config(x), glob_all_configs(namespace)))
     ActionFamily.set_configs(configs)
     family_names = []
     for config in configs:
-        if config.families(): family_names += config.families()
+        if config.families() and not config.interactive_only(): family_names += config.families()
     # remove dupicates
     family_names = list(set(family_names))
     family_names.sort()
