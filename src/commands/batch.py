@@ -219,6 +219,9 @@ def add_commands(appliance):
                 self.node = node
                 self.batch = batch
 
+            def green(self):
+                return greenlet(self.run)
+
             def run(self):
                 local_session = Session()
                 local_batch = local_session.merge(self.batch)
@@ -240,7 +243,7 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__()))
-                job_greens = map(lambda n: greenlet(JobRunner(n, batch).run), nodes)
+                job_greens = map(lambda n: JobRunner(n, batch).green(), nodes)
                 for green in job_greens: green.switch()
         finally:
             session.commit()
