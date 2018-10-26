@@ -17,6 +17,7 @@ from models.batch import Batch
 from appliance_cli.text import display_table
 
 from greenlet import greenlet
+import threading
 
 def add_commands(appliance):
 
@@ -218,9 +219,17 @@ def add_commands(appliance):
             def __init__(self, node, batch):
                 self.node = node
                 self.batch = batch
+                self.thread = threading.Thread(target=self.run)
 
             def green(self):
-                return greenlet(self.run)
+                return greenlet(self.run_greenlet)
+
+            # This method acts as the run method for greenlet. It is responsible for starting
+            # the job in a new thread
+            def run_greenlet(self):
+                # The thread identifier can be used to check if the thread has been started
+                if self.thread.ident is None: self.thread.start()
+                self.thread.join()
 
             def run(self):
                 local_session = Session()
