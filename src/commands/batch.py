@@ -233,18 +233,19 @@ def add_commands(appliance):
 
             def run(self):
                 local_session = Session()
-                local_batch = local_session.merge(self.batch)
-                job = Job(node = self.node, batch = local_batch)
-                local_session.add(job)
                 try:
+                    local_batch = local_session.merge(self.batch)
+                    job = Job(node = self.node, batch = local_batch)
+                    local_session.add(job)
                     job.run()
+                    if job.exit_code == 0:
+                        symbol = 'Pass'
+                    else:
+                        symbol = 'Failed: {}'.format(job.exit_code)
+                    click.echo('{}: {}'.format(job.node, symbol))
                 finally:
                     local_session.commit()
-                if job.exit_code == 0:
-                    symbol = 'Pass'
-                else:
-                    symbol = 'Failed: {}'.format(job.exit_code)
-                click.echo('{}: {}'.format(job.node, symbol))
+                    Session.remove()
 
         session = Session()
         try:
@@ -256,5 +257,5 @@ def add_commands(appliance):
                 for green in job_greens: green.switch()
         finally:
             session.commit()
-            session.close()
+            Session.remove()
 
