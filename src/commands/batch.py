@@ -16,7 +16,6 @@ from models.job import Job
 from models.batch import Batch
 from appliance_cli.text import display_table
 
-from greenlet import greenlet
 import threading
 
 def add_commands(appliance):
@@ -221,16 +220,6 @@ def add_commands(appliance):
                 self.batch = batch
                 self.thread = threading.Thread(target=self.run)
 
-            def green(self):
-                return greenlet(self.run_greenlet)
-
-            # This method acts as the run method for greenlet. It is responsible for starting
-            # the job in a new thread
-            def run_greenlet(self):
-                # The thread identifier can be used to check if the thread has been started
-                if self.thread.ident is None: self.thread.start()
-                self.thread.join()
-
             def run(self):
                 local_session = Session()
                 try:
@@ -253,8 +242,16 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__()))
-                job_greens = map(lambda n: JobRunner(n, batch).green(), nodes)
-                for green in job_greens: green.switch()
+                threads = list(map(lambda n: JobRunner(n, batch).thread, nodes))
+                active_threads = []
+                while len(threads) > 0 or len(active_threads) > 0:
+                    while len(active_threads) < 10 and len(threads) > 0:
+                        new_thread = threads.pop()
+                        new_thread.start()
+                        active_threads.append(new_thread)
+                    for thread in active_threads:
+                        if not thread.is_alive():
+                            active_threads.remove(thread)
         finally:
             session.commit()
             Session.remove()
