@@ -243,6 +243,7 @@ def add_commands(appliance):
                 session.commit()
                 click.echo('Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__()))
                 threads = list(map(lambda n: JobRunner(n, batch).thread, nodes))
+                threads.reverse()
                 active_threads = []
                 while len(threads) > 0 or len(active_threads) > 0:
                     while len(active_threads) < 10 and len(threads) > 0:
