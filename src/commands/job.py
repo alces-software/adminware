@@ -20,39 +20,6 @@ def add_commands(appliance):
     def job():
         pass
 
-    @job.command(help='List available tools at a namespace')
-    @click.argument('namespace', required=False)
-    def avail(namespace):
-        if not namespace: namespace = ''
-        dir_contents = explore_tools.inspect_namespace(namespace)
-        if dir_contents['configs'] or dir_contents['dirs']:
-            output = ''
-            for config in dir_contents['configs']:
-                output = output + "\n{} -- {}\n".format(config.__name__(), config.help())
-                if config.interactive_only(): output = output + "Only runnable interactively\n"
-            for directory in dir_contents['dirs']:
-                directory = basename(directory)
-                output = output + "\n{} -- see 'job avail {}'\n".format(basename(directory),
-                                                                          join(namespace, basename(directory)))
-        else:
-            if namespace:
-                output = "No commands or subdirectories in '{}'".format(namespace)
-            else:
-                output = "No commands found"
-        click.echo_via_pager(output)
-
-    @job.command(name='avail-families', help='List all available tool families')
-    def avail_families():
-        action_families = click_tools.create_families('')
-        if action_families:
-            output = ''
-            for family in action_families:
-                output = output + "\n{}".format(family.name) + \
-                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
-        else:
-            output = "No command families have been configured"
-        click.echo_via_pager(output)
-
     @job.command(name='node-log', help="View the history of execution on a node")
     @click.argument('node', type=str)
     # note: this works on config location, not command name.
