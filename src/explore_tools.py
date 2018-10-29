@@ -31,7 +31,7 @@ def inspect_namespace(namespace):
 
 # function is either command_helper to generate Action objects & click commands
 #   or glob_helper to generate a list of all config paths (for ActionFamily & batch tools)
-def each_dir(namespace, function, extra_args = [], parent_value = None, no_interactive_only = False):
+def each_dir(namespace, function, extra_args = [], parent_value = None):
     for dir_path in __glob_dirs(namespace):
         config_exists = __has_config(dir_path)
         child_value = function(extra_args,
