@@ -16,6 +16,8 @@ from models.job import Job
 from models.batch import Batch
 from appliance_cli.text import display_table
 
+import threading
+
 def add_commands(appliance):
 
     @appliance.group(help='Manage running a command over the nodes')
@@ -212,25 +214,46 @@ def add_commands(appliance):
         click.echo_via_pager(output)
 
     def execute_batch(batches, nodes):
-        session = Session()
-        output = ''
-        try:
-            for batch in batches:
-                if output: output = output + '\n'
-                session.add(batch)
-                session.commit()
-                output = output + 'Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__())
-                for node in nodes:
-                    job = Job(node = node, batch = batch)
-                    session.add(job)
+        class JobRunner:
+            def __init__(self, node, batch):
+                self.node = node
+                self.batch = batch
+                self.thread = threading.Thread(target=self.run)
+
+            def run(self):
+                local_session = Session()
+                try:
+                    local_batch = local_session.merge(self.batch)
+                    job = Job(node = self.node, batch = local_batch)
+                    local_session.add(job)
                     job.run()
                     if job.exit_code == 0:
                         symbol = 'Pass'
                     else:
                         symbol = 'Failed: {}'.format(job.exit_code)
-                    output = output + '\n{}: {}'.format(job.node, symbol)
+                    click.echo('{}: {}'.format(job.node, symbol))
+                finally:
+                    local_session.commit()
+                    Session.remove()
+
+        session = Session()
+        try:
+            for batch in batches:
+                session.add(batch)
+                session.commit()
+                click.echo('Batch: {}\nExecuting: {}'.format(batch.id, batch.__name__()))
+                threads = list(map(lambda n: JobRunner(n, batch).thread, nodes))
+                threads.reverse()
+                active_threads = []
+                while len(threads) > 0 or len(active_threads) > 0:
+                    while len(active_threads) < 10 and len(threads) > 0:
+                        new_thread = threads.pop()
+                        new_thread.start()
+                        active_threads.append(new_thread)
+                    for thread in active_threads:
+                        if not thread.is_alive():
+                            active_threads.remove(thread)
         finally:
             session.commit()
-            session.close()
-            click.echo_via_pager(output)
+            Session.remove()
 
