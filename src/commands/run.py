@@ -48,7 +48,7 @@ def add_commands(appliance):
         if not nodes:
             raise ClickException('Please give either --node or --group')
         batch = [Batch(config = config.path, arguments = arguments)]
-        execute_batch(batch, nodes)
+        execute_batches(batch, nodes)
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
@@ -69,9 +69,9 @@ def add_commands(appliance):
         for config in command_configs:
             #create batch w/ relevant config for command
             batches += [Batch(config=config.path)]
-        execute_batch(batches, nodes)
+        execute_batches(batches, nodes)
 
-    def execute_batch(batches, nodes):
+    def execute_batches(batches, nodes):
         class JobRunner:
             def __init__(self, node, batch):
                 self.node = node
