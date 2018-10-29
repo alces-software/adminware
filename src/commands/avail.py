@@ -10,7 +10,7 @@ def add_commands(appliance):
 
     @avail.command(help='List available tools at a namespace')
     @click.argument('namespace', required=False)
-    def tool(namespace):
+    def tools(namespace):
         if not namespace: namespace = ''
         dir_contents = explore_tools.inspect_namespace(namespace)
         if dir_contents['configs'] or dir_contents['dirs']:
@@ -20,9 +20,9 @@ def add_commands(appliance):
                 if config.interactive_only(): output = output + "Only runnable interactively\n"
             for directory in dir_contents['dirs']:
                 directory = basename(directory)
-                output = output + "\n{} -- see 'avail tool {}'\n".format(basename(directory),
-                                                                         join(namespace,
-                                                                         basename(directory)))
+                output += "\n{} -- see 'avail tools {}'\n".format(basename(directory),
+                                                                  join(namespace,
+                                                                  basename(directory)))
         else:
             if namespace:
                 output = "No commands or subdirectories in '{}'".format(namespace)
