@@ -73,23 +73,21 @@ def add_commands(appliance):
 
     def execute_batches(batches, nodes):
         class JobRunner:
-            def __init__(self, node, batch):
-                self.node = node
-                self.batch = batch
+            def __init__(self, job):
+                self.unsafe_job = job # This Job object may not thread safe
                 self.thread = threading.Thread(target=self.run)
 
             def run(self):
                 local_session = Session()
                 try:
-                    local_batch = local_session.merge(self.batch)
-                    job = Job(node = self.node, batch = local_batch)
-                    local_session.add(job)
+                    job = local_session.merge(self.unsafe_job)
+                    local_session.commit()
                     job.run()
                     if job.exit_code == 0:
                         symbol = 'Pass'
                     else:
                         symbol = 'Failed: {}'.format(job.exit_code)
-                    click.echo('{}: {}'.format(job.node, symbol))
+                    click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
                 finally:
                     local_session.commit()
                     Session.remove()
@@ -100,11 +98,12 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                threads = list(map(lambda n: JobRunner(n, batch).thread, nodes))
+                jobs = list(map(lambda n: Job(node = n, batch = batch), nodes))
+                threads = list(map(lambda j: JobRunner(j).thread, jobs))
                 threads.reverse()
                 active_threads = []
                 while len(threads) > 0 or len(active_threads) > 0:
-                    while len(active_threads) < 10 and len(threads) > 0:
+                    while len(active_threads) < 5 and len(threads) > 0:
                         new_thread = threads.pop()
                         new_thread.start()
                         active_threads.append(new_thread)
