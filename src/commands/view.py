@@ -29,7 +29,7 @@ def add_commands(appliance):
     @click.argument('job_id', type=int)
     def result(job_id):
         job = Session().query(Job).get(job_id)
-        if job == None: raise ClickException('No job found')
+        if job == None: raise click.ClickException('No job found')
         table_data = [
             ['Date', job.created_date],
             ['Job ID', job.id],
