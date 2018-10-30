@@ -118,26 +118,3 @@ def add_commands(appliance):
             return rows
         display_table(headers, table_rows())
 
-    @job.command(help='Inspect a previous job')
-    @click.argument('batch_id', type=int)
-    @click.argument('node')
-    def view(batch_id, node):
-        session = Session()
-        job = session.query(Job) \
-                     .filter(Job.node == node) \
-                     .join(Job, Batch.jobs) \
-                     .filter(Batch.id == int(batch_id)) \
-                     .first()
-        if job == None: raise ClickException('No job found')
-        table_data = [
-            ['Date', job.created_date],
-            ['Batch ID', job.batch.id],
-            ['Node', job.node],
-            ['Exit Code', job.exit_code],
-            ['Command', job.batch.__name__()],
-            ['Arguments', job.batch.arguments],
-            ['STDOUT', job.stdout],
-            ['STDERR', job.stderr]
-        ]
-        display_table([], table_data)
-
