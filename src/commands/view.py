@@ -32,7 +32,7 @@ def add_commands(appliance):
         if job == None: raise ClickException('No job found')
         table_data = [
             ['Date', job.created_date],
-            ['Batch ID', job.batch.id],
+            ['Job ID', job.id],
             ['Node', job.node],
             ['Exit Code', job.exit_code],
             ['Command', job.batch.__name__()],
