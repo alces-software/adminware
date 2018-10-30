@@ -38,10 +38,10 @@ def add_commands(appliance):
     @click.option('--group', '-g', multiple=True, metavar='GROUP',
                   help='Runs the command over the group')
     @click.pass_context
-    def batch(ctx, **kwargs):
+    def tool(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @click_tools.command(batch, exclude_interactive_only = True)
+    @click_tools.command(tool, exclude_interactive_only = True)
     @click.pass_context
     def runnner(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
