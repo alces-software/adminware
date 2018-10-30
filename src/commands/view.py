@@ -1,14 +1,15 @@
 
 import click
+import click_tools
 import explore_tools
 from os.path import basename, join
 
 def add_commands(appliance):
     @appliance.group(help='View the available tools')
-    def avail():
+    def view():
         pass
 
-    @avail.command(help='List available tools at a namespace')
+    @view.command(help='List available tools at a namespace')
     @click.argument('namespace', required=False)
     def tools(namespace):
         if not namespace: namespace = ''
@@ -30,7 +31,7 @@ def add_commands(appliance):
                 output = "No commands found"
         click.echo_via_pager(output)
 
-    @avail.command(help='List all available tool families')
+    @view.command(help='List all available tool families')
     def families():
         action_families = click_tools.create_families('')
         if action_families:
