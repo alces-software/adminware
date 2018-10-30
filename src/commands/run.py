@@ -104,7 +104,7 @@ def add_commands(appliance):
                 threads.reverse()
                 active_threads = []
                 while len(threads) > 0 or len(active_threads) > 0:
-                    while len(active_threads) < 5 and len(threads) > 0:
+                    while len(active_threads) < 10 and len(threads) > 0:
                         new_thread = threads.pop()
                         new_thread.start()
                         active_threads.append(new_thread)
