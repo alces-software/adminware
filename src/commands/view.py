@@ -76,3 +76,40 @@ def add_commands(appliance):
             output = "No command families have been configured"
         click.echo_via_pager(output)
 
+    @view.command(name='node-status', help='View the execution history of a single node')
+    click.argument('node', type=str)
+    # note: this works on config location, not command name.
+    # Any commands that are moved will be considered distinct.
+    def node_status(node):
+        session = Session()
+        # returns 2-length tuples of the Job data and the amount of times the command's been run on <node>
+        job_query = session.query(Job, func.count(Batch.config))\
+                           .filter(Job.node == node)\
+                           .join("batch")\
+                           .order_by(Job.created_date.desc())\
+                           .group_by(Batch.config)\
+                           .all()
+        if not job_query: raise ClickException('No jobs found for node {}'.format(node))
+        headers = ['Command',
+                   'Exit Code',
+                   'Batch',
+                   'Arguments',
+                   'Date',
+                   'No. Runs']
+
+        rows = []
+        for command in job_query:
+            count = command[1]
+            command = command[0]
+            arguments = None if not command.batch.arguments else command.batch.arguments
+            row = [command.batch.__name__(),
+                   command.exit_code,
+                   command.batch.id,
+                   arguments,
+                   command.created_date,
+                   count]
+            rows += [row]
+            # sort by command name
+            rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
+
