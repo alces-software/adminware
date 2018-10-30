@@ -1,0 +1,21 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Needed for ipython.
+yum install -y -e0 python-devel
+
+# Install development dependencies.
+# Note: Virtualenv uses unset variables, so toggle aborting on this while we
+# source it.
+set +u
+. venv/bin/activate
+set -u
+pip install -r requirements.dev.txt
+
+# Run any child development setup scripts.
+if test -n "$(shopt -s nullglob; echo src/**/bin/development-setup)"; then
+  for script in src/**/bin/development-setup; do
+    (cd "$(dirname "$script" | xargs dirname)" && "bin/development-setup")
+  done
+fi

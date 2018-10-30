@@ -1,0 +1,42 @@
+#!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
+
+# Install Python 3 and Virtualenv.
+# For some reason the following will error (something to do with installing RPM
+# directly?) when it's already been installed, so toggle exiting on error for
+# this install to make this script idempotent.
+set +e
+sudo yum install -y https://centos7.iuscommunity.org/ius-release.rpm
+set -e
+sudo yum install -y python35u python35u-pip
+sudo pip3.5 install virtualenv
+sudo yum remove -y ius-release
+
+sudo yum install -y genders git
+
+# Setup Virtualenv.
+if [ ! -d venv ]; then
+  virtualenv venv
+fi
+
+# Install dependencies.
+# Note: Virtualenv uses unset variables, so toggle aborting on this while we
+# source it.
+set +u
+. venv/bin/activate
+set -u
+pip install -r requirements.txt
+
+# Creates the basic directory structure
+mkdir -p /var/lib/adminware/tools/{batch,open}
+
+# Setup the db
+python src/db_setup.py
+
+# Run any child setup scripts.
+if test -n "$(shopt -s nullglob; echo src/**/bin/setup)"; then
+  for script in src/**/bin/setup; do
+    (cd "$(dirname "$script" | xargs dirname)" && "bin/setup")
+  done
+fi
