@@ -81,15 +81,16 @@ def add_commands(appliance):
                 local_session = Session()
                 try:
                     job = local_session.merge(self.unsafe_job)
-                    local_session.commit()
                     job.run()
+                    local_session.commit()
                     if job.exit_code == 0:
                         symbol = 'Pass'
                     else:
                         symbol = 'Failed: {}'.format(job.exit_code)
                     click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
-                finally:
+                except:
                     local_session.commit()
+                finally:
                     Session.remove()
 
         session = Session()
