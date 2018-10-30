@@ -1,13 +1,15 @@
 
+import click_tools
+import explore_tools
 import groups as groups_util
 
 from appliance_cli.text import display_table
+from models.batch import Batch
 
 import click
-import click_tools
-import explore_tools
-from os.path import basename, join
 
+from os.path import basename, join
+from sqlalchemy import func
 from database import Session
 from models.job import Job
 
@@ -77,7 +79,7 @@ def add_commands(appliance):
         click.echo_via_pager(output)
 
     @view.command(name='node-status', help='View the execution history of a single node')
-    click.argument('node', type=str)
+    @click.argument('node', type=str)
     # note: this works on config location, not command name.
     # Any commands that are moved will be considered distinct.
     def node_status(node):
@@ -92,11 +94,10 @@ def add_commands(appliance):
         if not job_query: raise ClickException('No jobs found for node {}'.format(node))
         headers = ['Command',
                    'Exit Code',
-                   'Batch',
+                   'Job ID',
                    'Arguments',
                    'Date',
                    'No. Runs']
-
         rows = []
         for command in job_query:
             count = command[1]
@@ -104,7 +105,7 @@ def add_commands(appliance):
             arguments = None if not command.batch.arguments else command.batch.arguments
             row = [command.batch.__name__(),
                    command.exit_code,
-                   command.batch.id,
+                   command.id,
                    arguments,
                    command.created_date,
                    count]
