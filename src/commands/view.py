@@ -99,15 +99,13 @@ def add_commands(appliance):
                    'Date',
                    'No. Runs']
         rows = []
-        for command in job_query:
-            count = command[1]
-            command = command[0]
-            arguments = None if not command.batch.arguments else command.batch.arguments
-            row = [command.batch.__name__(),
-                   command.exit_code,
-                   command.id,
+        for job, count in job_query:
+            arguments = None if not job.batch.arguments else job.batch.arguments
+            row = [job.batch.__name__(),
+                   job.exit_code,
+                   job.id,
                    arguments,
-                   command.created_date,
+                   job.created_date,
                    count]
             rows += [row]
             # sort by command name
