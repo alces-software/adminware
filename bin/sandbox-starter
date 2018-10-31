@@ -1,5 +1,5 @@
 #!/bin/bash
 
-CLI_DIR=/opt/adminware/cli
+CLI_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 (cd "$CLI_DIR" && bin/starter sandbox)
