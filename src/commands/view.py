@@ -15,7 +15,7 @@ def add_commands(appliance):
     def groups():
         click.echo_via_pager("\n".join(groups_util.list()))
 
-    @view.command(help='Gives the nodes within a group')
+    @view.command(help='Lists the nodes within a group')
     @click.argument('group_name')
     def group(group_name):
         click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
