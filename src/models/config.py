@@ -15,6 +15,9 @@ class Config():
     def __name__(self):
         return basename(dirname(self.path))
 
+    def name(self):
+        return "{} {}".format(self.additional_namespace(), self.__name__())
+
     # to capture everything after /var/lib/adminware/tools/{batch, open} but before the command's name
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))

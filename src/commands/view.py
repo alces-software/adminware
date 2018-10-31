@@ -11,6 +11,9 @@ from os.path import basename, join
 from database import Session
 from models.job import Job
 
+import subprocess
+from os.path import dirname
+
 def add_commands(appliance):
     @appliance.group(help='View the available tools')
     def view():
@@ -39,6 +42,24 @@ def add_commands(appliance):
             ['Arguments', job.batch.arguments],
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
+        ]
+        display_table([], table_data)
+
+    @view.group(help="View a tool's details")
+    def tool():
+        pass
+
+    @click_tools.command(tool)
+    def get_tool_info(config, _a):
+        ls_cmd = 'ls {}'.format(dirname(config.path))
+        stdout, _err = subprocess.Popen(ls_cmd, stdout=subprocess.PIPE, shell=True)\
+                                 .communicate()
+        working_files = stdout.decode("utf-8").rstrip('\n').split('\n')
+        table_data = [
+            ['Name', config.name()],
+            ['Description', config.help()],
+            ['Shell Command', config.command()],
+            ['Working Directory', '\n'.join(map(lambda f: "./{}".format(f), working_files))]
         ]
         display_table([], table_data)
 
