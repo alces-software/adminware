@@ -144,11 +144,12 @@ def add_commands(appliance):
         #       https://www.w3schools.com/sql/func_sqlserver_count.asp
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
         node_data = session.query(Job, func.count(Job.node))\
-                            .join(Batch)\
-                            .filter(Batch.config == config.path)\
-                            .order_by(Job.created_date.desc())\
-                            .group_by(Job.node)\
-                            .all()
+                           .select_from(Batch)\
+                           .filter(Batch.config == config.path)\
+                           .join(Job.batch)\
+                           .order_by(Job.created_date.desc())\
+                           .group_by(Job.node)\
+                           .all()
         if not node_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
         headers = ['Node',
                    'Exit Code',
