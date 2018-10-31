@@ -85,13 +85,13 @@ def add_commands(appliance):
     def node_status(node):
         session = Session()
         # returns 2-length tuples of the Job data and the amount of times the command's been run on <node>
-        job_query = session.query(Job, func.count(Batch.config))\
+        tool_data = session.query(Job, func.count(Batch.config))\
                            .filter(Job.node == node)\
                            .join("batch")\
                            .order_by(Job.created_date.desc())\
                            .group_by(Batch.config)\
                            .all()
-        if not job_query: raise ClickException('No jobs found for node {}'.format(node))
+        if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
         headers = ['Command',
                    'Exit Code',
                    'Job ID',
@@ -99,7 +99,7 @@ def add_commands(appliance):
                    'Date',
                    'No. Runs']
         rows = []
-        for job, count in job_query:
+        for job, count in tool_data:
             arguments = None if not job.batch.arguments else job.batch.arguments
             row = [job.batch.__name__(),
                    job.exit_code,
