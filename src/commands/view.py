@@ -84,7 +84,10 @@ def add_commands(appliance):
     # Any commands that are moved will be considered distinct.
     def node_status(node):
         session = Session()
-        # returns 2-length tuples of the Job data and the amount of times the command's been run on <node>
+        # Returns the most recent job for each tool and number of times it's been ran
+        # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
+        #       https://www.w3schools.com/sql/func_sqlserver_count.asp
+        # => [(latest_job1, count1), (lastest_job2, count2), ...]
         tool_data = session.query(Job, func.count(Batch.config))\
                            .filter(Job.node == node)\
                            .join("batch")\
