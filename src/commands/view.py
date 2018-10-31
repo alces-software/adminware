@@ -137,7 +137,7 @@ def add_commands(appliance):
         pass
 
     @click_tools.command(tool_status, exclude_interactive_only = True)
-    def tool_status_runner(config, arguments):
+    def tool_status_runner(config, _):
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
         # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
