@@ -2,7 +2,7 @@
 import appliance_cli.config
 import appliance_cli.text as text
 
-from os.path import join
+import os.path
 
 
 # Create Adminware CLI config object.
@@ -20,5 +20,7 @@ LEADER = '/var/lib/adminware/'
 
 TOOL_LOCATION = 'tools/'
 
+TOOL_DIR = os.path.join(LEADER, TOOL_LOCATION).strip('/')
+
 def join_with_tool_location(namespace):
-    return join(LEADER, TOOL_LOCATION, namespace)
+    return os.path.join(LEADER, TOOL_LOCATION, namespace)

@@ -3,7 +3,7 @@ import re
 from os.path import basename, dirname
 import subprocess
 
-from config import LEADER, TOOL_LOCATION
+from config import TOOL_DIR
 
 class Config():
     def __init__(self, path):
@@ -17,15 +17,16 @@ class Config():
         return basename(dirname(self.path))
 
     def name(self):
-        return "{} {}".format(self.additional_namespace(), self.__name__())
+        prefix = (self.additional_namespace() + ' ' if self.additional_namespace() else '')
+        return "{}{}".format(prefix, self.__name__())
 
     # to capture everything after /var/lib/adminware/tools/{batch, open} but before the command's name
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))
-        regex_expr = re.escape(LEADER + TOOL_LOCATION) + r'.*?(\/.*?$)'
-        match = re.search(regex_expr, top_path)
-        if match: match =  match.group(1)
-        return match
+        regex_expr = re.escape(TOOL_DIR) + r'(\/.*?$)'
+        result = re.search(regex_expr, top_path)
+        namespace_path = result.group(1) if result else ''
+        return namespace_path.translate(namespace_path.maketrans('/', ' ')).strip()
 
     def command(self):
         default = 'MISSING: Command for {}'.format(self.__name__())
