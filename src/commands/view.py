@@ -1,10 +1,15 @@
 
 import groups as groups_util
 
+from appliance_cli.text import display_table
+
 import click
 import click_tools
 import explore_tools
 from os.path import basename, join
+
+from database import Session
+from models.job import Job
 
 def add_commands(appliance):
     @appliance.group(help='View the available tools')
@@ -19,6 +24,23 @@ def add_commands(appliance):
     @click.argument('group_name')
     def group(group_name):
         click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
+
+    @view.command(help='View the result from a previous job')
+    @click.argument('job_id', type=int)
+    def result(job_id):
+        job = Session().query(Job).get(job_id)
+        if job == None: raise click.ClickException('No job found')
+        table_data = [
+            ['Date', job.created_date],
+            ['Job ID', job.id],
+            ['Node', job.node],
+            ['Exit Code', job.exit_code],
+            ['Command', job.batch.__name__()],
+            ['Arguments', job.batch.arguments],
+            ['STDOUT', job.stdout],
+            ['STDERR', job.stderr]
+        ]
+        display_table([], table_data)
 
     @view.command(help='List available tools at a namespace')
     @click.argument('namespace', required=False)
