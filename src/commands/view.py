@@ -1,13 +1,15 @@
 
+import click_tools
+import explore_tools
 import groups as groups_util
 
 from appliance_cli.text import display_table
+from models.batch import Batch
 
 import click
-import click_tools
-import explore_tools
-from os.path import basename, join
 
+from os.path import basename, join
+from sqlalchemy import func
 from database import Session
 from models.job import Job
 
@@ -75,4 +77,41 @@ def add_commands(appliance):
         else:
             output = "No command families have been configured"
         click.echo_via_pager(output)
+
+    @view.command(name='node-status', help='View the execution history of a single node')
+    @click.argument('node', type=str)
+    # note: this works on config location, not command name.
+    # Any commands that are moved will be considered distinct.
+    def node_status(node):
+        session = Session()
+        # Returns the most recent job for each tool and number of times it's been ran
+        # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
+        #       https://www.w3schools.com/sql/func_sqlserver_count.asp
+        # => [(latest_job1, count1), (lastest_job2, count2), ...]
+        tool_data = session.query(Job, func.count(Batch.config))\
+                           .filter(Job.node == node)\
+                           .join("batch")\
+                           .order_by(Job.created_date.desc())\
+                           .group_by(Batch.config)\
+                           .all()
+        if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
+        headers = ['Command',
+                   'Exit Code',
+                   'Job ID',
+                   'Arguments',
+                   'Date',
+                   'No. Runs']
+        rows = []
+        for job, count in tool_data:
+            arguments = None if not job.batch.arguments else job.batch.arguments
+            row = [job.batch.__name__(),
+                   job.exit_code,
+                   job.id,
+                   arguments,
+                   job.created_date,
+                   count]
+            rows += [row]
+            # sort by command name
+            rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
 
