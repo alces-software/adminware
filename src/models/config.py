@@ -1,6 +1,7 @@
 import yaml
 import re
 from os.path import basename, dirname
+import subprocess
 
 from config import LEADER, TOOL_LOCATION
 
@@ -49,3 +50,11 @@ class Config():
 
     def command_exists(self):
         return 'command' in self.data and self.data['command']
+
+    def working_files(self):
+        ls_cmd = 'ls {}'.format(dirname(self.path))
+        stdout, _err = subprocess.Popen(ls_cmd, stdout=subprocess.PIPE, shell=True)\
+                                 .communicate()
+        working_files = stdout.decode("utf-8").rstrip('\n').split('\n')
+        return list(map(lambda f: "./{}".format(f), working_files))
+
