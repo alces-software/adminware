@@ -5,6 +5,7 @@ import groups as groups_util
 
 from appliance_cli.text import display_table
 from models.batch import Batch
+from models.job import Job
 
 import click
 import os.path
@@ -128,6 +129,44 @@ def add_commands(appliance):
                    count]
             rows += [row]
             # sort by command name
+            rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
+
+    @view.group(name='tool-status', help='View the execution history of a single tool')
+    def tool_status():
+        pass
+
+    @click_tools.command(tool_status, exclude_interactive_only = True)
+    def tool_status_runner(config, arguments):
+        session = Session()
+        # Returns the most recent job for each node and the number of times the tool's been ran
+        # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
+        #       https://www.w3schools.com/sql/func_sqlserver_count.asp
+        # => [(latest_job1, count1), (lastest_job2, count2), ...]
+        node_data = session.query(Job, func.count(Job.node))\
+                            .join(Batch)\
+                            .filter(Batch.config == config.path)\
+                            .order_by(Job.created_date.desc())\
+                            .group_by(Job.node)\
+                            .all()
+        if not node_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
+        headers = ['Node',
+                   'Exit Code',
+                   'Job ID',
+                   'Arguments',
+                   'Date',
+                   'No. Runs']
+        rows = []
+        for job, count in node_data:
+            arguments = None if not job.batch.arguments else job.batch.arguments
+            row = [job.node,
+                   job.exit_code,
+                   job.id,
+                   arguments,
+                   job.created_date,
+                   count]
+            rows += [row]
+            # sort by node name
             rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
 
