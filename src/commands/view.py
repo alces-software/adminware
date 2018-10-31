@@ -1,4 +1,6 @@
 
+import groups as groups_util
+
 import click
 import click_tools
 import explore_tools
@@ -8,6 +10,15 @@ def add_commands(appliance):
     @appliance.group(help='View the available tools')
     def view():
         pass
+
+    @view.command(help='Lists the available groups')
+    def groups():
+        click.echo_via_pager("\n".join(groups_util.list()))
+
+    @view.command(help='Lists the nodes within a group')
+    @click.argument('group_name')
+    def group(group_name):
+        click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
 
     @view.command(help='List available tools at a namespace')
     @click.argument('namespace', required=False)
