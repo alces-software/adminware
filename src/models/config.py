@@ -20,7 +20,6 @@ class Config():
         prefix = (self.additional_namespace() + ' ' if self.additional_namespace() else '')
         return "{}{}".format(prefix, self.__name__())
 
-    # to capture everything after /var/lib/adminware/tools/{batch, open} but before the command's name
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))
         regex_expr = re.escape(TOOL_DIR) + r'(\/.*?$)'
