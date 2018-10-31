@@ -52,6 +52,7 @@ def add_commands(appliance):
             ['Name', config.name()],
             ['Description', config.help()],
             ['Shell Command', config.command()],
+            ['Families', '\n'.join(config.families())],
             ['Working Directory', '\n'.join(config.working_files())]
         ]
         display_table([], table_data)
