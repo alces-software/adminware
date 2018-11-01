@@ -7,8 +7,8 @@ from appliance_cli.text import display_table
 from models.batch import Batch
 
 import click
+import os.path
 
-from os.path import basename
 from sqlalchemy import func
 from database import Session
 from models.job import Job
@@ -56,7 +56,7 @@ def add_commands(appliance):
                 output = output + "\n{} -- {}\n".format(config.__name__(), config.help())
                 if config.interactive_only(): output = output + "Only runnable interactively\n"
             for directory in dir_contents['dirs']:
-                directory = basename(basename(directory))
+                directory = os.path.basename(os.path.basename(directory))
                 new_command_namespaces = ' '.join(tuple(namespaces) + (directory, ))
                 output += "\n{} -- see 'view tools {}'\n".format(directory, new_command_namespaces)
         else:
