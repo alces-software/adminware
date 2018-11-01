@@ -15,23 +15,6 @@ def add_commands(appliance):
     def run():
         pass
 
-    @run.group(help='Run a tool in an interactive shell')
-    @click.option('--node', '-n', help='The node to run on')
-    @click.pass_context
-    def interactive(ctx, **kwargs):
-        if not 'node' in kwargs or not kwargs['node']:
-            raise ClickException("Please specify a node")
-        ctx.obj = { 'adminware' : { 'node' : kwargs['node'] } }
-
-    @click_tools.command(interactive)
-    @click.pass_context
-    def interactive_runner(ctx, config, arguments):
-        batch = Batch(config = config.path, arguments = arguments)
-        job = Job(node = ctx.obj['adminware']['node'], batch = batch)
-        job.run(interactive = True)
-        # Display the error if adminware errors (e.g. failed ssh connection)
-        if job.exit_code < 0: raise ClickException(job.stderr)
-
     @run.group(help='Run a tool over a batch of nodes')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
                   help='Runs the command on the node')
