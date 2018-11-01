@@ -41,7 +41,7 @@ def add_commands(appliance):
     def tool(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @click_tools.command(tool, exclude_interactive_only = True)
+    @click_tools.command(tool)
     @click.pass_context
     def runnner(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
