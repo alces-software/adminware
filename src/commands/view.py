@@ -112,7 +112,13 @@ def add_commands(appliance):
                            .group_by(Batch.config)\
                            .all()
         if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
-        display_status(tool_data, 'node')
+        headers, rows = gen_columns(tool_data)
+        headers = ['Tool'] + headers
+        for i, tool_datum in enumerate(tool_data):
+            rows[i] = [tool_datum[0].batch.__name__()] + rows[i]
+        # sort by first column
+        rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
 
     @view.group(name='tool-status', help='View the execution history of a single tool')
     def tool_status():
@@ -122,8 +128,6 @@ def add_commands(appliance):
     def tool_status_runner(config, _):
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
-        # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
-        #       https://www.w3schools.com/sql/func_sqlserver_count.asp
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
         node_data = session.query(Job, func.count(Job.node))\
                            .select_from(Batch)\
@@ -133,12 +137,16 @@ def add_commands(appliance):
                            .group_by(Job.node)\
                            .all()
         if not node_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
-        display_status(node_data, 'tool')
+        headers, rows = gen_columns(node_data)
+        headers = ['Node'] + headers
+        for i, node_datum in enumerate(node_data):
+            rows[i] = [node_datum[0].node] + rows[i]
+        # sort by first column
+        rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
 
-    def display_status(data, topic):
-        if topic == 'node': headers = ['Tool']
-        elif topic == 'tool': headers = ['Node']
-        headers += ['Exit Code',
+    def gen_columns(data):
+        headers = ['Exit Code',
                     'Job ID',
                     'Arguments',
                     'Date',
@@ -146,15 +154,10 @@ def add_commands(appliance):
         rows = []
         for job, count in data:
             arguments = None if not job.batch.arguments else job.batch.arguments
-            if topic == 'node': row = [job.batch.__name__()]
-            elif topic == 'tool': row = [job.node]
-            row += [job.exit_code,
-                    job.id,
-                    arguments,
-                    job.created_date,
-                    count]
+            row = [job.exit_code,
+                   job.id,
+                   arguments,
+                   job.created_date,
+                   count]
             rows += [row]
-            # sort by first column
-            rows.sort(key=lambda x:x[0])
-        display_table(headers, rows)
-
+        return (headers, rows)
