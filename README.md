@@ -8,6 +8,48 @@ cd adminware
 make setup
 ```
 
+# Error Codes
+
+The exit code for the remote command is saved within the database. The meaning
+of the exit code is determined by the underlining command and will range from
+0-255.
+
+All negative exit codes indicate an internal `Adminware` error. The exit code
+meanings are as follows:
+
+| Error Code | Description             |
+| ---------- | ----------------------- |
+| -1         | SSH Connection Error    |
+| -2         | General Error           |
+| -3         | Interactive Job         |
+| -4         | Abandoned Job Error     |
+
+## -1: SSH Connection Error
+An initial ssh connection could not be established with the node.
+
+NOTE: This error code will only be issued for handled errors. It is still
+possible for unhandled ssh errors to be issued a different error code.
+
+## -2: General Error
+An error has occurred that concerns the job. See the jobs `STDERR` for more
+details.
+
+## -3: Interactive Job
+The tool has been ran in an interactive shell. The `STDOUT`, `STDERR`, and
+exit code are not available. This does not mean the Job failed, instead its
+status is undetermined.
+
+## -4: Abandoned Job Error
+The job has been created and queue to be ran but has since been abandoned.
+This indicates the `Job` was never ran, but this can not been known for
+certain.
+
+Possible Causes:
+1. `Adminware` was sent an interrupt,
+2. An uncaught SSH connection error has occurred,
+3. The connection was lost to the `adminware` appliance, or
+4. An unexpected error occurred before the `Job` was started.
+
 # Adding Commands
 Commands can be added to `batch run` and `open` features. `batch` runs the 
 command over a single or group of nodes and stores results in a database.
