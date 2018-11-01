@@ -31,7 +31,7 @@ available. Please see documentation for possible causes
     batch = relationship("Batch", backref="jobs")
 
 
-    def run(self, interactive=False):
+    def run(self):
         def __check_command(func):
             def wrapper():
                 if self.batch.command_exists():
@@ -90,7 +90,7 @@ available. Please see documentation for possible causes
                 # Runs the command
                 with connection.cd(temp_dir):
                     kwargs = { 'warn' : True }
-                    if interactive:
+                    if self.batch.is_interactive():
                         kwargs.update({ 'pty': True })
                     else:
                         kwargs.update({ 'hide': 'both' })
