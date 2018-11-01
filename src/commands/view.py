@@ -8,7 +8,7 @@ from models.batch import Batch
 
 import click
 
-from os.path import basename, join
+from os.path import basename
 from sqlalchemy import func
 from database import Session
 from models.job import Job
@@ -45,10 +45,11 @@ def add_commands(appliance):
         display_table([], table_data)
 
     @view.command(help='List available tools at a namespace')
-    @click.argument('namespace', required=False)
-    def tools(namespace):
-        if not namespace: namespace = ''
-        dir_contents = explore_tools.inspect_namespace(namespace)
+    @click.argument('namespaces', nargs=-1, required=False)
+    def tools(namespaces):
+        if not namespaces: namespaces = ''
+        namespace_path = '/'.join(namespaces)
+        dir_contents = explore_tools.inspect_namespace(namespace_path)
         if dir_contents['configs'] or dir_contents['dirs']:
             output = ''
             for config in dir_contents['configs']:
@@ -56,10 +57,11 @@ def add_commands(appliance):
                 if config.interactive_only(): output = output + "Only runnable interactively\n"
             for directory in dir_contents['dirs']:
                 directory = basename(basename(directory))
-                output += "\n{} -- see 'view tools {}'\n".format(directory, join(namespace, directory))
+                new_command_namespaces = ' '.join(tuple(namespaces) + (directory, ))
+                output += "\n{} -- see 'view tools {}'\n".format(directory, new_command_namespaces)
         else:
-            if namespace:
-                output = "No commands or subdirectories in '{}'".format(namespace)
+            if namespaces:
+                output = "No commands or subdirectories in '{}'".format('/'.join(namespaces))
             else:
                 output = "No commands found"
         click.echo_via_pager(output)
