@@ -56,7 +56,7 @@ def add_commands(appliance):
                 if config.interactive_only(): output = output + "Only runnable interactively\n"
             for directory in dir_contents['dirs']:
                 directory = basename(directory)
-                output += "\n{} -- see 'avail tools {}'\n".format(basename(directory),
+                output += "\n{} -- see 'view tools {}'\n".format(basename(directory),
                                                                   join(namespace,
                                                                   basename(directory)))
         else:
