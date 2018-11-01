@@ -37,7 +37,7 @@ available. Please see documentation for possible causes
                 if self.batch.command_exists():
                     func()
                 else:
-                    self.stderr = 'Incorrectly conifgured command'
+                    self.stderr = 'Incorrectly configured command'
                     self.exit_code = -2
             return wrapper
 
