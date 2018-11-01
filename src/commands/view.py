@@ -61,9 +61,9 @@ def add_commands(appliance):
                 output += "\n{} -- see 'view tools {}'\n".format(directory, new_command_namespaces)
         else:
             if namespaces:
-                output = "No commands or subdirectories in '{}'".format('/'.join(namespaces))
+                output = "No tools or subdirectories in '{}'".format('/'.join(namespaces))
             else:
-                output = "No commands found"
+                output = "No tools found"
         click.echo_via_pager(output)
 
     @view.command(help='List all available tool families')
@@ -75,7 +75,7 @@ def add_commands(appliance):
                 output = output + "\n{}".format(family.name) + \
                          "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
         else:
-            output = "No command families have been configured"
+            output = "No tool families have been configured"
         click.echo_via_pager(output)
 
     @view.command(name='node-status', help='View the execution history of a single node')
