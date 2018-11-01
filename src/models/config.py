@@ -1,8 +1,9 @@
 import yaml
 import re
 from os.path import basename, dirname
+import subprocess
 
-from config import LEADER, TOOL_LOCATION
+from config import TOOL_DIR
 
 class Config():
     def __init__(self, path):
@@ -15,13 +16,16 @@ class Config():
     def __name__(self):
         return basename(dirname(self.path))
 
-    # to capture everything after /var/lib/adminware/tools/{batch, open} but before the command's name
+    def name(self):
+        prefix = (self.additional_namespace() + ' ' if self.additional_namespace() else '')
+        return "{}{}".format(prefix, self.__name__())
+
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))
-        regex_expr = re.escape(LEADER + TOOL_LOCATION) + r'.*?(\/.*?$)'
-        match = re.search(regex_expr, top_path)
-        if match: match =  match.group(1)
-        return match
+        regex_expr = re.escape(TOOL_DIR) + r'(\/.*?$)'
+        result = re.search(regex_expr, top_path)
+        namespace_path = result.group(1) if result else ''
+        return namespace_path.translate(namespace_path.maketrans('/', ' ')).strip()
 
     def command(self):
         default = 'MISSING: Command for {}'.format(self.__name__())
@@ -46,3 +50,11 @@ class Config():
 
     def command_exists(self):
         return 'command' in self.data and self.data['command']
+
+    def working_files(self):
+        ls_cmd = 'ls {}'.format(dirname(self.path))
+        stdout, _err = subprocess.Popen(ls_cmd, stdout=subprocess.PIPE, shell=True)\
+                                 .communicate()
+        working_files = stdout.decode("utf-8").rstrip('\n').split('\n')
+        return list(map(lambda f: "./{}".format(f), working_files))
+

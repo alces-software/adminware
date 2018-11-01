@@ -44,6 +44,22 @@ def add_commands(appliance):
         ]
         display_table([], table_data)
 
+    @view.group(help="View a tool's details")
+    def tool():
+        pass
+
+    @click_tools.command(tool)
+    def get_tool_info(config, _a):
+        table_data = [
+            ['Name', config.name()],
+            ['Description', config.help()],
+            ['Shell Command', config.command()],
+            ['Interactive', 'Yes' if config.interactive_only() else 'No'],
+            ['Families', '\n'.join(config.families())],
+            ['Working Directory', '\n'.join(config.working_files())]
+        ]
+        display_table([], table_data)
+
     @view.command(help='List available tools at a namespace')
     @click.argument('namespace', required=False)
     def tools(namespace):
