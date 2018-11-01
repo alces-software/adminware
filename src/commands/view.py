@@ -112,25 +112,7 @@ def add_commands(appliance):
                            .group_by(Batch.config)\
                            .all()
         if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
-        headers = ['Command',
-                   'Exit Code',
-                   'Job ID',
-                   'Arguments',
-                   'Date',
-                   'No. Runs']
-        rows = []
-        for job, count in tool_data:
-            arguments = None if not job.batch.arguments else job.batch.arguments
-            row = [job.batch.__name__(),
-                   job.exit_code,
-                   job.id,
-                   arguments,
-                   job.created_date,
-                   count]
-            rows += [row]
-            # sort by command name
-            rows.sort(key=lambda x:x[0])
-        display_table(headers, rows)
+        display_status(tool_data, 'node')
 
     @view.group(name='tool-status', help='View the execution history of a single tool')
     def tool_status():
@@ -151,23 +133,28 @@ def add_commands(appliance):
                            .group_by(Job.node)\
                            .all()
         if not node_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
-        headers = ['Node',
-                   'Exit Code',
-                   'Job ID',
-                   'Arguments',
-                   'Date',
-                   'No. Runs']
+        display_status(node_data, 'tool')
+
+    def display_status(data, topic):
+        if topic == 'node': headers = ['Tool']
+        elif topic == 'tool': headers = ['Node']
+        headers += ['Exit Code',
+                    'Job ID',
+                    'Arguments',
+                    'Date',
+                    'No. Runs']
         rows = []
-        for job, count in node_data:
+        for job, count in data:
             arguments = None if not job.batch.arguments else job.batch.arguments
-            row = [job.node,
-                   job.exit_code,
-                   job.id,
-                   arguments,
-                   job.created_date,
-                   count]
+            if topic == 'node': row = [job.batch.__name__()]
+            elif topic == 'tool': row = [job.node]
+            row += [job.exit_code,
+                    job.id,
+                    arguments,
+                    job.created_date,
+                    count]
             rows += [row]
-            # sort by node name
+            # sort by first column
             rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
 
