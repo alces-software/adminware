@@ -20,8 +20,13 @@ class Job(Base):
     node = Column(String)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
     stdout = Column(String)
-    stderr = Column(String)
-    exit_code = Column(Integer)
+    stderr = Column(String, default = '''
+Internal Error: Abandoned Job Error
+
+This job was added to the queue before being abandoned. No further results are
+available. Please see documentation for possible causes
+'''.strip())
+    exit_code = Column(Integer, default=-4)
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
