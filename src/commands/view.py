@@ -55,10 +55,8 @@ def add_commands(appliance):
                 output = output + "\n{} -- {}\n".format(config.__name__(), config.help())
                 if config.interactive_only(): output = output + "Only runnable interactively\n"
             for directory in dir_contents['dirs']:
-                directory = basename(directory)
-                output += "\n{} -- see 'view tools {}'\n".format(basename(directory),
-                                                                  join(namespace,
-                                                                  basename(directory)))
+                directory = basename(basename(directory))
+                output += "\n{} -- see 'view tools {}'\n".format(directory, join(namespace, directory))
         else:
             if namespace:
                 output = "No commands or subdirectories in '{}'".format(namespace)
