@@ -76,6 +76,7 @@ class ActionFamily:
         self.name = name
 
     def set_configs(configs):
+        configs.sort(key=lambda x: x.__name__())
         ActionFamily.configs = configs
 
     def get_members_configs(self):
