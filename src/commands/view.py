@@ -89,20 +89,22 @@ def add_commands(appliance):
         output = ''
         for action_family in action_families:
             if action_family.name == family:
-               output = "{}\n{}".format(action_family.name,
-                                          " --> ".join(list(map(lambda x: x.__name__(), action_family.get_members_configs()))))
+               output = "{}\n".format(action_family.name) + \
+                        "{}".format(" --> ".join(list(map(lambda x: x.__name__(),
+                                                          action_family.get_members_configs()))))
                break
         if not output: output = "Family '{}' not found".format(family)
         click.echo_via_pager(output)
 
     @view.command(help='List all available tool families')
     def families():
-        action_families = click_tools.create_families('')
+        action_families = click_tools.create_families()
         if action_families:
             output = ''
-            for family in action_families:
-                output = output + "\n{}".format(family.name) + \
-                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
+            for action_family in action_families:
+                output = output + "\n{}".format(action_family.name) + \
+                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(),
+                                                               action_family.get_members_configs()))))
         else:
             output = "No tool families have been configured"
         click.echo_via_pager(output)
