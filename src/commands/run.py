@@ -30,8 +30,8 @@ def add_commands(appliance):
         nodes = ctx.obj['adminware']['nodes']
         if not nodes:
             raise ClickException('Please give either --node or --group')
-        batch = [Batch(config = config.path, arguments = arguments)]
-        execute_batches(batch, nodes)
+        batch = Batch(config = config.path, arguments = arguments)
+        execute_threaded_batches([batch], nodes)
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
@@ -52,9 +52,9 @@ def add_commands(appliance):
         for config in command_configs:
             #create batch w/ relevant config for command
             batches += [Batch(config=config.path)]
-        execute_batches(batches, nodes)
+        execute_threaded_batches(batches, nodes)
 
-    def execute_batches(batches, nodes):
+    def execute_threaded_batches(batches, nodes):
         class JobRunner:
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
