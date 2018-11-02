@@ -59,9 +59,14 @@ available. Please see documentation for possible causes
         @__with_connection
         def __runner(connection):
             def __set_result(result):
-                self.stdout = result.stdout
-                self.stderr = result.stderr
-                self.exit_code = result.return_code
+                if self.batch.is_interactive():
+                    self.stdout = 'Interactive Job: STDOUT is unavailable'
+                    self.stderr = 'Interactive Job: STDERR is unavailable'
+                    self.exit_code = -3
+                else:
+                    self.stdout = result.stdout
+                    self.stderr = result.stderr
+                    self.exit_code = result.return_code
 
             def __with_tempdir(func):
                 def wrapper(*args):
