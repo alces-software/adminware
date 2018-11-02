@@ -3,6 +3,8 @@ import groups
 from click import ClickException
 from collections import OrderedDict
 
+import re
+
 def with__node__group(cmd_func):
     def __with__node__group(config, argv, options, *a):
         nodes = nodes_in__node__group(options)
@@ -17,6 +19,16 @@ def nodes_in__node__group(options):
             raise ClickException('Could not find group: {}'.format(group))
         nodes.extend(group_nodes)
     return list(__remove_duplicates(nodes))
+
+def strip_escaped_argv(func):
+    def __strip_escaped_argv(c, argv, *a):
+        parsed = list(map(lambda a: strip(a), argv))
+        func(c, parsed, *a)
+
+    def strip(string):
+        return re.sub(r'^\\\s*', '', string)
+
+    return __strip_escaped_argv
 
 def set_nodes_context(ctx, **kwargs):
     # populate ctx.obj with nodes

@@ -39,6 +39,7 @@ def add_commands(appliance):
     }
 
     @Config.commands(tool, command = runner_cmd)
+    @cli_utils.strip_escaped_argv
     @cli_utils.with__node__group
     def runner(config, argv, _opt, nodes):
         batch = Batch(config = config.path, arguments = argv[0])
