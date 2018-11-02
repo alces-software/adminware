@@ -28,10 +28,13 @@ def add_commands(appliance):
     @click.pass_context
     def runnner(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
-        if not nodes:
-            raise ClickException('Please give either --node or --group')
         batch = Batch(config = config.path, arguments = arguments)
-        execute_threaded_batches([batch], nodes)
+        if batch.is_interactive():
+            pass
+        elif nodes:
+            execute_threaded_batches([batch], nodes)
+        else:
+            raise ClickException('Please give either --node or --group')
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
