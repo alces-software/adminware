@@ -37,8 +37,11 @@ def add_commands(appliance):
             }
         }
     }
+    runner_group = {
+        'help': "TODO: I'll write this soon....."
+    }
 
-    @Config.commands(tool, command = runner_cmd)
+    @Config.commands(tool, command = runner_cmd, group = runner_group)
     @cli_utils.strip_escaped_argv
     @cli_utils.with__node__group
     def runner(config, argv, _opt, nodes):
