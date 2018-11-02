@@ -112,7 +112,7 @@ def add_commands(appliance):
                            .group_by(Batch.config)\
                            .all()
         if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
-        headers, rows = gen_columns(tool_data)
+        headers, rows = shared_job_data_table(tool_data)
         headers = ['Tool'] + headers
         for i, tool_datum in enumerate(tool_data):
             rows[i] = [tool_datum[0].batch.__name__()] + rows[i]
@@ -137,7 +137,7 @@ def add_commands(appliance):
                            .group_by(Job.node)\
                            .all()
         if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
-        headers, rows = gen_columns(job_data)
+        headers, rows = shared_job_data_table(job_data)
         headers = ['Node'] + headers
         for i, (job, _) in enumerate(job_data):
             rows[i] = [job.node] + rows[i]
@@ -145,7 +145,7 @@ def add_commands(appliance):
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
 
-    def gen_columns(data):
+    def shared_job_data_table(data):
         headers = ['Exit Code',
                     'Job ID',
                     'Arguments',
