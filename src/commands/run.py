@@ -21,30 +21,6 @@ def add_commands(appliance):
     def tool():
         pass
 
-    # def runner(ctx, config, arguments):
-    #     nodes = ctx.obj['adminware']['nodes']
-    #     batch = Batch(config = config.path, arguments = arguments)
-    #     batch.build_jobs(*nodes)
-    #     if batch.is_interactive():
-    #         if len(batch.jobs) == 1:
-    #             session = Session()
-    #             try:
-    #                 session.add(batch)
-    #                 session.add(batch.jobs[0])
-    #                 batch.jobs[0].run()
-    #             finally:
-    #                 session.commit()
-    #                 Session.remove()
-    #         elif batch.jobs:
-    #             raise ClickException('''
-# '{}' is an interactive command and can only be ran on a single node
-# '''.strip())
-    #         else:
-    #             raise ClickException('Please specify a node with --node')
-    #     elif batch.jobs:
-    #         execute_threaded_batches([batch])
-    #     else:
-    #         raise ClickException('Please give either --node or --group')
     runner_cmd = {
         'help': Config.help,
         'options': {
@@ -63,11 +39,30 @@ def add_commands(appliance):
 
     @Config.commands(tool, command = runner_cmd)
     @cli_utils.with__node__group
-    def runner(config, argv, opt, nodes):
-        print(cli_utils.nodes_in__node__group_opts(opt))
-        print(config)
-        print(argv)
-        print(opt)
+    def runner(config, _argv, _opt, nodes):
+        arguments = []
+        batch = Batch(config = config.path, arguments = [])
+        batch.build_jobs(*nodes)
+        if batch.is_interactive():
+            if len(batch.jobs) == 1:
+                session = Session()
+                try:
+                    session.add(batch)
+                    session.add(batch.jobs[0])
+                    batch.jobs[0].run()
+                finally:
+                    session.commit()
+                    Session.remove()
+            elif batch.jobs:
+                raise ClickException('''
+'{}' is an interactive command and can only be ran on a single node
+'''.strip())
+            else:
+                raise ClickException('Please specify a node with --node')
+        elif batch.jobs:
+            execute_threaded_batches([batch])
+        else:
+            raise ClickException('Please give either --node or --group')
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
@@ -115,7 +110,6 @@ def add_commands(appliance):
         session = Session()
         try:
             for batch in batches:
-                jobs = list(map(lambda n: Job(node = n, batch = batch), nodes))
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
