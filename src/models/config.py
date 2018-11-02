@@ -27,6 +27,7 @@ class Config():
     #       namespace1: {
     #           <subcommand_key>: {
     #               command2: **<command>
+    #               ...
     #           }
     #   {
     def hashify_all(group = {}, command = {}, subcommand_key = 'commands'):

@@ -13,7 +13,21 @@ from models.config import Config
 import threading
 
 config_hash = Config.hashify_all(
-        command = { 'help': Config.help }
+        command = {
+            'help': Config.help,
+            'options': {
+                ('--node', '-n'): {
+                    'help': 'Runs the command over the node',
+                    'multiple': True,
+                    'metavar': 'NODE'
+                },
+                ('--group', '-g'): {
+                    'help': 'Runs the command over the group',
+                    'multiple': True,
+                    'metavar': 'GROUP'
+                }
+            }
+        }
     )
 
 def add_commands(appliance):
@@ -22,38 +36,37 @@ def add_commands(appliance):
         pass
 
     @run.group(help='Run a tool over a batch of nodes')
-    @click.option('--node', '-n', multiple=True, metavar='NODE',
-                  help='Runs the command on the node')
-    @click.option('--group', '-g', multiple=True, metavar='GROUP',
-                  help='Runs the command over the group')
-    @click.pass_context
-    def tool(ctx, **kwargs):
-        set_nodes_context(ctx, **kwargs)
+    def tool():
+        pass
 
-    def runner(ctx, config, arguments):
-        nodes = ctx.obj['adminware']['nodes']
-        batch = Batch(config = config.path, arguments = arguments)
-        batch.build_jobs(*nodes)
-        if batch.is_interactive():
-            if len(batch.jobs) == 1:
-                session = Session()
-                try:
-                    session.add(batch)
-                    session.add(batch.jobs[0])
-                    batch.jobs[0].run()
-                finally:
-                    session.commit()
-                    Session.remove()
-            elif batch.jobs:
-                raise ClickException('''
-'{}' is an interactive command and can only be ran on a single node
-'''.strip())
-            else:
-                raise ClickException('Please specify a node with --node')
-        elif batch.jobs:
-            execute_threaded_batches([batch])
-        else:
-            raise ClickException('Please give either --node or --group')
+    # def runner(ctx, config, arguments):
+    #     nodes = ctx.obj['adminware']['nodes']
+    #     batch = Batch(config = config.path, arguments = arguments)
+    #     batch.build_jobs(*nodes)
+    #     if batch.is_interactive():
+    #         if len(batch.jobs) == 1:
+    #             session = Session()
+    #             try:
+    #                 session.add(batch)
+    #                 session.add(batch.jobs[0])
+    #                 batch.jobs[0].run()
+    #             finally:
+    #                 session.commit()
+    #                 Session.remove()
+    #         elif batch.jobs:
+    #             raise ClickException('''
+# '{}' is an interactive command and can only be ran on a single node
+# '''.strip())
+    #         else:
+    #             raise ClickException('Please specify a node with --node')
+    #     elif batch.jobs:
+    #         execute_threaded_batches([batch])
+    #     else:
+    #         raise ClickException('Please give either --node or --group')
+    def runner(callstack, argv, opt):
+        print(callstack)
+        print(argv)
+        print(opt)
     generate_commands(tool, config_hash, runner)
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
