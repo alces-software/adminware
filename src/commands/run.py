@@ -32,7 +32,14 @@ def add_commands(appliance):
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             if len(batch.jobs) == 1:
-                batch.jobs[0].run()
+                session = Session()
+                try:
+                    session.add(batch)
+                    session.add(batch.jobs[0])
+                    batch.jobs[0].run()
+                finally:
+                    session.commit()
+                    Session.remove()
             elif batch.jobs:
                 raise ClickException('''
 '{}' is an interactive command and can only be ran on a single node
