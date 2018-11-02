@@ -8,10 +8,14 @@ from glob import glob
 import subprocess
 
 from config import TOOL_DIR
+from functools import lru_cache
 
 CONFIG_DIR = '/var/lib/adminware/tools'
 
 class Config():
+    # lru_cache will cache the result of the `all` function. This prevents the Config
+    # files being read more than once. However it also prevents updates and creations
+    @lru_cache()
     def all():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
         return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
