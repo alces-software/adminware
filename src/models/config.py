@@ -61,7 +61,7 @@ class Config():
 
         cur_hash = combined_hash = {}
         for config in Config.all():
-            build_group_hashes()
+            cur_hash = build_group_hashes()
             copy_command_values()
 
         return combined_hash[subcommand_key]
