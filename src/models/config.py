@@ -19,16 +19,28 @@ class Config():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
         return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
 
+    # The commands are hashed into the following structure
+    # NOTE: kwargs supports callable objects which takes the Config as its input
+    #       The result is then stored in the hash
+    #   {
+    #       command1: **kwargs,
+    #       namespace1: {
+    #           commands: {
+    #               command2: **kwargs
+    #           }
+    #   {
     def hashify_all(**kwargs):
         combined_hash = {}
         for config in Config.all():
             base_hash = combined_hash
             for name in config.name().split():
-                if name not in base_hash: base_hash[name] = {}
-                base_hash = base_hash[name]
+                if 'commands' not in base_hash: base_hash['commands'] = {}
+                cmd_hash = base_hash['commands']
+                if name not in cmd_hash: cmd_hash[name] = {}
+                base_hash = cmd_hash[name]
             for k, v in kwargs.items():
                 base_hash[k] = (v(config) if callable(v) else v)
-        return combined_hash
+        return combined_hash['commands']
 
     def __init__(self, path):
         self.path = path
