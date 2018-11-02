@@ -7,7 +7,6 @@ from glob import glob
 
 import subprocess
 
-from config import TOOL_DIR
 from functools import lru_cache
 
 CONFIG_DIR = '/var/lib/adminware/tools'
@@ -36,7 +35,7 @@ class Config():
 
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))
-        regex_expr = re.escape(TOOL_DIR) + r'(\/.*?$)'
+        regex_expr = re.escape(CONFIG_DIR) + r'(\/.*?$)'
         result = re.search(regex_expr, top_path)
         namespace_path = result.group(1) if result else ''
         return namespace_path.translate(namespace_path.maketrans('/', ' ')).strip()
