@@ -2,7 +2,6 @@
 import click
 
 from appliance_cli.commands import command_modules as standard_command_modules
-from commands import job
 from commands import run
 from commands import view
 
@@ -12,7 +11,6 @@ def adminware():
 
 
 command_modules = standard_command_modules + [
-    job,
     run,
     view,
 ]
