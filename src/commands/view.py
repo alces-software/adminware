@@ -129,17 +129,17 @@ def add_commands(appliance):
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        node_data = session.query(Job, func.count(Job.node))\
+        job_data = session.query(Job, func.count(Job.node))\
                            .select_from(Batch)\
                            .filter(Batch.config == config.path)\
                            .join(Job.batch)\
                            .order_by(Job.created_date.desc())\
                            .group_by(Job.node)\
                            .all()
-        if not node_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
-        headers, rows = gen_columns(node_data)
+        if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
+        headers, rows = gen_columns(job_data)
         headers = ['Node'] + headers
-        for i, (job, _c) in enumerate(node_data):
+        for i, (job, _) in enumerate(job_data):
             rows[i] = [job.node] + rows[i]
         # sort by first column
         rows.sort(key=lambda x:x[0])
