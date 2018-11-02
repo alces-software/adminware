@@ -15,23 +15,6 @@ def add_commands(appliance):
     def run():
         pass
 
-    @run.group(help='Run a tool in an interactive shell')
-    @click.option('--node', '-n', help='The node to run on')
-    @click.pass_context
-    def interactive(ctx, **kwargs):
-        if not 'node' in kwargs or not kwargs['node']:
-            raise ClickException("Please specify a node")
-        ctx.obj = { 'adminware' : { 'node' : kwargs['node'] } }
-
-    @click_tools.command(interactive)
-    @click.pass_context
-    def interactive_runner(ctx, config, arguments):
-        batch = Batch(config = config.path, arguments = arguments)
-        job = Job(node = ctx.obj['adminware']['node'], batch = batch)
-        job.run(interactive = True)
-        # Display the error if adminware errors (e.g. failed ssh connection)
-        if job.exit_code < 0: raise ClickException(job.stderr)
-
     @run.group(help='Run a tool over a batch of nodes')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
                   help='Runs the command on the node')
@@ -41,14 +24,32 @@ def add_commands(appliance):
     def tool(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @click_tools.command(tool, exclude_interactive_only = True)
+    @click_tools.command(tool)
     @click.pass_context
     def runnner(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
-        if not nodes:
+        batch = Batch(config = config.path, arguments = arguments)
+        batch.build_jobs(*nodes)
+        if batch.is_interactive():
+            if len(batch.jobs) == 1:
+                session = Session()
+                try:
+                    session.add(batch)
+                    session.add(batch.jobs[0])
+                    batch.jobs[0].run()
+                finally:
+                    session.commit()
+                    Session.remove()
+            elif batch.jobs:
+                raise ClickException('''
+'{}' is an interactive command and can only be ran on a single node
+'''.strip())
+            else:
+                raise ClickException('Please specify a node with --node')
+        elif batch.jobs:
+            execute_threaded_batches([batch])
+        else:
             raise ClickException('Please give either --node or --group')
-        batch = [Batch(config = config.path, arguments = arguments)]
-        execute_batches(batch, nodes)
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
@@ -68,10 +69,12 @@ def add_commands(appliance):
         batches = []
         for config in command_configs:
             #create batch w/ relevant config for command
-            batches += [Batch(config=config.path)]
-        execute_batches(batches, nodes)
+            batch = Batch(config = config.path)
+            batch.build_jobs(*nodes)
+            batches += [batch]
+        execute_threaded_batches(batches)
 
-    def execute_batches(batches, nodes):
+    def execute_threaded_batches(batches):
         class JobRunner:
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
@@ -98,7 +101,7 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                threads = list(map(lambda j: JobRunner(j).thread, jobs))
+                threads = list(map(lambda j: JobRunner(j).thread, batch.jobs))
                 threads.reverse()
                 active_threads = []
                 while len(threads) > 0 or len(active_threads) > 0:

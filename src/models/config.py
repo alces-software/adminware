@@ -45,8 +45,12 @@ class Config():
         if not self.data['families']: self.data['families'] = default
         return self.data['families']
 
+    # Deprecated, avoid usage
     def interactive_only(self):
-        return 'interactive_only' in self.data and self.data['interactive_only'] == True
+        return self.interactive()
+
+    def interactive(self):
+        return 'interactive' in self.data and self.data['interactive'] == True
 
     def command_exists(self):
         return 'command' in self.data and self.data['command']

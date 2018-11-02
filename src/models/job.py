@@ -8,7 +8,6 @@ from shlex import quote
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
-from models.batch import Batch
 from database import Base
 
 
@@ -31,7 +30,7 @@ available. Please see documentation for possible causes
     batch = relationship("Batch", backref="jobs")
 
 
-    def run(self, interactive=False):
+    def run(self):
         def __check_command(func):
             def wrapper():
                 if self.batch.command_exists():
@@ -60,9 +59,14 @@ available. Please see documentation for possible causes
         @__with_connection
         def __runner(connection):
             def __set_result(result):
-                self.stdout = result.stdout
-                self.stderr = result.stderr
-                self.exit_code = result.return_code
+                if self.batch.is_interactive():
+                    self.stdout = 'Interactive Job: STDOUT is unavailable'
+                    self.stderr = 'Interactive Job: STDERR is unavailable'
+                    self.exit_code = -3
+                else:
+                    self.stdout = result.stdout
+                    self.stderr = result.stderr
+                    self.exit_code = result.return_code
 
             def __with_tempdir(func):
                 def wrapper(*args):
@@ -90,7 +94,7 @@ available. Please see documentation for possible causes
                 # Runs the command
                 with connection.cd(temp_dir):
                     kwargs = { 'warn' : True }
-                    if interactive:
+                    if self.batch.is_interactive():
                         kwargs.update({ 'pty': True })
                     else:
                         kwargs.update({ 'hide': 'both' })
@@ -104,4 +108,6 @@ available. Please see documentation for possible causes
     def __init__(self, **kwargs):
         self.node = kwargs['node']
         self.batch = kwargs['batch']
+
+from models.batch import Batch
 
