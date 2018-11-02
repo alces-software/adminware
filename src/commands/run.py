@@ -3,6 +3,7 @@ import click
 from click import ClickException
 import click_tools
 from cli_utils import set_nodes_context
+import cli_utils
 
 from database import Session
 from models.job import Job
@@ -62,6 +63,7 @@ def add_commands(appliance):
 
     @Config.commands(tool, command = runner_cmd)
     def runner(config, argv, opt):
+        print(cli_utils.nodes_in__node__group_opts(opt))
         print(config)
         print(argv)
         print(opt)
