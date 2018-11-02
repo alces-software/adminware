@@ -42,6 +42,7 @@ class Config():
     #   {
     #       command1: **<command>,
     #       namespace1: {
+    #           **<group>,
     #           <subcommand_key>: {
     #               command2: **<command>
     #               ...
@@ -52,18 +53,18 @@ class Config():
         def build_group_hashes():
             cur_hash = combined_hash
             for name in config.name().split():
+                copy_values(group, cur_hash)
                 cur_hash = cur_hash.setdefault(subcommand_key, {})\
                                    .setdefault(name, {})
             return cur_hash
 
-        def copy_values(source):
+        def copy_values(source, target):
             for k, v in source.items():
-                cur_hash[k] = (v(config) if callable(v) else v)
+                target[k] = (v(config) if callable(v) else v)
 
-        cur_hash = combined_hash = {}
+        combined_hash = {}
         for config in Config.all():
-            cur_hash = build_group_hashes()
-            copy_values(command)
+            copy_values(command, build_group_hashes())
 
         return combined_hash[subcommand_key]
 
