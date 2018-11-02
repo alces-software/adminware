@@ -29,10 +29,11 @@ def add_commands(appliance):
     def runnner(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
         batch = Batch(config = config.path, arguments = arguments)
+        batch.build_jobs(*nodes)
         if batch.is_interactive():
             pass
         elif nodes:
-            execute_threaded_batches([batch], nodes)
+            execute_threaded_batches([batch])
         else:
             raise ClickException('Please give either --node or --group')
 
@@ -54,10 +55,12 @@ def add_commands(appliance):
         batches = []
         for config in command_configs:
             #create batch w/ relevant config for command
-            batches += [Batch(config=config.path)]
-        execute_threaded_batches(batches, nodes)
+            batch = Batch(config = config.path)
+            batch.build_jobs(*nodes)
+            batches += [batch]
+        execute_threaded_batches(batches)
 
-    def execute_threaded_batches(batches, nodes):
+    def execute_threaded_batches(batches):
         class JobRunner:
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
@@ -84,8 +87,7 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                jobs = batch.build_jobs(*nodes)
-                threads = list(map(lambda j: JobRunner(j).thread, jobs))
+                threads = list(map(lambda j: JobRunner(j).thread, batch.jobs))
                 threads.reverse()
                 active_threads = []
                 while len(threads) > 0 or len(active_threads) > 0:
