@@ -5,6 +5,7 @@ import groups as groups_util
 
 from appliance_cli.text import display_table
 from models.batch import Batch
+from models.job import Job
 
 import click
 import os.path
@@ -104,30 +105,59 @@ def add_commands(appliance):
         # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
         #       https://www.w3schools.com/sql/func_sqlserver_count.asp
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        tool_data = session.query(Job, func.count(Batch.config))\
+        job_data = session.query(Job, func.count(Batch.config))\
                            .filter(Job.node == node)\
                            .join("batch")\
                            .order_by(Job.created_date.desc())\
                            .group_by(Batch.config)\
                            .all()
-        if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
-        headers = ['Command',
-                   'Exit Code',
-                   'Job ID',
-                   'Arguments',
-                   'Date',
-                   'No. Runs']
+        if not job_data: raise ClickException('No jobs found for node {}'.format(node))
+        headers, rows = shared_job_data_table(job_data)
+        headers = ['Tool'] + headers
+        for i, (job, _) in enumerate(job_data):
+            rows[i] = [job.batch.__name__()] + rows[i]
+        # sort by first column
+        rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
+
+    @view.group(name='tool-status', help='View the execution history of a single tool')
+    def tool_status():
+        pass
+
+    @click_tools.command(tool_status, exclude_interactive_only = True)
+    def tool_status_runner(config, _):
+        session = Session()
+        # Returns the most recent job for each node and the number of times the tool's been ran
+        # => [(latest_job1, count1), (lastest_job2, count2), ...]
+        job_data = session.query(Job, func.count(Job.node))\
+                           .select_from(Batch)\
+                           .filter(Batch.config == config.path)\
+                           .join(Job.batch)\
+                           .order_by(Job.created_date.desc())\
+                           .group_by(Job.node)\
+                           .all()
+        if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
+        headers, rows = shared_job_data_table(job_data)
+        headers = ['Node'] + headers
+        for i, (job, _) in enumerate(job_data):
+            rows[i] = [job.node] + rows[i]
+        # sort by first column
+        rows.sort(key=lambda x:x[0])
+        display_table(headers, rows)
+
+    def shared_job_data_table(data):
+        headers = ['Exit Code',
+                    'Job ID',
+                    'Arguments',
+                    'Date',
+                    'No. Runs']
         rows = []
-        for job, count in tool_data:
+        for job, count in data:
             arguments = None if not job.batch.arguments else job.batch.arguments
-            row = [job.batch.__name__(),
-                   job.exit_code,
+            row = [job.exit_code,
                    job.id,
                    arguments,
                    job.created_date,
                    count]
             rows += [row]
-            # sort by command name
-            rows.sort(key=lambda x:x[0])
-        display_table(headers, rows)
-
+        return (headers, rows)
