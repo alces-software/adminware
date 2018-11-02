@@ -32,7 +32,7 @@ def add_commands(appliance):
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             pass
-        elif nodes:
+        elif batch.jobs:
             execute_threaded_batches([batch])
         else:
             raise ClickException('Please give either --node or --group')
