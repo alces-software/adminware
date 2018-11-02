@@ -30,8 +30,8 @@ def add_commands(appliance):
         nodes = ctx.obj['adminware']['nodes']
         batch = Batch(config = config.path, arguments = arguments)
         batch.build_jobs(*nodes)
-        if batch.is_interactive():
-            pass
+        if batch.is_interactive() and (len(batch.jobs) == 1):
+            batch.jobs[0].run()
         elif batch.jobs:
             execute_threaded_batches([batch])
         else:
