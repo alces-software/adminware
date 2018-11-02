@@ -5,6 +5,8 @@ from os.path import basename, dirname
 import os.path
 from glob import glob
 
+from appliance_cli.command_generation import generate_commands
+
 import subprocess
 
 from functools import lru_cache
@@ -12,6 +14,12 @@ from functools import lru_cache
 CONFIG_DIR = '/var/lib/adminware/tools'
 
 class Config():
+    def commands(root_command, **kwargs):
+        def __commands(callback):
+            config_hash = Config.hashify_all(subcommand_key = 'commands', **kwargs)
+            generate_commands(root_command, config_hash, callback)
+        return __commands
+
     # lru_cache will cache the result of the `all` function. This prevents the Config
     # files being read more than once. However it also prevents updates and creations
     @lru_cache()
@@ -30,7 +38,7 @@ class Config():
     #               ...
     #           }
     #   {
-    def hashify_all(group = {}, command = {}, subcommand_key = 'commands'):
+    def hashify_all(group = {}, command = {}, subcommand_key = ''):
         combined_hash = {}
         for config in Config.all():
             base_hash = combined_hash

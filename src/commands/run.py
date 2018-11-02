@@ -3,7 +3,6 @@ import click
 from click import ClickException
 import click_tools
 from cli_utils import set_nodes_context
-from appliance_cli.command_generation import generate_commands
 
 from database import Session
 from models.job import Job
@@ -11,24 +10,6 @@ from models.batch import Batch
 from models.config import Config
 
 import threading
-
-config_hash = Config.hashify_all(
-        command = {
-            'help': Config.help,
-            'options': {
-                ('--node', '-n'): {
-                    'help': 'Runs the command over the node',
-                    'multiple': True,
-                    'metavar': 'NODE'
-                },
-                ('--group', '-g'): {
-                    'help': 'Runs the command over the group',
-                    'multiple': True,
-                    'metavar': 'GROUP'
-                }
-            }
-        }
-    )
 
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
@@ -63,11 +44,27 @@ def add_commands(appliance):
     #         execute_threaded_batches([batch])
     #     else:
     #         raise ClickException('Please give either --node or --group')
+    runner_cmd = {
+        'help': Config.help,
+        'options': {
+            ('--node', '-n'): {
+                'help': 'Runs the command over the node',
+                'multiple': True,
+                'metavar': 'NODE'
+            },
+            ('--group', '-g'): {
+                'help': 'Runs the command over the group',
+                'multiple': True,
+                'metavar': 'GROUP'
+            }
+        }
+    }
+
+    @Config.commands(tool, command = runner_cmd)
     def runner(callstack, argv, opt):
         print(callstack)
         print(argv)
         print(opt)
-    generate_commands(tool, config_hash, runner)
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
