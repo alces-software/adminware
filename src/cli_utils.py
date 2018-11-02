@@ -3,7 +3,13 @@ import groups
 from click import ClickException
 from collections import OrderedDict
 
-def nodes_in__node__group_opts(options):
+def with__node__group(cmd_func):
+    def __with__node__group(config, argv, options, *a):
+        nodes = nodes_in__node__group(options)
+        cmd_func(config, argv, options, nodes, *a)
+    return __with__node__group
+
+def nodes_in__node__group(options):
     nodes = groups.expand_nodes(options['node'].value)
     for group in options['group'].value:
         group_nodes = groups.nodes_in(group)

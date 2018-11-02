@@ -62,7 +62,8 @@ def add_commands(appliance):
     }
 
     @Config.commands(tool, command = runner_cmd)
-    def runner(config, argv, opt):
+    @cli_utils.with__node__group
+    def runner(config, argv, opt, nodes):
         print(cli_utils.nodes_in__node__group_opts(opt))
         print(config)
         print(argv)
