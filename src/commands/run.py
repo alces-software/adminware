@@ -13,7 +13,7 @@ from models.config import Config
 import threading
 
 config_hash = Config.hashify_all(
-        help = Config.help
+        command = { 'help': Config.help }
     )
 
 def add_commands(appliance):

@@ -20,27 +20,28 @@ class Config():
         return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
 
     # The commands are hashed into the following structure
-    # NOTE: kwargs supports callable objects which takes the Config as its input
-    #       The result is then stored in the hash
+    # NOTE: `command` supports callable objects which takes the Config as its
+    #       input. The result is then stored in the hash
     #   {
-    #       command1: **kwargs,
+    #       command1: **<command>,
     #       namespace1: {
-    #           commands: {
-    #               command2: **kwargs
+    #           <subcommand_key>: {
+    #               command2: **<command>
     #           }
     #   {
-    def hashify_all(**kwargs):
+    def hashify_all(group = {}, command = {}, subcommand_key = 'commands'):
         combined_hash = {}
         for config in Config.all():
             base_hash = combined_hash
             for name in config.name().split():
-                if 'commands' not in base_hash: base_hash['commands'] = {}
-                cmd_hash = base_hash['commands']
+                if subcommand_key not in base_hash:
+                    base_hash[subcommand_key] = {}
+                cmd_hash = base_hash[subcommand_key]
                 if name not in cmd_hash: cmd_hash[name] = {}
                 base_hash = cmd_hash[name]
-            for k, v in kwargs.items():
+            for k, v in command.items():
                 base_hash[k] = (v(config) if callable(v) else v)
-        return combined_hash['commands']
+        return combined_hash[subcommand_key]
 
     def __init__(self, path):
         self.path = path
