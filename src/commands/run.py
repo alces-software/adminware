@@ -38,7 +38,7 @@ def add_commands(appliance):
         }
     }
     runner_group = {
-        'help': "TODO: I'll write this soon....."
+        'help': (lambda names: "Run further tools: '{}'".format(' '.join(names)))
     }
 
     @Config.commands(tool, command = runner_cmd, group = runner_group)
