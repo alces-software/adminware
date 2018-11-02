@@ -55,11 +55,15 @@ class Config():
                                    .setdefault(name, {})
             return cur_hash
 
-        combined_hash = {}
-        for config in Config.all():
-            base_hash = build_group_hashes()
+        def copy_command_values():
             for k, v in command.items():
-                base_hash[k] = (v(config) if callable(v) else v)
+                cur_hash[k] = (v(config) if callable(v) else v)
+
+        cur_hash = combined_hash = {}
+        for config in Config.all():
+            build_group_hashes()
+            copy_command_values()
+
         return combined_hash[subcommand_key]
 
     def __init__(self, path):
