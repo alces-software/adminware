@@ -114,8 +114,8 @@ def add_commands(appliance):
         if not job_data: raise ClickException('No jobs found for node {}'.format(node))
         headers, rows = shared_job_data_table(job_data)
         headers = ['Tool'] + headers
-        for i, tool_datum in enumerate(job_data):
-            rows[i] = [tool_datum[0].batch.__name__()] + rows[i]
+        for i, (job, _) in enumerate(job_data):
+            rows[i] = [job.batch.__name__()] + rows[i]
         # sort by first column
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
