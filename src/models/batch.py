@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, Integer, DateTime, orm
 
 from database import Base
 from models.config import Config
+from models.job import Job
 
 class Batch(Base):
     __tablename__ = 'batches'
@@ -29,6 +30,9 @@ class Batch(Base):
 
     def is_interactive(self):
         return self.config_model.interactive()
+
+    def build_jobs(self, *nodes):
+        return list(map(lambda n: Job(node = n, batch = self), nodes))
 
     def __init__(self, **kwargs):
         self.config = kwargs['config']

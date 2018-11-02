@@ -81,6 +81,7 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
+                jobs = batch.build_jobs(*nodes)
                 threads = list(map(lambda j: JobRunner(j).thread, jobs))
                 threads.reverse()
                 active_threads = []

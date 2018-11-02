@@ -8,7 +8,6 @@ from shlex import quote
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
-from models.batch import Batch
 from database import Base
 
 
@@ -104,4 +103,6 @@ available. Please see documentation for possible causes
     def __init__(self, **kwargs):
         self.node = kwargs['node']
         self.batch = kwargs['batch']
+
+from models.batch import Batch
 
