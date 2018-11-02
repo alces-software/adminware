@@ -1,11 +1,21 @@
 import yaml
 import re
 from os.path import basename, dirname
+
+import os.path
+from glob import glob
+
 import subprocess
 
 from config import TOOL_DIR
 
+CONFIG_DIR = '/var/lib/adminware/tools'
+
 class Config():
+    def all():
+        glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
+        return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
+
     def __init__(self, path):
         self.path = path
         def __read_data():
