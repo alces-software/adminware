@@ -105,16 +105,16 @@ def add_commands(appliance):
         # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
         #       https://www.w3schools.com/sql/func_sqlserver_count.asp
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        tool_data = session.query(Job, func.count(Batch.config))\
+        job_data = session.query(Job, func.count(Batch.config))\
                            .filter(Job.node == node)\
                            .join("batch")\
                            .order_by(Job.created_date.desc())\
                            .group_by(Batch.config)\
                            .all()
-        if not tool_data: raise ClickException('No jobs found for node {}'.format(node))
-        headers, rows = shared_job_data_table(tool_data)
+        if not job_data: raise ClickException('No jobs found for node {}'.format(node))
+        headers, rows = shared_job_data_table(job_data)
         headers = ['Tool'] + headers
-        for i, tool_datum in enumerate(tool_data):
+        for i, tool_datum in enumerate(job_data):
             rows[i] = [tool_datum[0].batch.__name__()] + rows[i]
         # sort by first column
         rows.sort(key=lambda x:x[0])
