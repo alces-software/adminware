@@ -3,12 +3,18 @@ import click
 from click import ClickException
 import click_tools
 from cli_utils import set_nodes_context
+from appliance_cli.command_generation import generate_commands
 
 from database import Session
 from models.job import Job
 from models.batch import Batch
+from models.config import Config
 
 import threading
+
+config_hash = Config.hashify_all(
+        help = Config.help
+    )
 
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
@@ -24,9 +30,7 @@ def add_commands(appliance):
     def tool(ctx, **kwargs):
         set_nodes_context(ctx, **kwargs)
 
-    @click_tools.command(tool)
-    @click.pass_context
-    def runnner(ctx, config, arguments):
+    def runner(ctx, config, arguments):
         nodes = ctx.obj['adminware']['nodes']
         batch = Batch(config = config.path, arguments = arguments)
         batch.build_jobs(*nodes)
@@ -50,6 +54,7 @@ def add_commands(appliance):
             execute_threaded_batches([batch])
         else:
             raise ClickException('Please give either --node or --group')
+    generate_commands(tool, config_hash, runner)
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
     @click.option('--node', '-n', multiple=True, metavar='NODE',
