@@ -46,7 +46,8 @@ class Config():
     #               command2: **<command>
     #               ...
     #           }
-    #   {
+    #       }
+    #   }
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
         def build_group_hashes():
             cur_hash = combined_hash
@@ -55,14 +56,14 @@ class Config():
                                    .setdefault(name, {})
             return cur_hash
 
-        def copy_command_values():
-            for k, v in command.items():
+        def copy_values(source):
+            for k, v in source.items():
                 cur_hash[k] = (v(config) if callable(v) else v)
 
         cur_hash = combined_hash = {}
         for config in Config.all():
             cur_hash = build_group_hashes()
-            copy_command_values()
+            copy_values(command)
 
         return combined_hash[subcommand_key]
 
