@@ -48,12 +48,16 @@ class Config():
     #           }
     #   {
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
+        def build_group_hashes():
+            cur_hash = combined_hash
+            for name in config.name().split():
+                cur_hash = cur_hash.setdefault(subcommand_key, {})\
+                                   .setdefault(name, {})
+            return cur_hash
+
         combined_hash = {}
         for config in Config.all():
-            base_hash = combined_hash
-            for name in config.name().split():
-                base_hash = base_hash.setdefault(subcommand_key, {})\
-                                     .setdefault(name, {})
+            base_hash = build_group_hashes()
             for k, v in command.items():
                 base_hash[k] = (v(config) if callable(v) else v)
         return combined_hash[subcommand_key]
