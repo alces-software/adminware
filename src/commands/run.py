@@ -23,6 +23,7 @@ def add_commands(appliance):
 
     runner_cmd = {
         'help': Config.help,
+        'arguments': ['remote_arguments'],
         'options': {
             ('--node', '-n'): {
                 'help': 'Runs the command over the node',
@@ -39,9 +40,8 @@ def add_commands(appliance):
 
     @Config.commands(tool, command = runner_cmd)
     @cli_utils.with__node__group
-    def runner(config, _argv, _opt, nodes):
-        arguments = []
-        batch = Batch(config = config.path, arguments = [])
+    def runner(config, argv, _opt, nodes):
+        batch = Batch(config = config.path, arguments = argv[0])
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             if len(batch.jobs) == 1:
