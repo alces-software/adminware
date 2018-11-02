@@ -19,6 +19,9 @@ class Batch(Base):
     def __name__(self):
         return self.config_model.__name__()
 
+    def name(self):
+        return self.config_model.name()
+
     def help(self):
         return self.config_model.help()
 
