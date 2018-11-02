@@ -82,6 +82,19 @@ def add_commands(appliance):
                 output = "No tools found"
         click.echo_via_pager(output)
 
+    @view.command(help="View a tool family's details")
+    @click.argument('family', type=str)
+    def family(family):
+        action_families = click_tools.create_families()
+        output = ''
+        for action_family in action_families:
+            if action_family.name == family:
+               output = "{}\n{}".format(action_family.name,
+                                          " --> ".join(list(map(lambda x: x.__name__(), action_family.get_members_configs()))))
+               break
+        if not output: output = "Family '{}' not found".format(family)
+        click.echo_via_pager(output)
+
     @view.command(help='List all available tool families')
     def families():
         action_families = click_tools.create_families('')
