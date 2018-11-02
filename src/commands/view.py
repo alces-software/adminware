@@ -139,8 +139,8 @@ def add_commands(appliance):
         if not node_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
         headers, rows = gen_columns(node_data)
         headers = ['Node'] + headers
-        for i, node_datum in enumerate(node_data):
-            rows[i] = [node_datum[0].node] + rows[i]
+        for i, (job, _c) in enumerate(node_data):
+            rows[i] = [job.node] + rows[i]
         # sort by first column
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
