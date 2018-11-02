@@ -52,11 +52,8 @@ class Config():
         for config in Config.all():
             base_hash = combined_hash
             for name in config.name().split():
-                if subcommand_key not in base_hash:
-                    base_hash[subcommand_key] = {}
-                cmd_hash = base_hash[subcommand_key]
-                if name not in cmd_hash: cmd_hash[name] = {}
-                base_hash = cmd_hash[name]
+                base_hash = base_hash.setdefault(subcommand_key, {})\
+                                     .setdefault(name, {})
             for k, v in command.items():
                 base_hash[k] = (v(config) if callable(v) else v)
         return combined_hash[subcommand_key]
