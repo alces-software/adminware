@@ -15,8 +15,17 @@ CONFIG_DIR = '/var/lib/adminware/tools'
 
 class Config():
     def commands(root_command, **kwargs):
-        def __commands(callback):
+        class ConfigCallback():
+            def __init__(self, callback_func):
+                self.callback = callback_func
+
+            def run(self, callstack, *a):
+                path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
+                self.callback(Config(path), *a)
+
+        def __commands(config_callback):
             config_hash = Config.hashify_all(subcommand_key = 'commands', **kwargs)
+            callback = ConfigCallback(config_callback).run
             generate_commands(root_command, config_hash, callback)
         return __commands
 

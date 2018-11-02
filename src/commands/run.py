@@ -61,8 +61,8 @@ def add_commands(appliance):
     }
 
     @Config.commands(tool, command = runner_cmd)
-    def runner(callstack, argv, opt):
-        print(callstack)
+    def runner(config, argv, opt):
+        print(config)
         print(argv)
         print(opt)
 
