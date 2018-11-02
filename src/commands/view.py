@@ -85,29 +85,41 @@ def add_commands(appliance):
     @view.command(help="View a tool family's details")
     @click.argument('family', type=str)
     def family(family):
-        action_families = click_tools.create_families()
-        output = ''
-        for action_family in action_families:
-            if action_family.name == family:
-               output = "{}\n".format(action_family.name) + \
-                        "{}".format(" --> ".join(list(map(lambda x: x.__name__(),
-                                                          action_family.get_members_configs()))))
-               break
+        write_family = family_output_decorator(family_output)
+        output = family_iterator(write_family, target_family = family)
         if not output: output = "Family '{}' not found".format(family)
         click.echo_via_pager(output)
 
     @view.command(help='List all available tool families')
     def families():
+        write_families = families_output_decorator(family_output)
+        click.echo_via_pager(family_iterator(write_families))
+
+    def family_iterator(iterator_func, target_family = ''):
         action_families = click_tools.create_families()
         if action_families:
             output = ''
             for action_family in action_families:
-                output = output + "\n{}".format(action_family.name) + \
-                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(),
-                                                               action_family.get_members_configs()))))
-        else:
-            output = "No tool families have been configured"
-        click.echo_via_pager(output)
+                output = iterator_func(output, action_family, target_family)
+        else: output = "No tool families have been configured"
+        return output
+
+    def family_output_decorator(func):
+        def wrapper(output, action_family, target_family):
+            if action_family.name == target_family:
+                output = func(action_family)
+            return output
+        return wrapper
+
+    def families_output_decorator(func):
+        def wrapper(output, action_family, target_family=''):
+            return output + "\n" + func(action_family) + "\n"
+        return wrapper
+
+    def family_output(action_family):
+        return "{}".format(action_family.name) + \
+               "\n{}".format(" --> ".join(list(map(lambda x: x.__name__(),
+                                                   action_family.get_members_configs()))))
 
     @view.command(name='node-status', help='View the execution history of a single node')
     @click.argument('node', type=str)
