@@ -19,6 +19,17 @@ class Config():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
         return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
 
+    def hashify_all(**kwargs):
+        combined_hash = {}
+        for config in Config.all():
+            base_hash = combined_hash
+            for name in config.name().split():
+                if name not in base_hash: base_hash[name] = {}
+                base_hash = base_hash[name]
+            for k, v in kwargs.items():
+                base_hash[k] = (v(config) if callable(v) else v)
+        return combined_hash
+
     def __init__(self, path):
         self.path = path
         def __read_data():
