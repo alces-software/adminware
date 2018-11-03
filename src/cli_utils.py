@@ -22,11 +22,11 @@ def nodes_in__node__group(options):
 
 def strip_escaped_argv(func):
     def __strip_escaped_argv(c, argv, *a):
-        parsed = list(map(lambda a: strip(a), argv))
+        parsed = list(map(lambda arg: strip(arg), argv))
         func(c, parsed, *a)
 
     def strip(string):
-        return re.sub(r'^\\\s*', '', string)
+        return (re.sub(r'^\\\s*', '', string) if isinstance(string, str) else string)
 
     return __strip_escaped_argv
 
