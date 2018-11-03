@@ -82,20 +82,15 @@ def add_commands(appliance):
     @cli_utils.with__node__group
     def family_runner(callstack, _a, _o, nodes):
         family = callstack[0]
-        print(family)
-        print(nodes)
-
-    #def family_runner(ctx, family, command_configs):
-    #    nodes = ctx.obj['adminware']['nodes']
-    #    if not nodes:
-    #        raise ClickException('Please give either --node or --group')
-    #    batches = []
-    #    for config in command_configs:
-    #        #create batch w/ relevant config for command
-    #        batch = Batch(config = config.path)
-    #        batch.build_jobs(*nodes)
-    #        batches += [batch]
-    #    execute_threaded_batches(batches)
+        if not nodes:
+            raise ClickException('Please give either --node or --group')
+        batches = []
+        for config in Config.all_families()[family]:
+            #create batch w/ relevant config for command
+            batch = Batch(config = config.path)
+            batch.build_jobs(*nodes)
+            batches += [batch]
+        execute_threaded_batches(batches)
 
     def execute_threaded_batches(batches):
         class JobRunner:
