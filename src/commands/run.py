@@ -1,7 +1,6 @@
 
 import click
 from click import ClickException
-from cli_utils import set_nodes_context
 import cli_utils
 
 from database import Session
