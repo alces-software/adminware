@@ -1,4 +1,5 @@
 
+import cli_utils
 import click_tools
 import explore_tools
 import groups as groups_util
@@ -6,6 +7,7 @@ import groups as groups_util
 from appliance_cli.text import display_table
 from models.batch import Batch
 from models.job import Job
+from models.config import Config
 
 import click
 import os.path
@@ -45,12 +47,14 @@ def add_commands(appliance):
         ]
         display_table([], table_data)
 
-    @view.group(help="View a tool's details")
+    @view.group(help="See more details about your tools")
     def tool():
         pass
 
-    @click_tools.command(tool)
-    def get_tool_info(config, _a):
+    tool_cmd = { 'help': "See tool's details" }
+    tool_grp = { 'help': 'List details for further tools' }
+    @Config.commands(tool, command = tool_cmd, group = tool_grp)
+    def get_tool_info(config, _a, _o):
         table_data = [
             ['Name', config.name()],
             ['Description', config.help()],
