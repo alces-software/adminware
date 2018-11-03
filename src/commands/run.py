@@ -71,6 +71,15 @@ def add_commands(appliance):
     @run.group(help='Run a family of commands on node(s) or group(s)')
     def family(): pass
 
+    family_runner = {
+        'help': 'Runs the command over the group'
+    }
+
+    @Config.family_commands(family, command = family_runner)
+    def family_runner(callstack, _a, _o):
+        family = callstack[0]
+        print(family)
+
     #@click.option('--node', '-n', multiple=True, metavar='NODE',
     #          help='Runs the command on the node')
     #@click.option('--group', '-g', multiple=True, metavar='GROUP',

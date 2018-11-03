@@ -29,6 +29,12 @@ class Config():
             generate_commands(root_command, config_hash, callback)
         return __commands
 
+    def family_commands(root_command, **kwargs):
+        def __family_commands(callback):
+            families_hash = Config.hashify_all_families(**kwargs)
+            generate_commands(root_command, families_hash, callback)
+        return __family_commands
+
     # lru_cache will cache the result of the `all` function. This prevents the Config
     # files being read more than once. However it also prevents updates and creations
     @lru_cache()
