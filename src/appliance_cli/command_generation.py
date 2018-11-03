@@ -158,12 +158,17 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
 def _form_arguments(arguments_config):
     args_map = OrderedDict()
     is_required = True
-    for arg_name in arguments_config:
+    for arg_n in arguments_config:
         def add_argument(name):
             identifier = _parameter_identifier(name)
             args_map[identifier] = click.Argument([name], required = is_required)
 
-        add_argument(arg_name)
+        if isinstance(arg_n, list):
+            # Sublists flag all future arguments as optional
+            is_required = False
+            for n in arg_n: add_argument(n)
+        else:
+            add_argument(arg_name)
     return args_map
 
 
