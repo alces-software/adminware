@@ -69,27 +69,28 @@ def add_commands(appliance):
             raise ClickException('Please give either --node or --group')
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
-    @click.option('--node', '-n', multiple=True, metavar='NODE',
-              help='Runs the command on the node')
-    @click.option('--group', '-g', multiple=True, metavar='GROUP',
-              help='Runs the command over the group')
-    @click.pass_context
-    def family(ctx, **kwargs):
-        set_nodes_context(ctx, **kwargs)
+    def family(): pass
 
-    @click_tools.command_family(family)
-    @click.pass_context
-    def family_runner(ctx, family, command_configs):
-        nodes = ctx.obj['adminware']['nodes']
-        if not nodes:
-            raise ClickException('Please give either --node or --group')
-        batches = []
-        for config in command_configs:
-            #create batch w/ relevant config for command
-            batch = Batch(config = config.path)
-            batch.build_jobs(*nodes)
-            batches += [batch]
-        execute_threaded_batches(batches)
+    #@click.option('--node', '-n', multiple=True, metavar='NODE',
+    #          help='Runs the command on the node')
+    #@click.option('--group', '-g', multiple=True, metavar='GROUP',
+    #          help='Runs the command over the group')
+    #@click.pass_context
+    #    set_nodes_context(ctx, **kwargs)
+
+    #@click_tools.command_family(family)
+    #@click.pass_context
+    #def family_runner(ctx, family, command_configs):
+    #    nodes = ctx.obj['adminware']['nodes']
+    #    if not nodes:
+    #        raise ClickException('Please give either --node or --group')
+    #    batches = []
+    #    for config in command_configs:
+    #        #create batch w/ relevant config for command
+    #        batch = Batch(config = config.path)
+    #        batch.build_jobs(*nodes)
+    #        batches += [batch]
+    #    execute_threaded_batches(batches)
 
     def execute_threaded_batches(batches):
         class JobRunner:
