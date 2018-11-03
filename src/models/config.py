@@ -52,8 +52,10 @@ class Config():
         return combined_hash
 
     # The commands are hashed into the following structure
-    # NOTE: `command` supports callable objects which takes the Config as its
-    #       input. The result is then stored in the hash
+    # NOTES: `command` and `group both supports callable objects as a means
+    #        to customize the hashes. They are called with:
+    #          - command: The config object
+    #          - group: The current name
     #   {
     #       command1: **<command>,
     #       namespace1: {
@@ -64,10 +66,6 @@ class Config():
     #           }
     #       }
     #   }
-    def __copy_values(source, target, args):
-        for k, v in source.items():
-            target[k] = (v(args) if callable(v) else v)
-
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
         def build_group_hashes():
             cur_hash = combined_hash
@@ -85,12 +83,22 @@ class Config():
 
         return combined_hash[subcommand_key]
 
+    # Generates a similar hash as above but for the command families
+    # Callable objects are called with the family name
+    #   {
+    #       familyX: **<command>,
+    #       ...
+    #   }
     def hashify_all_families(command = {}):
         combined_hash = {}
         for family in Config.all_families():
             family_hash = combined_hash.setdefault(family, {})
             Config.__copy_values(command, family_hash, family)
         return combined_hash
+
+    def __copy_values(source, target, args):
+        for k, v in source.items():
+            target[k] = (v(args) if callable(v) else v)
 
     def __init__(self, path):
         self.path = path
