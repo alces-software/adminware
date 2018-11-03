@@ -87,18 +87,6 @@ def add_commands(appliance):
                 output = "No tools found"
         click.echo_via_pager(output)
 
-    @view.command(help='List all available tool families')
-    def families():
-        action_families = click_tools.create_families('')
-        if action_families:
-            output = ''
-            for family in action_families:
-                output = output + "\n{}".format(family.name) + \
-                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
-        else:
-            output = "No tool families have been configured"
-        click.echo_via_pager(output)
-
     @view.command(name='node-status', help='View the execution history of a single node')
     @click.argument('node', type=str)
     # note: this works on config location, not command name.
