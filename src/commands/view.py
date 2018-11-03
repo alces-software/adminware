@@ -1,6 +1,5 @@
 
 import cli_utils
-import explore_tools
 import groups as groups_util
 
 from appliance_cli.text import display_table
