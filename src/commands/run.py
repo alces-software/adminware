@@ -21,21 +21,23 @@ def add_commands(appliance):
     def tool():
         pass
 
+    node_group_options = {
+        ('--node', '-n'): {
+            'help': 'Runs the command over the node',
+            'multiple': True,
+            'metavar': 'NODE'
+        },
+        ('--group', '-g'): {
+            'help': 'Runs the command over the group',
+            'multiple': True,
+            'metavar': 'GROUP'
+        }
+    }
+
     runner_cmd = {
         'help': Config.help,
         'arguments': [['remote_arguments']], # [[]]: Optional Arg
-        'options': {
-            ('--node', '-n'): {
-                'help': 'Runs the command over the node',
-                'multiple': True,
-                'metavar': 'NODE'
-            },
-            ('--group', '-g'): {
-                'help': 'Runs the command over the group',
-                'multiple': True,
-                'metavar': 'GROUP'
-            }
-        }
+        'options': node_group_options
     }
     runner_group = {
         'help': (lambda names: "Run further tools: '{}'".format(' '.join(names)))
@@ -72,23 +74,17 @@ def add_commands(appliance):
     def family(): pass
 
     family_runner = {
-        'help': 'Runs the command over the group'
+        'help': 'Runs the command over the group',
+        'options': node_group_options
     }
 
     @Config.family_commands(family, command = family_runner)
-    def family_runner(callstack, _a, _o):
+    @cli_utils.with__node__group
+    def family_runner(callstack, _a, _o, nodes):
         family = callstack[0]
         print(family)
+        print(nodes)
 
-    #@click.option('--node', '-n', multiple=True, metavar='NODE',
-    #          help='Runs the command on the node')
-    #@click.option('--group', '-g', multiple=True, metavar='GROUP',
-    #          help='Runs the command over the group')
-    #@click.pass_context
-    #    set_nodes_context(ctx, **kwargs)
-
-    #@click_tools.command_family(family)
-    #@click.pass_context
     #def family_runner(ctx, family, command_configs):
     #    nodes = ctx.obj['adminware']['nodes']
     #    if not nodes:
