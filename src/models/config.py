@@ -58,26 +58,33 @@ class Config():
     #           }
     #       }
     #   }
+    def __copy_values(source, target, args):
+        for k, v in source.items():
+            target[k] = (v(args) if callable(v) else v)
+
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
         def build_group_hashes():
             cur_hash = combined_hash
             names = config.names()
             for idx, name in enumerate(config.names()):
                 cur_names = names[0:idx]
-                copy_values(group, cur_hash, cur_names)
+                Config.__copy_values(group, cur_hash, cur_names)
                 cur_hash = cur_hash.setdefault(subcommand_key, {})\
                                    .setdefault(name, {})
             return cur_hash
 
-        def copy_values(source, target, args):
-            for k, v in source.items():
-                target[k] = (v(args) if callable(v) else v)
-
         combined_hash = {}
         for config in Config.all():
-            copy_values(command, build_group_hashes(), config)
+            Config.__copy_values(command, build_group_hashes(), config)
 
         return combined_hash[subcommand_key]
+
+    def hashify_all_families(command = {}):
+        combined_hash = {}
+        for family in Config.all_families():
+            family_hash = combined_hash.setdefault(family, {})
+            Config.__copy_values(command, family_hash, family)
+        return combined_hash
 
     def __init__(self, path):
         self.path = path
