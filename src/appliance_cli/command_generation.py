@@ -159,8 +159,11 @@ def _form_arguments(arguments_config):
     args_map = OrderedDict()
     is_required = True
     for arg_name in arguments_config:
-        identifier = _parameter_identifier(arg_name)
-        args_map[identifier] = click.Argument([arg_name], required = is_required)
+        def add_argument(name):
+            identifier = _parameter_identifier(name)
+            args_map[identifier] = click.Argument([name], required = is_required)
+
+        add_argument(arg_name)
     return args_map
 
 
