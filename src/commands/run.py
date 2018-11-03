@@ -23,12 +23,12 @@ def add_commands(appliance):
 
     node_group_options = {
         ('--node', '-n'): {
-            'help': 'Runs the command over the node',
+            'help': 'Specify a node, repeat the flag for multiple',
             'multiple': True,
             'metavar': 'NODE'
         },
         ('--group', '-g'): {
-            'help': 'Runs the command over the group',
+            'help': 'Specify a group, repeat the flag for multiple',
             'multiple': True,
             'metavar': 'GROUP'
         }
