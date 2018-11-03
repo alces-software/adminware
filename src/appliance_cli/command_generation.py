@@ -157,9 +157,10 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
 
 def _form_arguments(arguments_config):
     args_map = OrderedDict()
+    is_required = True
     for arg_name in arguments_config:
         identifier = _parameter_identifier(arg_name)
-        args_map[identifier] = click.Argument([arg_name])
+        args_map[identifier] = click.Argument([arg_name], required = is_required)
     return args_map
 
 
