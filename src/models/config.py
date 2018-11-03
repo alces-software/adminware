@@ -52,9 +52,9 @@ class Config():
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
         def build_group_hashes():
             cur_hash = combined_hash
-            name_parts = config.name().split()
-            for idx, name in enumerate(name_parts):
-                cur_names = name_parts[0:idx]
+            names = config.names()
+            for idx, name in enumerate(config.names()):
+                cur_names = names[0:idx]
                 copy_values(group, cur_hash, cur_names)
                 cur_hash = cur_hash.setdefault(subcommand_key, {})\
                                    .setdefault(name, {})
@@ -83,6 +83,9 @@ class Config():
     def name(self):
         prefix = (self.additional_namespace() + ' ' if self.additional_namespace() else '')
         return "{}{}".format(prefix, self.__name__())
+
+    def names(self):
+        return self.name().split()
 
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))
