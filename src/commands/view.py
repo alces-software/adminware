@@ -1,6 +1,5 @@
 
 import cli_utils
-import click_tools
 import explore_tools
 import groups as groups_util
 

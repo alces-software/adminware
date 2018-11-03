@@ -1,7 +1,6 @@
 
 import click
 from click import ClickException
-import click_tools
 from cli_utils import set_nodes_context
 import cli_utils
 
