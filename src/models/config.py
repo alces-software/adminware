@@ -36,6 +36,15 @@ class Config():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
         return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
 
+    @lru_cache()
+    def all_families():
+        combined_hash = {}
+        for config in Config.all():
+            for family in config.families():
+                combined_hash.setdefault(family, [])
+                combined_hash[family] += [config]
+        return combined_hash
+
     # The commands are hashed into the following structure
     # NOTE: `command` supports callable objects which takes the Config as its
     #       input. The result is then stored in the hash
