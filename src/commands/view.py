@@ -128,8 +128,10 @@ def add_commands(appliance):
     def tool_status():
         pass
 
-    @click_tools.command(tool_status, exclude_interactive_only = True)
-    def tool_status_runner(config, _):
+    tool_status_cmd = { 'help': 'List the status across the nodes' }
+    tool_status_grp = { 'help': 'See the status of further tools' }
+    @Config.commands(tool_status, command = tool_status_cmd, group = tool_status_grp)
+    def tool_status_runner(config, _a, _o):
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
