@@ -10,7 +10,6 @@ from models.config import Config
 import click
 import os.path
 
-from click import ClickException
 from sqlalchemy import func
 from database import Session
 from models.job import Job
@@ -80,7 +79,7 @@ def add_commands(appliance):
                            .order_by(Job.created_date.desc())\
                            .group_by(Batch.config)\
                            .all()
-        if not job_data: raise ClickException('No jobs found for node {}'.format(node))
+        if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
         headers = ['Tool'] + headers + ['No. Runs']
@@ -108,7 +107,7 @@ def add_commands(appliance):
                            .order_by(Job.created_date.desc())\
                            .group_by(Job.node)\
                            .all()
-        if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
+        if not job_data: raise click.ClickException('No jobs found for tool {}'.format(config.__name__()))
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
         headers = ['Node'] + headers + ['No. Runs']
@@ -126,7 +125,7 @@ def add_commands(appliance):
                           .filter(Job.node == node)\
                           .join("batch")\
                           .all()
-        if not job_data: raise ClickException('No jobs found for node {}'.format(node))
+        if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
         headers, rows = shared_job_data_table(job_data)
         headers = ['Tool'] + headers
         for i, job in enumerate(job_data):
@@ -146,7 +145,7 @@ def add_commands(appliance):
                           .filter(Batch.config == config.path)\
                           .join(Job.batch)\
                           .all()
-        if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
+        if not job_data: raise click.ClickException('No jobs found for tool {}'.format(config.__name__()))
         headers, rows = shared_job_data_table(job_data)
         headers = ['Node'] + headers
         for i, job in enumerate(job_data):
