@@ -10,6 +10,7 @@ from models.config import Config
 import click
 import os.path
 
+from click import ClickException
 from sqlalchemy import func
 from database import Session
 from models.job import Job
@@ -80,10 +81,11 @@ def add_commands(appliance):
                            .group_by(Batch.config)\
                            .all()
         if not job_data: raise ClickException('No jobs found for node {}'.format(node))
-        headers, rows = shared_job_data_table(job_data)
-        headers = ['Tool'] + headers
-        for i, (job, _) in enumerate(job_data):
-            rows[i] = [job.batch.__name__()] + rows[i]
+        job_objects = [i for i, j in job_data]
+        headers, rows = shared_job_data_table(job_objects)
+        headers = ['Tool'] + headers + ['No. Runs']
+        for i, (job, count) in enumerate(job_data):
+            rows[i] = [job.batch.__name__()] + rows[i] + [count]
         # sort by first column
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
@@ -107,27 +109,62 @@ def add_commands(appliance):
                            .group_by(Job.node)\
                            .all()
         if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
-        headers, rows = shared_job_data_table(job_data)
-        headers = ['Node'] + headers
-        for i, (job, _) in enumerate(job_data):
-            rows[i] = [job.node] + rows[i]
+        job_objects = [i for i, j in job_data]
+        headers, rows = shared_job_data_table(job_objects)
+        headers = ['Node'] + headers + ['No. Runs']
+        for i, (job, count) in enumerate(job_data):
+            rows[i] = [job.node] + rows[i] + [count]
         # sort by first column
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
 
+    @view.command(name='node-history', help='View all executions on a single node')
+    @click.argument('node', type=str)
+    def node_history(node):
+        session = Session()
+        job_data = session.query(Job)\
+                          .filter(Job.node == node)\
+                          .join("batch")\
+                          .all()
+        if not job_data: raise ClickException('No jobs found for node {}'.format(node))
+        headers, rows = shared_job_data_table(job_data)
+        headers = ['Tool'] + headers
+        for i, job in enumerate(job_data):
+            rows[i] = [job.batch.__name__()] + rows[i]
+        rows.sort(key=lambda x:x[1], reverse=True)
+        display_table(headers, rows)
+
+    @view.group(name='tool-history', help='View all executions of a single tool')
+    def tool_history():
+        pass
+
+    @click_tools.command(tool_history, exclude_interactive_only = True)
+    def tool_history_runner(config, _):
+        session = Session()
+        job_data = session.query(Job)\
+                          .select_from(Batch)\
+                          .filter(Batch.config == config.path)\
+                          .join(Job.batch)\
+                          .all()
+        if not job_data: raise ClickException('No jobs found for tool {}'.format(config.__name__()))
+        headers, rows = shared_job_data_table(job_data)
+        headers = ['Node'] + headers
+        for i, job in enumerate(job_data):
+            rows[i] = [job.node] + rows[i]
+        rows.sort(key=lambda x:x[1], reverse=True)
+        display_table(headers, rows)
+        
     def shared_job_data_table(data):
-        headers = ['Exit Code',
-                    'Job ID',
-                    'Arguments',
-                    'Date',
-                    'No. Runs']
+        headers = ['Job ID',
+                   'Exit Code',
+                   'Arguments',
+                   'Date']
         rows = []
-        for job, count in data:
+        for job in data:
             arguments = None if not job.batch.arguments else job.batch.arguments
-            row = [job.exit_code,
-                   job.id,
+            row = [job.id,
+                   job.exit_code,
                    arguments,
-                   job.created_date,
-                   count]
+                   job.created_date]
             rows += [row]
         return (headers, rows)
