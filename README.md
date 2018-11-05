@@ -21,6 +21,9 @@ run - command group used for running tools - works in parallel across nodes.
     - A tool's namespaces must be specified before its name.
     - If a tool is selected for a single node it will be automatically ran
       in interactive mode.
+    - If a tool marked as being interactive only (see 'Adding Tools') and it is 
+      attempted to run it on more than one node it will cancel and an error will
+      be thrown.
     - Optionally, arguments can be provided.
  - run family NODE(S) TOOL-FAMILY
     - Runs family TOOL-FAMILY on NODE(S).
