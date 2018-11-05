@@ -90,6 +90,9 @@ def add_commands(appliance):
         execute_threaded_batches(batches)
 
     def execute_threaded_batches(batches):
+        runners = []
+        active_runners = []
+
         class JobRunner:
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
@@ -116,9 +119,8 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                runners = list(map(lambda j: JobRunner(j), batch.jobs))
+                runners += list(map(lambda j: JobRunner(j), batch.jobs))
                 runners.reverse()
-                active_runners = []
                 while len(runners) > 0 or len(active_runners) > 0:
                     while len(active_runners) < 10 and len(runners) > 0:
                         new_run = runners.pop()
