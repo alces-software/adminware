@@ -10,6 +10,7 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
+import threading
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -29,6 +30,7 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+    kill_connection_event = threading.Event()
 
     def run(self):
         def __check_command(func):
@@ -43,6 +45,13 @@ available. Please see documentation for possible causes
         def __with_connection(func):
             def wrapper():
                 connection = Connection(self.node)
+                def run_function():
+                    try: func(connection)
+                    # Do not pass on errors, they should already be handled
+                    except: pass
+                    # Flag the job as finished
+                    finally: self.kill_connection_event.set()
+
                 try:
                     connection.open()
                 except:
@@ -50,7 +59,11 @@ available. Please see documentation for possible causes
                     self.exit_code = -1
                 if connection.is_connected:
                     try:
-                        func(connection)
+                        self.kill_connection_event.clear()
+                        worker = threading.Thread(target = run_function)
+                        worker.start()
+                        self.kill_connection_event.wait()
+                        worker.join(1) # Do not block as it might be interrupted
                     finally:
                         connection.close()
             return wrapper
