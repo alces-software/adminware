@@ -29,10 +29,10 @@ run - command group used for running tools - works in parallel across nodes.
     - Runs family FAMILY on NODE(S).
 
 view - inspect execution history, statuses, groups, and tools.
- - view groups
-    - Lists every group set-up in the system's genders file
- - view group GROUP
+ - view group [GROUP]
     - Lists all the nodes in group GROUP
+    - If no group is given, a list of all groups can be found in the command's
+      help display
  - view tool [NAMESPACE(S)] [TOOL]
     - Shows info about the tool at NAMESPACE(S)/TOOL
     - Displays the tool's name, description, command, families, whether it must
