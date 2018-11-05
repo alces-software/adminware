@@ -59,7 +59,7 @@ def add_commands(appliance):
             elif batch.jobs:
                 raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
-'''.strip())
+'''.format(config.name()).strip())
             else:
                 raise ClickException('Please specify a node with --node')
         elif batch.jobs:
