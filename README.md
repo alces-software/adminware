@@ -37,8 +37,8 @@ view - inspect execution history, statuses, groups, and tools.
     - Shows info about the tool at NAMESPACE(S)/TOOL
     - Displays the tool's name, description, command, families, whether it must
       be ran interactively and the contents of its working directory
-    - If no tool is given, the command's help display it lists the availible tools
-      and sub-namespaces the given namespace(s).
+    - If no tool is given, in the command's help display it lists the availible tools
+      and sub-namespaces of the given namespace(s).
     - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
  - view family [FAMILY]
     - Displays the members of the tool family FAMILY, as well as their order of
@@ -114,7 +114,7 @@ single line output. The full results are logged to the database.
 
 Tools are automatically picked up from config files stored at:
 
-`/var/lib/adminware/tools/[<optional-namespace>/].../<command-name>/config.yaml`
+`/var/lib/adminware/tools/[<optional-namespace>/].../<tool-name>/config.yaml`
 
 The config.yaml files cannot have directories as their siblings, although
 there can be other files in the same directories.
