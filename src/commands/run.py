@@ -9,6 +9,7 @@ from models.batch import Batch
 from models.config import Config
 
 import threading
+import signal
 
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
@@ -93,6 +94,11 @@ def add_commands(appliance):
         runners = []
         active_runners = []
 
+        def handler_interrupt(*_):
+            print('Interrupt Received')
+            # Stop all queued jobs from running
+            runners.clear()
+
         class JobRunner:
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
@@ -117,6 +123,7 @@ def add_commands(appliance):
                     Session.remove()
 
         session = Session()
+        signal.signal(signal.SIGINT, handler_interrupt)
         try:
             for batch in batches:
                 session.add(batch)
@@ -134,5 +141,6 @@ def add_commands(appliance):
                             run.thread.join()
                             active_runners.remove(run)
         finally:
+            signal.signal(signal.SIGINT, signal.SIG_DFL)
             session.commit()
             Session.remove()
