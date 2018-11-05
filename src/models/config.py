@@ -46,7 +46,8 @@ class Config():
     @lru_cache()
     def all_families():
         combined_hash = {}
-        for config in Config.all():
+        sorted_configs = sorted(Config.all(), key = lambda x: x.__name__())
+        for config in sorted_configs:
             for family in config.families():
                 combined_hash.setdefault(family, [])
                 combined_hash[family] += [config]
