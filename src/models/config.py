@@ -42,27 +42,31 @@ class Config():
     #   {
     #       command1: **<command>,
     #       namespace1: {
+    #           **<group>,
     #           <subcommand_key>: {
     #               command2: **<command>
     #               ...
     #           }
-    #   {
+    #       }
+    #   }
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
         def build_group_hashes():
             cur_hash = combined_hash
-            for name in config.name().split():
+            name_parts = config.name().split()
+            for idx, name in enumerate(name_parts):
+                cur_names = name_parts[0:idx]
+                copy_values(group, cur_hash, cur_names)
                 cur_hash = cur_hash.setdefault(subcommand_key, {})\
                                    .setdefault(name, {})
             return cur_hash
 
-        def copy_command_values():
-            for k, v in command.items():
-                cur_hash[k] = (v(config) if callable(v) else v)
+        def copy_values(source, target, args):
+            for k, v in source.items():
+                target[k] = (v(args) if callable(v) else v)
 
-        cur_hash = combined_hash = {}
+        combined_hash = {}
         for config in Config.all():
-            build_group_hashes()
-            copy_command_values()
+            copy_values(command, build_group_hashes(), config)
 
         return combined_hash[subcommand_key]
 

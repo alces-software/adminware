@@ -23,6 +23,7 @@ def add_commands(appliance):
 
     runner_cmd = {
         'help': Config.help,
+        'arguments': [['remote_arguments']], # [[]]: Optional Arg
         'options': {
             ('--node', '-n'): {
                 'help': 'Runs the command over the node',
@@ -36,12 +37,15 @@ def add_commands(appliance):
             }
         }
     }
+    runner_group = {
+        'help': (lambda names: "Run further tools: '{}'".format(' '.join(names)))
+    }
 
-    @Config.commands(tool, command = runner_cmd)
+    @Config.commands(tool, command = runner_cmd, group = runner_group)
+    @cli_utils.strip_escaped_argv
     @cli_utils.with__node__group
-    def runner(config, _argv, _opt, nodes):
-        arguments = []
-        batch = Batch(config = config.path, arguments = [])
+    def runner(config, argv, _, nodes):
+        batch = Batch(config = config.path, arguments = (argv[0] or ''))
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             if len(batch.jobs) == 1:
