@@ -19,14 +19,15 @@ def add_commands(appliance):
     def view():
         pass
 
-    @view.command(help='Lists the available groups')
-    def groups():
-        click.echo_via_pager("\n".join(groups_util.list()))
+    @view.group(help='Lists nodes within a group')
+    def group():
+        pass
 
-    @view.command(help='Lists the nodes within a group')
-    @click.argument('group_name')
-    def group(group_name):
-        click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
+    group_command = { 'help': 'View the nodes in this group' }
+    @Config.group_commands(group, command = group_command)
+    def get_group_info(callstack, _a, _o):
+        group_name = callstack[0]
+        click.echo_via_pager("\n".join(Config.all_groups()[group_name]))
 
     @view.command(help='View the result from a previous job')
     @click.argument('job_id', type=int)
