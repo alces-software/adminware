@@ -35,12 +35,13 @@ class Config():
             generate_commands(root_command, families_hash, callback)
         return __family_commands
 
-    # lru_cache will cache the result of the `all` function. This prevents the Config
-    # files being read more than once. However it also prevents updates and creations
     @lru_cache()
+    def cache(*a, **kw): return Config(*a, **kw)
+
     def all():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
-        return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
+        return list(map(lambda p: Config.cache(p), glob(glob_path, recursive=True)))
+
 
     @lru_cache()
     def all_families():

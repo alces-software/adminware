@@ -1,11 +1,11 @@
 
-import click_tools
-import explore_tools
+import cli_utils
 import groups as groups_util
 
 from appliance_cli.text import display_table
 from models.batch import Batch
 from models.job import Job
+from models.config import Config
 
 import click
 import os.path
@@ -45,12 +45,14 @@ def add_commands(appliance):
         ]
         display_table([], table_data)
 
-    @view.group(help="View a tool's details")
+    @view.group(help="See more details about your tools")
     def tool():
         pass
 
-    @click_tools.command(tool)
-    def get_tool_info(config, _a):
+    tool_cmd = { 'help': "See tool's details" }
+    tool_grp = { 'help': 'List details for further tools' }
+    @Config.commands(tool, command = tool_cmd, group = tool_grp)
+    def get_tool_info(config, _a, _o):
         table_data = [
             ['Name', config.name()],
             ['Description', config.help()],
@@ -60,40 +62,6 @@ def add_commands(appliance):
             ['Working Directory', '\n'.join(config.working_files())]
         ]
         display_table([], table_data)
-
-    @view.command(help='List available tools at a namespace')
-    @click.argument('namespaces', nargs=-1, required=False)
-    def tools(namespaces):
-        if not namespaces: namespaces = ''
-        namespace_path = '/'.join(namespaces)
-        dir_contents = explore_tools.inspect_namespace(namespace_path)
-        if dir_contents['configs'] or dir_contents['dirs']:
-            output = ''
-            for config in dir_contents['configs']:
-                output = output + "\n{} -- {}\n".format(config.__name__(), config.help())
-                if config.interactive_only(): output = output + "Only runnable interactively\n"
-            for directory in dir_contents['dirs']:
-                directory = os.path.basename(os.path.basename(directory))
-                new_command_namespaces = ' '.join(tuple(namespaces) + (directory, ))
-                output += "\n{} -- see 'view tools {}'\n".format(directory, new_command_namespaces)
-        else:
-            if namespaces:
-                output = "No tools or subdirectories in '{}'".format('/'.join(namespaces))
-            else:
-                output = "No tools found"
-        click.echo_via_pager(output)
-
-    @view.command(help='List all available tool families')
-    def families():
-        action_families = click_tools.create_families('')
-        if action_families:
-            output = ''
-            for family in action_families:
-                output = output + "\n{}".format(family.name) + \
-                         "\n{}\n".format(" --> ".join(list(map(lambda x: x.__name__(), family.get_members_configs()))))
-        else:
-            output = "No tool families have been configured"
-        click.echo_via_pager(output)
 
     @view.command(name='node-status', help='View the execution history of a single node')
     @click.argument('node', type=str)
@@ -124,8 +92,10 @@ def add_commands(appliance):
     def tool_status():
         pass
 
-    @click_tools.command(tool_status, exclude_interactive_only = True)
-    def tool_status_runner(config, _):
+    tool_status_cmd = { 'help': 'List the status across the nodes' }
+    tool_status_grp = { 'help': 'See the status of further tools' }
+    @Config.commands(tool_status, command = tool_status_cmd, group = tool_status_grp)
+    def tool_status_runner(config, _a, _o):
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
