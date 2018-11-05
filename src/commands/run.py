@@ -58,7 +58,7 @@ def add_commands(appliance):
                     Session.remove()
             elif batch.jobs:
                 raise ClickException('''
-'{}' is an interactive command and can only be ran on a single node
+'{}' is an interactive tool and can only be ran on a single node
 '''.strip())
             else:
                 raise ClickException('Please specify a node with --node')
@@ -67,11 +67,11 @@ def add_commands(appliance):
         else:
             raise ClickException('Please give either --node or --group')
 
-    @run.group(help='Run a family of commands on node(s) or group(s)')
+    @run.group(help='Run a family of tools on node(s) or group(s)')
     def family(): pass
 
     family_runner = {
-        'help': 'Runs the command over the group',
+        'help': 'Runs the tool over the group',
         'options': node_group_options
     }
 
@@ -83,7 +83,7 @@ def add_commands(appliance):
             raise ClickException('Please give either --node or --group')
         batches = []
         for config in Config.all_families()[family]:
-            #create batch w/ relevant config for command
+            #create batch w/ relevant config for tool
             batch = Batch(config = config.path)
             batch.build_jobs(*nodes)
             batches += [batch]
