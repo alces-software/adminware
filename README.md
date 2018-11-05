@@ -13,7 +13,7 @@ The command line interface of Adminware is laid out as follows:
 
 exit - exits the CLI.
 
-help - displays help for the current level of commands.
+help - displays help for the current level's commands.
 
 run - command group used for running tools - works in parallel across nodes.
  - run tool NODE(S) [NAMESPACE(S)] TOOL [ARGUMENTS]
@@ -36,7 +36,7 @@ view - inspect execution history, statuses, groups, and tools.
       be ran interactively and the contents of its working directory
     - If no tool is given, the command's help display it lists the availible tools
       and sub-namespaces the given namespace(s).
-    - If NAMESPACE(S) is not given, it lists at the highest level 'tools' directory.
+    - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
  - view family [FAMILY]
     - Displays the members of the tool family FAMILY, as well as their order of
       execution
@@ -62,11 +62,11 @@ view - inspect execution history, statuses, groups, and tools.
 # Error Codes
 
 The exit code for the remote command is saved within the database. The meaning
-of the exit code is determined by the underlining command and will range from
+of the exit code is determined by the underlying command and will range from
 0-255.
 
-All negative exit codes indicate an internal `Adminware` error. The exit code
-meanings are as follows:
+All negative exit codes indicate an internal `Adminware` error. The exit codes
+and their meanings are as follows:
 
 | Error Code | Description             |
 | ---------- | ----------------------- |
@@ -76,10 +76,10 @@ meanings are as follows:
 | -4         | Abandoned Job Error     |
 
 ## -1: SSH Connection Error
-An initial ssh connection could not be established with the node.
+An initial SSH connection could not be established with the node.
 
 NOTE: This error code will only be issued for handled errors. It is still
-possible for unhandled ssh errors to be issued a different error code.
+possible for unhandled SSH errors to be issued a different error code.
 
 ## -2: General Error
 An error has occurred that concerns the job. See the jobs `STDERR` for more
@@ -87,19 +87,19 @@ details.
 
 ## -3: Interactive Job
 The tool has been ran in an interactive shell. The `STDOUT`, `STDERR`, and
-exit code are not available. This does not mean the Job failed, instead its
+exit code are not available. This does not mean the job failed, instead its
 status is undetermined.
 
 ## -4: Abandoned Job Error
-The job has been created and queue to be ran but has since been abandoned.
-This indicates the `Job` was never ran, but this can not been known for
+The job has been created and queued to be ran but has since been abandoned.
+This indicates the job was never ran, but this can not been known for
 certain.
 
 Possible Causes:
 1. `Adminware` was sent an interrupt,
 2. An uncaught SSH connection error has occurred,
 3. The connection was lost to the `adminware` appliance, or
-4. An unexpected error occurred before the `Job` was started.
+4. An unexpected error occurred before the job was started.
 
 # Adding Tools
 Tools can be ran interactively and non-interactively; a tool will automatically
@@ -139,7 +139,8 @@ families:
 # A flag stating that this tool's command should never be ran in a non-interactive
 # shell. It's value must be "True" for this to take effect. If a tool is marked as
 # interactive only it will be excluded from tool families and from being run on more
-# than one node at once.
+# than one node at once. If it is attempted to run in on more than one node an error
+# will be thrown.
 interactive: True
 ```
 
