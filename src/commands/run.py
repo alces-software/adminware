@@ -98,6 +98,8 @@ def add_commands(appliance):
             print('Interrupt Received')
             # Stop all queued jobs from running
             runners.clear()
+            # Kills the `ssh` connections of the current threads
+            for r in active_runners: r.kill()
 
         class JobRunner:
             def __init__(self, job):
