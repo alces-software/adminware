@@ -20,6 +20,16 @@ def nodes_in__node__group(options):
         nodes.extend(group_nodes)
     return list(__remove_duplicates(nodes))
 
+def strip_escaped_argv(func):
+    def __strip_escaped_argv(c, argv, *a):
+        parsed = list(map(lambda arg: strip(arg), argv))
+        func(c, parsed, *a)
+
+    def strip(string):
+        return (re.sub(r'^\\\s*', '', string) if isinstance(string, str) else string)
+
+    return __strip_escaped_argv
+
 def set_nodes_context(ctx, **kwargs):
     # populate ctx.obj with nodes
     obj = { 'nodes' : [] }

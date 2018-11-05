@@ -39,7 +39,7 @@ class Batch(Base):
 
     def __init__(self, **kwargs):
         self.config = kwargs['config']
-        self.arguments = kwargs.setdefault('arguments')
+        if 'arguments' in kwargs: self.arguments = ' '. join(kwargs['arguments'])
         self.__init_or_load()
 
     @orm.reconstructor
