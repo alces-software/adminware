@@ -94,11 +94,12 @@ def add_commands(appliance):
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
                 self.thread = threading.Thread(target=self.run)
+                self.job = None
 
             def run(self):
                 local_session = Session()
                 try:
-                    job = local_session.merge(self.unsafe_job)
+                    job = self.job = local_session.merge(self.unsafe_job)
                     job.run()
                     if job.exit_code == 0:
                         symbol = 'Pass'
@@ -115,17 +116,18 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                threads = list(map(lambda j: JobRunner(j).thread, batch.jobs))
-                threads.reverse()
-                active_threads = []
-                while len(threads) > 0 or len(active_threads) > 0:
-                    while len(active_threads) < 10 and len(threads) > 0:
-                        new_thread = threads.pop()
-                        new_thread.start()
-                        active_threads.append(new_thread)
-                    for thread in active_threads:
-                        if not thread.is_alive():
-                            active_threads.remove(thread)
+                runners = list(map(lambda j: JobRunner(j), batch.jobs))
+                runners.reverse()
+                active_runners = []
+                while len(runners) > 0 or len(active_runners) > 0:
+                    while len(active_runners) < 10 and len(runners) > 0:
+                        new_run = runners.pop()
+                        new_run.thread.start()
+                        active_runners.append(new_run)
+                    for run in active_runners:
+                        if not run.thread.is_alive():
+                            run.thread.join()
+                            active_runners.remove(run)
         finally:
             session.commit()
             Session.remove()
