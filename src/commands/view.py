@@ -153,7 +153,7 @@ def add_commands(appliance):
             rows[i] = [job.node] + rows[i]
         rows.sort(key=lambda x:x[1], reverse=True)
         display_table(headers, rows)
-        
+
     def shared_job_data_table(data):
         headers = ['Job ID',
                    'Exit Code',
