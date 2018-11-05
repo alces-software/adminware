@@ -67,8 +67,8 @@ def add_commands(appliance):
     def family():
         pass
 
-    family_viewer = {'help': 'View the tools in this family'}
-    @Config.family_commands(family, command = family_viewer)
+    family_view_command = { 'help': 'View the tools in this family' }
+    @Config.family_commands(family, command = family_view_command)
     def get_family_info(callstack, _a, _o):
         family = callstack[0]
         output = "{}\n{}".format(family, " --> ".join(list(map(lambda x: x.__name__(),
