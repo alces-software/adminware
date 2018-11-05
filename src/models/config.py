@@ -29,6 +29,12 @@ class Config():
             generate_commands(root_command, config_hash, callback)
         return __commands
 
+    def family_commands(root_command, **kwargs):
+        def __family_commands(callback):
+            families_hash = Config.hashify_all_families(**kwargs)
+            generate_commands(root_command, families_hash, callback)
+        return __family_commands
+
     # lru_cache will cache the result of the `all` function. This prevents the Config
     # files being read more than once. However it also prevents updates and creations
     @lru_cache()
@@ -36,9 +42,20 @@ class Config():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
         return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
 
+    @lru_cache()
+    def all_families():
+        combined_hash = {}
+        for config in Config.all():
+            for family in config.families():
+                combined_hash.setdefault(family, [])
+                combined_hash[family] += [config]
+        return combined_hash
+
     # The commands are hashed into the following structure
-    # NOTE: `command` supports callable objects which takes the Config as its
-    #       input. The result is then stored in the hash
+    # NOTES: `command` and `group both supports callable objects as a means
+    #        to customize the hashes. They are called with:
+    #          - command: The config object
+    #          - group: The current name
     #   {
     #       command1: **<command>,
     #       namespace1: {
@@ -52,23 +69,36 @@ class Config():
     def hashify_all(group = {}, command = {}, subcommand_key = ''):
         def build_group_hashes():
             cur_hash = combined_hash
-            name_parts = config.name().split()
-            for idx, name in enumerate(name_parts):
-                cur_names = name_parts[0:idx]
-                copy_values(group, cur_hash, cur_names)
+            names = config.names()
+            for idx, name in enumerate(config.names()):
+                cur_names = names[0:idx]
+                Config.__copy_values(group, cur_hash, cur_names)
                 cur_hash = cur_hash.setdefault(subcommand_key, {})\
                                    .setdefault(name, {})
             return cur_hash
 
-        def copy_values(source, target, args):
-            for k, v in source.items():
-                target[k] = (v(args) if callable(v) else v)
-
         combined_hash = {}
         for config in Config.all():
-            copy_values(command, build_group_hashes(), config)
+            Config.__copy_values(command, build_group_hashes(), config)
 
         return combined_hash[subcommand_key]
+
+    # Generates a similar hash as above but for the command families
+    # Callable objects are called with the family name
+    #   {
+    #       familyX: **<command>,
+    #       ...
+    #   }
+    def hashify_all_families(command = {}):
+        combined_hash = {}
+        for family in Config.all_families():
+            family_hash = combined_hash.setdefault(family, {})
+            Config.__copy_values(command, family_hash, family)
+        return combined_hash
+
+    def __copy_values(source, target, args):
+        for k, v in source.items():
+            target[k] = (v(args) if callable(v) else v)
 
     def __init__(self, path):
         self.path = path
@@ -83,6 +113,9 @@ class Config():
     def name(self):
         prefix = (self.additional_namespace() + ' ' if self.additional_namespace() else '')
         return "{}{}".format(prefix, self.__name__())
+
+    def names(self):
+        return self.name().split()
 
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))

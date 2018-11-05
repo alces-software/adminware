@@ -21,21 +21,23 @@ def add_commands(appliance):
     def tool():
         pass
 
+    node_group_options = {
+        ('--node', '-n'): {
+            'help': 'Specify a node, repeat the flag for multiple',
+            'multiple': True,
+            'metavar': 'NODE'
+        },
+        ('--group', '-g'): {
+            'help': 'Specify a group, repeat the flag for multiple',
+            'multiple': True,
+            'metavar': 'GROUP'
+        }
+    }
+
     runner_cmd = {
         'help': Config.help,
         'arguments': [['remote_arguments']], # [[]]: Optional Arg
-        'options': {
-            ('--node', '-n'): {
-                'help': 'Runs the command over the node',
-                'multiple': True,
-                'metavar': 'NODE'
-            },
-            ('--group', '-g'): {
-                'help': 'Runs the command over the group',
-                'multiple': True,
-                'metavar': 'GROUP'
-            }
-        }
+        'options': node_group_options
     }
     runner_group = {
         'help': (lambda names: "Run further tools: '{}'".format(' '.join(names)))
@@ -69,22 +71,21 @@ def add_commands(appliance):
             raise ClickException('Please give either --node or --group')
 
     @run.group(help='Run a family of commands on node(s) or group(s)')
-    @click.option('--node', '-n', multiple=True, metavar='NODE',
-              help='Runs the command on the node')
-    @click.option('--group', '-g', multiple=True, metavar='GROUP',
-              help='Runs the command over the group')
-    @click.pass_context
-    def family(ctx, **kwargs):
-        set_nodes_context(ctx, **kwargs)
+    def family(): pass
 
-    @click_tools.command_family(family)
-    @click.pass_context
-    def family_runner(ctx, family, command_configs):
-        nodes = ctx.obj['adminware']['nodes']
+    family_runner = {
+        'help': 'Runs the command over the group',
+        'options': node_group_options
+    }
+
+    @Config.family_commands(family, command = family_runner)
+    @cli_utils.with__node__group
+    def family_runner(callstack, _a, _o, nodes):
+        family = callstack[0]
         if not nodes:
             raise ClickException('Please give either --node or --group')
         batches = []
-        for config in command_configs:
+        for config in Config.all_families()[family]:
             #create batch w/ relevant config for command
             batch = Batch(config = config.path)
             batch.build_jobs(*nodes)

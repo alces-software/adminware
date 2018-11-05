@@ -8,7 +8,7 @@ import re
 def with__node__group(cmd_func):
     def __with__node__group(config, argv, options, *a):
         nodes = nodes_in__node__group(options)
-        cmd_func(config, argv, options, nodes, *a)
+        cmd_func(config, argv, options, *a, nodes)
     return __with__node__group
 
 def nodes_in__node__group(options):
