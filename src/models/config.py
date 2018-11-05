@@ -5,6 +5,7 @@ from os.path import basename, dirname
 import os.path
 from glob import glob
 
+import groups
 from appliance_cli.command_generation import generate_commands
 
 import subprocess
@@ -35,6 +36,12 @@ class Config():
             generate_commands(root_command, families_hash, callback)
         return __family_commands
 
+    def group_commands(root_command, **kwargs):
+        def __group_commands(callback):
+            groups_hash = Config.hashify_all_groups(**kwargs)
+            generate_commands(root_command, groups_hash, callback)
+        return __group_commands
+
     @lru_cache()
     def cache(*a, **kw): return Config(*a, **kw)
 
@@ -51,6 +58,14 @@ class Config():
             for family in config.families():
                 combined_hash.setdefault(family, [])
                 combined_hash[family] += [config]
+        return combined_hash
+
+    @lru_cache()
+    def all_groups():
+        combined_hash = {}
+        groups_list = groups.list()
+        for group in groups_list:
+            combined_hash[group] = groups.nodes_in(group)
         return combined_hash
 
     # The commands are hashed into the following structure
@@ -96,6 +111,18 @@ class Config():
         for family in Config.all_families():
             family_hash = combined_hash.setdefault(family, {})
             Config.__copy_values(command, family_hash, family)
+        return combined_hash
+
+    # Also generates a similar hash - for node groups
+    #   {
+    #       groupX: **<node>,
+    #       ...
+    #   }
+    def hashify_all_groups(command = {}):
+        combined_hash = {}
+        for group in Config.all_groups():
+            group_hash = combined_hash.setdefault(group, {})
+            Config.__copy_values(command, group_hash, group)
         return combined_hash
 
     def __copy_values(source, target, args):
