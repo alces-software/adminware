@@ -25,8 +25,8 @@ run - command group used for running tools - works in parallel across nodes.
       attempted to run it on more than one node it will cancel and an error will
       be thrown.
     - Optionally, arguments can be provided.
- - run family NODE(S) TOOL-FAMILY
-    - Runs family TOOL-FAMILY on NODE(S).
+ - run family NODE(S) FAMILY
+    - Runs family FAMILY on NODE(S).
 
 view - inspect execution history, statuses, groups, and tools.
  - view groups
