@@ -126,8 +126,7 @@ The config files should follow the following format:
 command: command_to_run
 
 # Full help text for this tool, it will be picked up and displayed in full when `help` is
-# displayed for this tool, or the first line will be displayed when `help` is displayed for
-# its corresponding parent commands (see http://click.pocoo.org/5/documentation/#help-texts)
+# displayed for this tool in `run` commands.
 help: command_help
 
 # A list of any families that the tool is in. A family is a group of tools that
