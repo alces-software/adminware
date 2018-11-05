@@ -99,6 +99,9 @@ def add_commands(appliance):
                 self.thread = threading.Thread(target=self.run)
                 self.job = None
 
+            def kill(self):
+                if self.job: self.job.kill_connection_event.set()
+
             def run(self):
                 local_session = Session()
                 try:

@@ -59,7 +59,6 @@ available. Please see documentation for possible causes
                     self.exit_code = -1
                 if connection.is_connected:
                     try:
-                        self.kill_connection_event.clear()
                         worker = threading.Thread(target = run_function)
                         worker.start()
                         self.kill_connection_event.wait()
