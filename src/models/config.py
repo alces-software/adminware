@@ -1,11 +1,71 @@
 import yaml
 import re
 from os.path import basename, dirname
+
+import os.path
+from glob import glob
+
+from appliance_cli.command_generation import generate_commands
+
 import subprocess
 
-from config import TOOL_DIR
+from functools import lru_cache
+
+CONFIG_DIR = '/var/lib/adminware/tools'
 
 class Config():
+    def commands(root_command, **kwargs):
+        class ConfigCallback():
+            def __init__(self, callback_func):
+                self.callback = callback_func
+
+            def run(self, callstack, *a):
+                path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
+                self.callback(Config(path), *a)
+
+        def __commands(config_callback):
+            config_hash = Config.hashify_all(subcommand_key = 'commands', **kwargs)
+            callback = ConfigCallback(config_callback).run
+            generate_commands(root_command, config_hash, callback)
+        return __commands
+
+    # lru_cache will cache the result of the `all` function. This prevents the Config
+    # files being read more than once. However it also prevents updates and creations
+    @lru_cache()
+    def all():
+        glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
+        return list(map(lambda p: Config(p), glob(glob_path, recursive=True)))
+
+    # The commands are hashed into the following structure
+    # NOTE: `command` supports callable objects which takes the Config as its
+    #       input. The result is then stored in the hash
+    #   {
+    #       command1: **<command>,
+    #       namespace1: {
+    #           <subcommand_key>: {
+    #               command2: **<command>
+    #               ...
+    #           }
+    #   {
+    def hashify_all(group = {}, command = {}, subcommand_key = ''):
+        def build_group_hashes():
+            cur_hash = combined_hash
+            for name in config.name().split():
+                cur_hash = cur_hash.setdefault(subcommand_key, {})\
+                                   .setdefault(name, {})
+            return cur_hash
+
+        def copy_command_values():
+            for k, v in command.items():
+                cur_hash[k] = (v(config) if callable(v) else v)
+
+        cur_hash = combined_hash = {}
+        for config in Config.all():
+            build_group_hashes()
+            copy_command_values()
+
+        return combined_hash[subcommand_key]
+
     def __init__(self, path):
         self.path = path
         def __read_data():
@@ -22,7 +82,7 @@ class Config():
 
     def additional_namespace(self):
         top_path = dirname(dirname(self.path))
-        regex_expr = re.escape(TOOL_DIR) + r'(\/.*?$)'
+        regex_expr = re.escape(CONFIG_DIR) + r'(\/.*?$)'
         result = re.search(regex_expr, top_path)
         namespace_path = result.group(1) if result else ''
         return namespace_path.translate(namespace_path.maketrans('/', ' ')).strip()

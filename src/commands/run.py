@@ -3,10 +3,12 @@ import click
 from click import ClickException
 import click_tools
 from cli_utils import set_nodes_context
+import cli_utils
 
 from database import Session
 from models.job import Job
 from models.batch import Batch
+from models.config import Config
 
 import threading
 
@@ -16,19 +18,30 @@ def add_commands(appliance):
         pass
 
     @run.group(help='Run a tool over a batch of nodes')
-    @click.option('--node', '-n', multiple=True, metavar='NODE',
-                  help='Runs the command on the node')
-    @click.option('--group', '-g', multiple=True, metavar='GROUP',
-                  help='Runs the command over the group')
-    @click.pass_context
-    def tool(ctx, **kwargs):
-        set_nodes_context(ctx, **kwargs)
+    def tool():
+        pass
 
-    @click_tools.command(tool)
-    @click.pass_context
-    def runnner(ctx, config, arguments):
-        nodes = ctx.obj['adminware']['nodes']
-        batch = Batch(config = config.path, arguments = arguments)
+    runner_cmd = {
+        'help': Config.help,
+        'options': {
+            ('--node', '-n'): {
+                'help': 'Runs the command over the node',
+                'multiple': True,
+                'metavar': 'NODE'
+            },
+            ('--group', '-g'): {
+                'help': 'Runs the command over the group',
+                'multiple': True,
+                'metavar': 'GROUP'
+            }
+        }
+    }
+
+    @Config.commands(tool, command = runner_cmd)
+    @cli_utils.with__node__group
+    def runner(config, _argv, _opt, nodes):
+        arguments = []
+        batch = Batch(config = config.path, arguments = [])
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             if len(batch.jobs) == 1:
@@ -97,7 +110,6 @@ def add_commands(appliance):
         session = Session()
         try:
             for batch in batches:
-                jobs = list(map(lambda n: Job(node = n, batch = batch), nodes))
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
