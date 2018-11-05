@@ -137,8 +137,10 @@ def add_commands(appliance):
     def tool_history():
         pass
 
-    @click_tools.command(tool_history, exclude_interactive_only = True)
-    def tool_history_runner(config, _):
+    tool_history_cmd = { 'help': 'List the history across the nodes' }
+    tool_history_grp = { 'help': 'See the history of further tools' }
+    @Config.commands(tool_history, command = tool_history_cmd, group = tool_history_grp)
+    def tool_history_runner(config, _a, _o):
         session = Session()
         job_data = session.query(Job)\
                           .select_from(Batch)\
