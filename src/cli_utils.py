@@ -1,5 +1,6 @@
 
 import groups
+from models.config import Config
 from click import ClickException
 from collections import OrderedDict
 
@@ -14,8 +15,9 @@ def with__node__group(cmd_func):
 def nodes_in__node__group(options):
     nodes = groups.expand_nodes(options['node'].value)
     for group in options['group'].value:
-        group_nodes = groups.nodes_in(group)
-        if not group_nodes:
+        try:
+            group_nodes = Config.all_groups()[group]
+        except KeyError:
             raise ClickException('Could not find group: {}'.format(group))
         nodes.extend(group_nodes)
     return list(__remove_duplicates(nodes))
