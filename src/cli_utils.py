@@ -1,6 +1,5 @@
 
 import groups
-from models.config import Config
 from click import ClickException
 from collections import OrderedDict
 
