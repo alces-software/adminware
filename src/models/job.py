@@ -32,6 +32,8 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+    connection = None
+
     class JobTask(asyncio.Task):
         def __init__(self, job, *a, **k):
             super().__init__(self.run(), *a, **k)

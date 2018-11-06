@@ -9,6 +9,8 @@ from models.batch import Batch
 from models.config import Config
 
 import asyncio
+import concurrent
+import signal
 
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
@@ -90,8 +92,15 @@ def add_commands(appliance):
         execute_threaded_batches(batches)
 
     def execute_threaded_batches(batches):
-        session = Session()
         loop = asyncio.get_event_loop()
+        def handler_interrupt():
+            print('Interrupt: Cancelling the jobs....')
+            session.commit()
+            for task in asyncio.Task.all_tasks(loop = loop):
+                task.cancel()
+        loop.add_signal_handler(signal.SIGINT, handler_interrupt)
+
+        session = Session()
 
         try:
             for batch in batches:
@@ -100,6 +109,7 @@ def add_commands(appliance):
                 click.echo('Executing: {}'.format(batch.__name__()))
                 tasks = map(lambda j: j.task(), batch.jobs)
                 loop.run_until_complete(asyncio.gather(*tasks))
+        except concurrent.futures.CancelledError: pass
         finally:
             session.commit()
             Session.remove()
