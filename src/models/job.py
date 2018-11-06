@@ -3,6 +3,8 @@ from fabric import Connection
 import os
 import glob
 
+import click
+
 import datetime
 from shlex import quote
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
@@ -10,6 +12,7 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
+from asyncio import Task
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -29,6 +32,21 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+
+    class JobTask(Task):
+        def __init__(self, job, *a, **k):
+            super().__init__(self.run(), *a, **k)
+            self.job = job
+
+        async def run(self):
+            # Prints the Results
+            if self.job.exit_code == 0:
+                symbol = 'Pass'
+            else:
+                symbol = 'Failed: {}'.format(self.job.exit_code)
+            click.echo('ID: {}, Node: {}, {}'.format(self.job.id, self.job.node, symbol))
+
+    def task(self): return Job.JobTask(self)
 
     def run(self):
         def __check_command(func):

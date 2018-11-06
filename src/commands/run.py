@@ -93,22 +93,13 @@ def add_commands(appliance):
         session = Session()
         loop = asyncio.get_event_loop()
 
-        async def run(job):
-            session.add(job)
-            await loop.run_in_executor(None, job.run)
-            if job.exit_code == 0:
-                symbol = 'Pass'
-            else:
-                symbol = 'Failed: {}'.format(job.exit_code)
-            click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
-
         try:
             for batch in batches:
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                runners = map(lambda j: run(j), batch.jobs)
-                loop.run_until_complete(asyncio.gather(*runners))
+                tasks = map(lambda j: j.task(), batch.jobs)
+                loop.run_until_complete(asyncio.gather(*tasks))
         finally:
             session.commit()
             Session.remove()
