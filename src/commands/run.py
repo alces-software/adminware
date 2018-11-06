@@ -90,32 +90,24 @@ def add_commands(appliance):
         execute_threaded_batches(batches)
 
     def execute_threaded_batches(batches):
-        class JobRunner:
-            def __init__(self, job):
-                self.unsafe_job = job # This Job object may not thread safe
-
-            async def run(self):
-                local_session = Session()
-                try:
-                    job = local_session.merge(self.unsafe_job)
-                    job.run()
-                    if job.exit_code == 0:
-                        symbol = 'Pass'
-                    else:
-                        symbol = 'Failed: {}'.format(job.exit_code)
-                    click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
-                finally:
-                    local_session.commit()
-                    Session.remove()
-
         session = Session()
+
+        async def run(job):
+            session.add(job)
+            job.run()
+            if job.exit_code == 0:
+                symbol = 'Pass'
+            else:
+                symbol = 'Failed: {}'.format(job.exit_code)
+            click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
+
         loop = asyncio.get_event_loop()
         try:
             for batch in batches:
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                runners = map(lambda j: JobRunner(j).run(), batch.jobs)
+                runners = map(lambda j: run(j), batch.jobs)
                 loop.run_until_complete(asyncio.gather(*runners))
         finally:
             session.commit()
