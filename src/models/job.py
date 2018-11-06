@@ -36,6 +36,10 @@ available. Please see documentation for possible causes
         def __init__(self, job, *a, **k):
             super().__init__(self.run(), *a, **k)
             self.job = job
+            self.add_done_callback(type(self).__close_connection)
+
+        def __close_connection(self):
+            self.job.close_connection()
 
         async def __run_thread(self, func, *a):
             return await self._loop.run_in_executor(None, func, *a)
@@ -70,6 +74,9 @@ available. Please see documentation for possible causes
             self.stdout = ''
             self.stderr = 'Could not establish ssh connection'
             self.exit_code = -1
+
+    def close_connection(self):
+        self.connection.close()
 
     def run(self):
         def __with_connection(func):
