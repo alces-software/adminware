@@ -91,17 +91,17 @@ def add_commands(appliance):
 
     def execute_threaded_batches(batches):
         session = Session()
+        loop = asyncio.get_event_loop()
 
         async def run(job):
             session.add(job)
-            job.run()
+            await loop.run_in_executor(None, job.run)
             if job.exit_code == 0:
                 symbol = 'Pass'
             else:
                 symbol = 'Failed: {}'.format(job.exit_code)
             click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
 
-        loop = asyncio.get_event_loop()
         try:
             for batch in batches:
                 session.add(batch)
