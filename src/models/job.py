@@ -32,14 +32,16 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
-
     class JobTask(Task):
         def __init__(self, job, *a, **k):
             super().__init__(self.run(), *a, **k)
             self.job = job
 
         async def run(self):
-            if self.job.check_command(): pass
+            if self.job.check_command():
+                if await self.job.open_connection():
+                    pass
+
             # Prints the Results
             if self.job.exit_code == 0:
                 symbol = 'Pass'
@@ -56,6 +58,15 @@ available. Please see documentation for possible causes
             self.stderr = 'Incorrectly configured command'
             self.exit_code = -2
 
+    async def open_connection(self):
+        self.connection = Connection(self.node)
+        try:
+            self.connection.open()
+            return self.connection
+        except:
+            self.stdout = ''
+            self.stderr = 'Could not establish ssh connection'
+            self.exit_code = -1
 
     def run(self):
         def __with_connection(func):
