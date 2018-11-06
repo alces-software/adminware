@@ -24,10 +24,10 @@ def add_commands(appliance):
         pass
 
     group_command = { 'help': 'View the nodes in this group' }
-    @Config.group_commands(group, command = group_command)
+    @groups_util.group_commands(group, command = group_command)
     def get_group_info(callstack, _a, _o):
         group_name = callstack[0]
-        click.echo_via_pager("\n".join(Config.all_groups()[group_name]))
+        click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
 
     @view.command(help='View the result from a previous job')
     @click.argument('job_id', type=int)
