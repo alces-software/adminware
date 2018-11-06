@@ -38,7 +38,7 @@ def add_commands(appliance):
             ['Job ID', job.id],
             ['Node', job.node],
             ['Exit Code', job.exit_code],
-            ['Command', job.batch.__name__()],
+            ['Tool', job.batch.__name__()],
             ['Arguments', job.batch.arguments],
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
@@ -77,8 +77,8 @@ def add_commands(appliance):
 
     @view.command(name='node-status', help='View the execution history of a single node')
     @click.argument('node', type=str)
-    # note: this works on config location, not command name.
-    # Any commands that are moved will be considered distinct.
+    # note: this works on tool location, not tool name.
+    # Any tools that are moved will be considered distinct.
     def node_status(node):
         session = Session()
         # Returns the most recent job for each tool and number of times it's been ran
