@@ -16,17 +16,17 @@ exit - exits the CLI.
 help - displays help for the current level's commands.
 
 run - command group used for running tools - works in parallel across nodes.
- - run tool NODE(S) [NAMESPACE(S)] TOOL [ARGUMENTS]
+ - run tool [NAMESPACE(S)] TOOL NODE(S) [ARGUMENTS]
     - Runs tool TOOL on NODE(S).
     - A tool's namespaces must be specified before its name.
     - If a tool is selected for a single node it will be automatically ran
       in interactive mode.
-    - If a tool marked as being interactive only (see 'Adding Tools') and it is 
-      attempted to run it on more than one node it will cancel and an error will
+    - If a tool marked as being interactive only (see 'Adding Tools') and you
+      attempt to run it on more than one node it will cancel and an error will
       be thrown.
     - Optionally, arguments can be provided.
- - run family NODE(S) FAMILY
-    - Runs family FAMILY on NODE(S).
+ - run family FAMILY NODE(S)
+    - Runs tool-family FAMILY on NODE(S).
 
 view - inspect execution history, statuses, groups, and tools.
  - view group [GROUP]
