@@ -8,6 +8,8 @@ from models.job import Job
 from models.batch import Batch
 from models.config import Config
 
+import asyncio
+
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
     def run():
@@ -92,7 +94,7 @@ def add_commands(appliance):
             def __init__(self, job):
                 self.unsafe_job = job # This Job object may not thread safe
 
-            def run(self):
+            async def run(self):
                 local_session = Session()
                 try:
                     job = local_session.merge(self.unsafe_job)
@@ -107,13 +109,14 @@ def add_commands(appliance):
                     Session.remove()
 
         session = Session()
+        loop = asyncio.get_event_loop()
         try:
             for batch in batches:
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                runners = map(lambda j: JobRunner(j).run, batch.jobs)
-                for r in runners: r()
+                runners = map(lambda j: JobRunner(j).run(), batch.jobs)
+                loop.run_until_complete(asyncio.gather(*runners))
         finally:
             session.commit()
             Session.remove()
