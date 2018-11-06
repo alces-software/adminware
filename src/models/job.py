@@ -12,7 +12,7 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
-from asyncio import Task
+import asyncio
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -32,14 +32,17 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
-    class JobTask(Task):
+    class JobTask(asyncio.Task):
         def __init__(self, job, *a, **k):
             super().__init__(self.run(), *a, **k)
             self.job = job
 
+        async def __run_thread(self, func, *a):
+            return await self._loop.run_in_executor(None, func, *a)
+
         async def run(self):
             if self.job.check_command():
-                if await self.job.open_connection():
+                if await self.__run_thread(self.job.open_connection):
                     pass
 
             # Prints the Results
@@ -58,7 +61,7 @@ available. Please see documentation for possible causes
             self.stderr = 'Incorrectly configured command'
             self.exit_code = -2
 
-    async def open_connection(self):
+    def open_connection(self):
         self.connection = Connection(self.node)
         try:
             self.connection.open()
