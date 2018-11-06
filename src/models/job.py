@@ -39,6 +39,7 @@ available. Please see documentation for possible causes
             self.job = job
 
         async def run(self):
+            if self.job.check_command(): pass
             # Prints the Results
             if self.job.exit_code == 0:
                 symbol = 'Pass'
@@ -48,16 +49,15 @@ available. Please see documentation for possible causes
 
     def task(self): return Job.JobTask(self)
 
-    def run(self):
-        def __check_command(func):
-            def wrapper():
-                if self.batch.command_exists():
-                    func()
-                else:
-                    self.stderr = 'Incorrectly configured command'
-                    self.exit_code = -2
-            return wrapper
+    def check_command(self):
+        if self.batch.command_exists(): return True
+        else:
+            self.stdout = ''
+            self.stderr = 'Incorrectly configured command'
+            self.exit_code = -2
 
+
+    def run(self):
         def __with_connection(func):
             def wrapper():
                 connection = Connection(self.node)
@@ -73,7 +73,6 @@ available. Please see documentation for possible causes
                         connection.close()
             return wrapper
 
-        @__check_command
         @__with_connection
         def __runner(connection):
             def __set_result(result):
