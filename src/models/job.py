@@ -97,28 +97,27 @@ available. Please see documentation for possible causes
         self.stderr = 'Could not establish ssh connection'
         self.exit_code = -1
 
-    def run(self):
-        def __set_result(result):
-            if self.batch.is_interactive():
-                self.stdout = 'Interactive Job: STDOUT is unavailable'
-                self.stderr = 'Interactive Job: STDERR is unavailable'
-                self.exit_code = -3
-            else:
-                self.stdout = result.stdout
-                self.stderr = result.stderr
-                self.exit_code = result.return_code
+    def set_ssh_results():
+        if self.batch.is_interactive():
+            self.stdout = 'Interactive Job: STDOUT is unavailable'
+            self.stderr = 'Interactive Job: STDERR is unavailable'
+            self.exit_code = -3
+        else:
+            self.stdout = self.__result.stdout
+            self.stderr = self.__result.stderr
+            self.exit_code = self.__result.return_code
 
+    def run(self):
         def __with_tempdir(func):
             def wrapper(*args):
                 result = self.connection().run('mktemp -d', hide='both')
                 if result:
                     temp_dir = result.stdout.rstrip()
                     try:
-                        func(temp_dir, *args)
+                        result = func(temp_dir, *args)
                     finally:
                         self.connection().run("rm -rf {}".format(temp_dir))
-                else:
-                    __set_result(result)
+                return result
             return wrapper
 
         @__with_tempdir
@@ -127,9 +126,7 @@ available. Please see documentation for possible causes
             parts = [os.path.dirname(self.batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
                 result = self.connection().put(src_path, temp_dir)
-                if not result:
-                    __set_result(result)
-                    return
+                if not result: return result
 
             # Runs the command
             with self.connection().cd(temp_dir):
@@ -140,9 +137,8 @@ available. Please see documentation for possible causes
                     kwargs.update({ 'hide': 'both' })
                 cmd = self.batch.command()
                 if self.batch.arguments: cmd = cmd + ' ' + quote(self.batch.arguments)
-                result = self.connection().run(cmd, **kwargs)
-                __set_result(result)
-        __run_command()
+                return self.connection().run(cmd, **kwargs)
+        self.__result = __run_command()
 
 from models.batch import Batch
 
