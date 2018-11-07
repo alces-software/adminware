@@ -34,6 +34,7 @@ available. Please see documentation for possible causes
     batch = relationship("Batch", backref="jobs")
 
     __connection = None
+    __result = None
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
@@ -48,6 +49,7 @@ available. Please see documentation for possible causes
             super().__init__(self.run_async(), *a, **k)
             self.job = job
             self.add_job_callback(lambda job: job.connection().close())
+            self.add_job_callback(lambda job: job.set_ssh_results())
             self.add_done_callback(type(self).report_results)
 
         def __getattr__(self, attr):
@@ -97,7 +99,8 @@ available. Please see documentation for possible causes
         self.stderr = 'Could not establish ssh connection'
         self.exit_code = -1
 
-    def set_ssh_results():
+    def set_ssh_results(self):
+        if self.__result == None: return
         if self.batch.is_interactive():
             self.stdout = 'Interactive Job: STDOUT is unavailable'
             self.stderr = 'Interactive Job: STDERR is unavailable'
