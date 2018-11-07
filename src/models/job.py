@@ -46,13 +46,14 @@ available. Please see documentation for possible causes
         def __init__(self, job, *a, **k):
             super().__init__(self.run_async(), *a, **k)
             self.job = job
-            self.add_done_callback(type(self).__close_connection)
+            self.add_job_callback(lambda job: job.connection().close())
 
         def __getattr__(self, attr):
             return getattr(self.job, attr)
 
-        def __close_connection(self):
-            self.close_connection()
+        def add_job_callback(self, func):
+            callback = lambda task: func(task.job)
+            self.add_done_callback(callback)
 
         async def __run_thread(self, func, *a):
             return await self._loop.run_in_executor(None, func, *a)
@@ -84,9 +85,6 @@ available. Please see documentation for possible causes
             self.stderr = 'Could not establish ssh connection'
             self.exit_code = -1
         if self.connection().is_connected: return func()
-
-    def close_connection(self):
-        self.connection().close()
 
     def run(self):
         def __set_result(result):
