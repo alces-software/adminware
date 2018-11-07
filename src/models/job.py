@@ -47,6 +47,7 @@ available. Please see documentation for possible causes
             super().__init__(self.run_async(), *a, **k)
             self.job = job
             self.add_job_callback(lambda job: job.connection().close())
+            self.add_done_callback(type(self).report_results)
 
         def __getattr__(self, attr):
             return getattr(self.job, attr)
@@ -54,6 +55,13 @@ available. Please see documentation for possible causes
         def add_job_callback(self, func):
             callback = lambda task: func(task.job)
             self.add_done_callback(callback)
+
+        def report_results(self):
+            if self.exit_code == 0:
+                symbol = 'Pass'
+            else:
+                symbol = 'Failed: {}'.format(self.exit_code)
+            click.echo('ID: {}, Node: {}, {}'.format(self.id, self.node, symbol))
 
         async def __run_thread(self, func, *a):
             return await self._loop.run_in_executor(None, func, *a)
@@ -65,13 +73,6 @@ available. Please see documentation for possible causes
 
                 if self.connection().is_connected:
                     await self.__run_thread(self.run)
-
-            # Prints the Results
-            if self.exit_code == 0:
-                symbol = 'Pass'
-            else:
-                symbol = 'Failed: {}'.format(self.exit_code)
-            click.echo('ID: {}, Node: {}, {}'.format(self.id, self.node, symbol))
 
     def task(self): return Job.JobTask(self)
 
