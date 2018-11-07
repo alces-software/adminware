@@ -45,8 +45,9 @@ available. Please see documentation for possible causes
         return self.__connection
 
     class JobTask(asyncio.Task):
-        def __init__(self, job, *a, **k):
-            super().__init__(self.run_async(), *a, **k)
+        def __init__(self, job, thread_pool = None):
+            self.thread_pool = thread_pool
+            super().__init__(self.run_async())
             self.job = job
             self.add_job_callback(lambda job: job.connection().close())
             self.add_job_callback(lambda job: job.set_ssh_results())
@@ -74,7 +75,8 @@ available. Please see documentation for possible causes
             click.echo('ID: {}, Node: {}, {}'.format(*args))
 
         async def __run_thread(self, func, *a):
-            return await self._loop.run_in_executor(None, func, *a)
+            coroutine = self._loop.run_in_executor(self.thread_pool, func, *a)
+            return await coroutine
 
         async def run_async(self):
             if self.check_command():
@@ -85,7 +87,7 @@ available. Please see documentation for possible causes
                 if self.connection().is_connected:
                     await self.__run_thread(self.run)
 
-    def task(self): return Job.JobTask(self)
+    def task(self, *a, **k): return Job.JobTask(self, *a, **k)
 
     def check_command(self):
         if self.batch.command_exists(): return True
