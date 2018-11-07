@@ -75,17 +75,22 @@ available. Please see documentation for possible causes
             click.echo('ID: {}, Node: {}, {}'.format(*args))
 
         async def __run_thread(self, func, *a):
-            coroutine = self._loop.run_in_executor(self.thread_pool, func, *a)
+            def catch_errors(func):
+                try: func()
+                except: pass
+            run = lambda: catch_errors(func)
+            coroutine = self._loop.run_in_executor(self.thread_pool, run, *a)
             return await coroutine
 
         async def run_async(self):
             if self.check_command():
                 try: await self.__run_thread(self.connection().open)
                 except concurrent.futures.CancelledError as e: raise e
-                except: self.set_ssh_error()
 
                 if self.connection().is_connected:
                     await self.__run_thread(self.run)
+                else:
+                    self.set_ssh_error()
 
     def task(self, *a, **k): return Job.JobTask(self, *a, **k)
 
