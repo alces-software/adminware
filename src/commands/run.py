@@ -95,7 +95,6 @@ def add_commands(appliance):
         loop = asyncio.get_event_loop()
         def handler_interrupt():
             print('Interrupt: Cancelling the jobs....')
-            session.commit()
             for task in asyncio.Task.all_tasks(loop = loop):
                 task.cancel()
         loop.add_signal_handler(signal.SIGINT, handler_interrupt)
