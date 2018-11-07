@@ -12,8 +12,6 @@ import asyncio
 import concurrent
 import signal
 
-import time
-
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
     def run():
@@ -102,6 +100,11 @@ def add_commands(appliance):
         loop.add_signal_handler(signal.SIGINT, handler_interrupt)
 
         session = Session()
+        async def save_session():
+            while True:
+                await asyncio.sleep(5)
+                session.commit()
+        asyncio.ensure_future(save_session(), loop = loop)
 
         try:
             for batch in batches:
