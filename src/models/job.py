@@ -32,7 +32,15 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
-    connection = None
+    __connection = None
+
+    def __init__(self, **kwargs):
+        self.node = kwargs['node']
+        self.batch = kwargs['batch']
+
+    def connection(self):
+        if not self.__connection: self.__connection = Connection(self.node)
+        return self.__connection
 
     class JobTask(asyncio.Task):
         def __init__(self, job, *a, **k):
@@ -69,17 +77,16 @@ available. Please see documentation for possible causes
             self.exit_code = -2
 
     def with_connection(self, func):
-        self.connection = Connection(self.node)
         try:
-            self.connection.open()
+            self.connection().open()
         except:
             self.stdout = ''
             self.stderr = 'Could not establish ssh connection'
             self.exit_code = -1
-        if self.connection.is_connected: return func()
+        if self.connection().is_connected: return func()
 
     def close_connection(self):
-        if self.connection: self.connection.close()
+        self.connection().close()
 
     def run(self):
         def __set_result(result):
@@ -94,13 +101,13 @@ available. Please see documentation for possible causes
 
         def __with_tempdir(func):
             def wrapper(*args):
-                result = self.connection.run('mktemp -d', hide='both')
+                result = self.connection().run('mktemp -d', hide='both')
                 if result:
                     temp_dir = result.stdout.rstrip()
                     try:
                         func(temp_dir, *args)
                     finally:
-                        self.connection.run("rm -rf {}".format(temp_dir))
+                        self.connection().run("rm -rf {}".format(temp_dir))
                 else:
                     __set_result(result)
             return wrapper
@@ -110,13 +117,13 @@ available. Please see documentation for possible causes
             # Copies the files across
             parts = [os.path.dirname(self.batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
-                result = self.connection.put(src_path, temp_dir)
+                result = self.connection().put(src_path, temp_dir)
                 if not result:
                     __set_result(result)
                     return
 
             # Runs the command
-            with self.connection.cd(temp_dir):
+            with self.connection().cd(temp_dir):
                 kwargs = { 'warn' : True }
                 if self.batch.is_interactive():
                     kwargs.update({ 'pty': True })
@@ -124,14 +131,10 @@ available. Please see documentation for possible causes
                     kwargs.update({ 'hide': 'both' })
                 cmd = self.batch.command()
                 if self.batch.arguments: cmd = cmd + ' ' + quote(self.batch.arguments)
-                result = self.connection.run(cmd, **kwargs)
+                result = self.connection().run(cmd, **kwargs)
                 __set_result(result)
 
         self.with_connection(__run_command)
-
-    def __init__(self, **kwargs):
-        self.node = kwargs['node']
-        self.batch = kwargs['batch']
 
 from models.batch import Batch
 
