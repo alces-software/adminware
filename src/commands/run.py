@@ -12,6 +12,8 @@ import asyncio
 import concurrent
 import signal
 
+import time
+
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
     def run():
@@ -110,5 +112,6 @@ def add_commands(appliance):
                 loop.run_until_complete(asyncio.gather(*tasks))
         except concurrent.futures.CancelledError: pass
         finally:
+            time.sleep(2)
             session.commit()
             Session.remove()
