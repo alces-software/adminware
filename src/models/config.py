@@ -1,5 +1,6 @@
 import yaml
 import re
+import click
 from os.path import basename, dirname
 
 import os.path
@@ -26,6 +27,10 @@ class Config():
                 else:
                     parts = [CONFIG_DIR, *callstack, '*/config.yaml']
                     paths = glob(os.path.join(*parts))
+                    if not paths:
+                        raise click.ClickException("""
+No tools found in namespace '{}'
+""".format('/'.join(callstack)).strip())
                     configs = list(map(lambda x: Config(x), paths))
                     self.callback(configs, *a)
 
