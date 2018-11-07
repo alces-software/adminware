@@ -65,7 +65,11 @@ available. Please see documentation for possible causes
             # as the Task is now in the "done" state
             try: self.exception()
             except concurrent.futures.CancelledError: return
-            except: pass
+            except Exception as e:
+                # TODO: Setup debugging printing at some point
+                # print(type(e))
+                # print(e)
+                pass
 
             if self.exit_code == 0:
                 symbol = 'Pass'
@@ -75,11 +79,11 @@ available. Please see documentation for possible causes
             click.echo('ID: {}, Node: {}, {}'.format(*args))
 
         async def __run_thread(self, func, *a):
-            def catch_errors(func):
-                try: func()
+            def catch_errors(func, *args):
+                try: func(*args)
                 except: pass
-            run = lambda: catch_errors(func)
-            coroutine = self._loop.run_in_executor(self.thread_pool, run, *a)
+            run = lambda: catch_errors(func, *a)
+            coroutine = self._loop.run_in_executor(self.thread_pool, run)
             return await coroutine
 
         async def run_async(self):
@@ -88,7 +92,7 @@ available. Please see documentation for possible causes
                 except concurrent.futures.CancelledError as e: raise e
 
                 if self.connection().is_connected:
-                    await self.__run_thread(self.run)
+                    await self.__run_thread(self.run, self.batch)
                 else:
                     self.set_ssh_error()
 
@@ -117,12 +121,12 @@ available. Please see documentation for possible causes
             self.stderr = self.__result.stderr
             self.exit_code = self.__result.return_code
 
-    def run(self):
+    def run(self, batch):
         def __with_tempdir(func):
             def wrapper(*args):
                 result = self.connection().run('mktemp -d', hide='both')
                 if result:
-                    temp_dir = result.stdout.rstrip()
+                    temp_dir = ('{}'.format(result.stdout)).rstrip()
                     try:
                         result = func(temp_dir, *args)
                     finally:
@@ -133,7 +137,8 @@ available. Please see documentation for possible causes
         @__with_tempdir
         def __run_command(temp_dir):
             # Copies the files across
-            parts = [os.path.dirname(self.batch.config), '*']
+            path = '/var/lib/adminware/tools/namespace/stutool1/config.yaml'
+            parts = [os.path.dirname(batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
                 result = self.connection().put(src_path, temp_dir)
                 if not result: return result
@@ -141,12 +146,12 @@ available. Please see documentation for possible causes
             # Runs the command
             with self.connection().cd(temp_dir):
                 kwargs = { 'warn' : True }
-                if self.batch.is_interactive():
+                if batch.is_interactive():
                     kwargs.update({ 'pty': True })
                 else:
                     kwargs.update({ 'hide': 'both' })
-                cmd = self.batch.command()
-                if self.batch.arguments: cmd = cmd + ' ' + quote(self.batch.arguments)
+                cmd = batch.command()
+                if batch.arguments: cmd = cmd + ' ' + quote(batch.arguments)
                 return self.connection().run(cmd, **kwargs)
         self.__result = __run_command()
 
