@@ -59,7 +59,12 @@ available. Please see documentation for possible causes
             return await self._loop.run_in_executor(None, func, *a)
 
         async def run_async(self):
-            if self.check_command(): await self.__run_thread(self.run)
+            if self.check_command():
+                try: await self.__run_thread(self.connection().open)
+                except: self.set_ssh_error()
+
+                if self.connection().is_connected:
+                    await self.__run_thread(self.run)
 
             # Prints the Results
             if self.exit_code == 0:
@@ -77,14 +82,10 @@ available. Please see documentation for possible causes
             self.stderr = 'Incorrectly configured command'
             self.exit_code = -2
 
-    def with_connection(self, func):
-        try:
-            self.connection().open()
-        except:
-            self.stdout = ''
-            self.stderr = 'Could not establish ssh connection'
-            self.exit_code = -1
-        if self.connection().is_connected: return func()
+    def set_ssh_error(self):
+        self.stdout = ''
+        self.stderr = 'Could not establish ssh connection'
+        self.exit_code = -1
 
     def run(self):
         def __set_result(result):
@@ -131,8 +132,7 @@ available. Please see documentation for possible causes
                 if self.batch.arguments: cmd = cmd + ' ' + quote(self.batch.arguments)
                 result = self.connection().run(cmd, **kwargs)
                 __set_result(result)
-
-        self.with_connection(__run_command)
+        __run_command()
 
 from models.batch import Batch
 
