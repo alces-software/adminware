@@ -58,11 +58,18 @@ available. Please see documentation for possible causes
             self.add_done_callback(callback)
 
         def report_results(self):
+            # Do not print cancelled Tasks. `self.cancelled()` can't be used
+            # as the Task is now in the "done" state
+            try: self.exception()
+            except concurrent.futures.CancelledError: return
+            except: pass
+
             if self.exit_code == 0:
                 symbol = 'Pass'
             else:
                 symbol = 'Failed: {}'.format(self.exit_code)
-            click.echo('ID: {}, Node: {}, {}'.format(self.id, self.node, symbol))
+            args = [self.id, self.node, symbol]
+            click.echo('ID: {}, Node: {}, {}'.format(*args))
 
         async def __run_thread(self, func, *a):
             return await self._loop.run_in_executor(None, func, *a)
@@ -70,7 +77,7 @@ available. Please see documentation for possible causes
         async def run_async(self):
             if self.check_command():
                 try: await self.__run_thread(self.connection().open)
-                except concurrent.futures.CancelledError: pass
+                except concurrent.futures.CancelledError as e: raise e
                 except: self.set_ssh_error()
 
                 if self.connection().is_connected:
