@@ -20,8 +20,14 @@ class Config():
                 self.callback = callback_func
 
             def run(self, callstack, *a):
-                path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
-                self.callback(Config(path), *a)
+                if os.path.isfile(os.path.join(CONFIG_DIR, *callstack, 'config.yaml')):
+                    path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
+                    self.callback([Config(path)], *a)
+                else:
+                    parts = [CONFIG_DIR, *callstack, '*/config.yaml']
+                    paths = glob(os.path.join(*parts))
+                    configs = list(map(lambda x: Config(x), paths))
+                    self.callback(configs, *a)
 
         def __commands(config_callback):
             config_hash = Config.hashify_all(subcommand_key = 'commands', **kwargs)
@@ -54,7 +60,7 @@ class Config():
         return combined_hash
 
     # The commands are hashed into the following structure
-    # NOTES: `command` and `group both supports callable objects as a means
+    # NOTES: `command` and `group` both supports callable objects as a means
     #        to customize the hashes. They are called with:
     #          - command: The config object
     #          - group: The current name

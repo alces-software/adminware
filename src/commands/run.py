@@ -42,28 +42,31 @@ def add_commands(appliance):
         'options': node_group_options
     }
     runner_group = {
-        'help': (lambda names: "Run further tools: '{}'".format(' '.join(names)))
+        'help': (lambda names: "Run tools in {}".format(' '.join(names))),
+        'invoke_without_command': True,
+        'options': node_group_options
     }
 
     @Config.commands(tool, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
-    def runner(config, argv, _, nodes):
-        batch = Batch(config = config.path, arguments = (argv[0] or ''))
-        batch.build_jobs(*nodes)
-        if batch.is_interactive():
-            if len(batch.jobs) == 1:
-                execute_threaded_batches([batch], quiet = True)
-            elif batch.jobs:
-                raise ClickException('''
+    def runner(configs, argv, _, nodes):
+        if not argv: argv = [None]
+        for config in configs:
+            batch = Batch(config = config.path, arguments = (argv[0] or ''))
+            batch.build_jobs(*nodes)
+            if batch.is_interactive():
+                if len(batch.jobs) == 1:
+                    execute_threaded_batches([batch], quiet = True)
+                elif batch.jobs:
+                    raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
 '''.format(config.name()).strip())
+                else:
+                    raise ClickException('Please specify a node with --node')
+            elif batch.jobs:
+                execute_threaded_batches([batch])
             else:
-                raise ClickException('Please specify a node with --node')
-        elif batch.jobs:
-            report = batch.config_model.report
-            execute_threaded_batches([batch], quiet = report)
-        else:
-            raise ClickException('Please give either --node or --group')
+                raise ClickException('Please give either --node or --group')
 
     @run.group(help='Run a family of tools on node(s) or group(s)')
     def family(): pass
