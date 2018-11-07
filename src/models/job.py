@@ -36,25 +36,28 @@ available. Please see documentation for possible causes
 
     class JobTask(asyncio.Task):
         def __init__(self, job, *a, **k):
-            super().__init__(self.run(), *a, **k)
+            super().__init__(self.run_async(), *a, **k)
             self.job = job
             self.add_done_callback(type(self).__close_connection)
 
+        def __getattr__(self, attr):
+            return getattr(self.job, attr)
+
         def __close_connection(self):
-            self.job.close_connection()
+            self.close_connection()
 
         async def __run_thread(self, func, *a):
             return await self._loop.run_in_executor(None, func, *a)
 
-        async def run(self):
-            if self.job.check_command(): await self.__run_thread(self.job.run)
+        async def run_async(self):
+            if self.check_command(): await self.__run_thread(self.run)
 
             # Prints the Results
-            if self.job.exit_code == 0:
+            if self.exit_code == 0:
                 symbol = 'Pass'
             else:
-                symbol = 'Failed: {}'.format(self.job.exit_code)
-            click.echo('ID: {}, Node: {}, {}'.format(self.job.id, self.job.node, symbol))
+                symbol = 'Failed: {}'.format(self.exit_code)
+            click.echo('ID: {}, Node: {}, {}'.format(self.id, self.node, symbol))
 
     def task(self): return Job.JobTask(self)
 
