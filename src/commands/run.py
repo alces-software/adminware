@@ -112,6 +112,5 @@ def add_commands(appliance):
                 loop.run_until_complete(asyncio.gather(*tasks))
         except concurrent.futures.CancelledError: pass
         finally:
-            time.sleep(2)
             session.commit()
             Session.remove()
