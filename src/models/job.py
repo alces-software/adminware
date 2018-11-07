@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 
 import asyncio
+import concurrent
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -69,6 +70,7 @@ available. Please see documentation for possible causes
         async def run_async(self):
             if self.check_command():
                 try: await self.__run_thread(self.connection().open)
+                except concurrent.futures.CancelledError: pass
                 except: self.set_ssh_error()
 
                 if self.connection().is_connected:
