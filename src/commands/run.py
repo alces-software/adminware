@@ -103,8 +103,6 @@ def add_commands(appliance):
 
         max_ssh = 300
         pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
-        def pool_size():
-            return pool._work_queue.qsize()
 
         async def start_tasks(tasks):
             active_tasks = []
