@@ -52,6 +52,12 @@ def add_commands(appliance):
     @cli_utils.with__node__group
     def runner(configs, argv, _, nodes):
         if not argv: argv = [None]
+        if len(configs) > 1:
+            for config in configs:
+                if config.interactive():
+                    raise ClickException('''
+'{}' is an interactive tool and cannot be ran as part of a group
+'''.format(config.__name__()).strip())
         for config in configs:
             batch = Batch(config = config.path, arguments = (argv[0] or ''))
             batch.build_jobs(*nodes)
@@ -61,7 +67,7 @@ def add_commands(appliance):
                 elif batch.jobs:
                     raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
-'''.format(config.name()).strip())
+'''.format(config.__name__()).strip())
                 else:
                     raise ClickException('Please specify a node with --node')
             elif batch.jobs:
