@@ -119,6 +119,7 @@ def add_commands(appliance):
                 for active_task in active_tasks:
                     if active_task._state == 'FINISHED':
                         active_tasks.remove(active_task)
+                        break
             for task in tasks:
                 while len(active_tasks) > max_ssh:
                     remove_done_tasks()
