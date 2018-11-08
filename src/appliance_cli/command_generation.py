@@ -150,9 +150,9 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
         callback_args = [new_commands, argument_values, new_options]
 
         if config.get('pass_context'):
-            callback_args += [ctx]
-
-        callback(*callback_args)
+            callback(*callback_args, ctx=ctx)
+        else:
+            callback(*callback_args)
 
     return {
         'params': click_params,
