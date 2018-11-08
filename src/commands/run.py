@@ -108,22 +108,30 @@ def add_commands(appliance):
                 session.commit()
         asyncio.ensure_future(save_session(), loop = loop)
 
-        max_ssh = 40
+        max_ssh = 10
         pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
         def pool_size():
             return pool._work_queue.qsize()
 
         async def start_tasks(tasks):
+            active_tasks = []
+            def remove_done_tasks():
+                for active_task in active_tasks:
+                    if active_task._state == 'FINISHED':
+                        active_tasks.remove(active_task)
             for task in tasks:
-                while pool_size() > max_ssh: await asyncio.sleep(0.01)
+                while len(active_tasks) > max_ssh:
+                    remove_done_tasks()
+                    await asyncio.sleep(0.01)
                 asyncio.ensure_future(task, loop = loop)
-                await asyncio.sleep(0.1)
-
-        async def wait_for_tasks(tasks):
-            print('Waiting for Jobs to finish...')
-            while asyncio.Task.all_tasks():
-                print(len(asyncio.Task.all_tasks()))
-                await asyncio.sleep(1)
+                active_tasks.append(task)
+                print('Starting Job: {}'.format(task.node))
+                await(asyncio.sleep(1))
+            while len(active_tasks) > 0:
+                remove_done_tasks()
+                await asyncio.sleep(0.01)
+            import time
+            time.sleep(10)
 
         try:
             for batch in batches:
@@ -132,7 +140,7 @@ def add_commands(appliance):
                 click.echo('Executing: {}'.format(batch.__name__()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 asyncio.ensure_future(start_tasks(tasks), loop = loop)
-                loop.run_until_complete(wait_for_tasks(tasks))
+                loop.run_until_complete(start_tasks(tasks))
         except concurrent.futures.CancelledError: pass
         finally:
             print('Cleaning up...')
