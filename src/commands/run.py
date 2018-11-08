@@ -54,7 +54,8 @@ def add_commands(appliance):
                 try:
                     session.add(batch)
                     session.add(batch.jobs[0])
-                    batch.jobs[0].run()
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(batch.jobs[0].task())
                 finally:
                     session.commit()
                     Session.remove()
