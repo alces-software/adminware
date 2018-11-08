@@ -157,9 +157,8 @@ The default maximum is 100, but it can be set from the environment with:
 `ADMINWARE_MAX_SSH`
 
 # Delay Between Jobs
-There is a minor delay between starting new Jobs, and by extension, opening new
-`SSH` connections. This is useful for spreading out the operations preformed by
-the Jobs.
+There is a minor delay between starting new Jobs. This causes the initial `SSH`
+connections to be spread out whist the Jobs are starting.
 
 The delay defaults to 0.2s, but can be changed by setting:
 `ADMINWARE_START_DELAY`
