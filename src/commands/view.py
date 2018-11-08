@@ -53,7 +53,8 @@ def add_commands(appliance):
     tool_cmd = { 'help': "See tool's details" }
     tool_grp = { 'help': 'List details for further tools' }
     @Config.commands(tool, command = tool_cmd, group = tool_grp)
-    def get_tool_info(config, _a, _o):
+    def get_tool_info(configs, _a, _o):
+        config = configs[0]
         table_data = [
             ['Name', config.name()],
             ['Description', config.help()],
@@ -109,7 +110,8 @@ def add_commands(appliance):
     tool_status_cmd = { 'help': 'List the status across the nodes' }
     tool_status_grp = { 'help': 'See the status of further tools' }
     @Config.commands(tool_status, command = tool_status_cmd, group = tool_status_grp)
-    def tool_status_runner(config, _a, _o):
+    def tool_status_runner(configs, _a, _o):
+        config = configs[0]
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
@@ -153,7 +155,8 @@ def add_commands(appliance):
     tool_history_cmd = { 'help': 'List the history across the nodes' }
     tool_history_grp = { 'help': 'See the history of further tools' }
     @Config.commands(tool_history, command = tool_history_cmd, group = tool_history_grp)
-    def tool_history_runner(config, _a, _o):
+    def tool_history_runner(configs, _a, _o):
+        config = configs[0]
         session = Session()
         job_data = session.query(Job)\
                           .select_from(Batch)\
