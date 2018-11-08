@@ -97,8 +97,8 @@ def add_commands(appliance):
     def execute_threaded_batches(batches):
         loop = asyncio.get_event_loop()
         def handler_interrupt():
-            print('Interrupt Received! ')
-            print('Cancelling the jobs...')
+            click.echo('Interrupt Received! ')
+            click.echo('Cancelling the jobs...')
             for task in asyncio.Task.all_tasks(loop = loop):
                 task.cancel()
         loop.add_signal_handler(signal.SIGINT, handler_interrupt)
@@ -120,9 +120,9 @@ def add_commands(appliance):
                     await asyncio.sleep(0.01)
                 asyncio.ensure_future(task, loop = loop)
                 active_tasks.append(task)
-                print('Starting Job: {}'.format(task.node))
+                click.echo('Starting Job: {}'.format(task.node))
                 await(asyncio.sleep(start_delay))
-            print('Waiting for jobs to finish...')
+            click.echo('Waiting for jobs to finish...')
             while len(active_tasks) > 0:
                 remove_done_tasks()
                 await asyncio.sleep(0.01)
@@ -137,9 +137,9 @@ def add_commands(appliance):
                 loop.run_until_complete(start_tasks(tasks))
         except concurrent.futures.CancelledError: pass
         finally:
-            print('Cleaning up...')
+            click.echo('Cleaning up...')
             pool.shutdown(wait = True)
-            print('Saving...')
+            click.echo('Saving...')
             session.commit()
             Session.remove()
-            print('Done')
+            click.echo('Done')
