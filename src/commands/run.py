@@ -105,10 +105,10 @@ def add_commands(appliance):
         async def save_session():
             while True:
                 await asyncio.sleep(5)
-                session.commit()
+                # session.commit()
         asyncio.ensure_future(save_session(), loop = loop)
 
-        max_ssh = 10
+        max_ssh = 300
         pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
         def pool_size():
             return pool._work_queue.qsize()
@@ -127,12 +127,11 @@ def add_commands(appliance):
                 asyncio.ensure_future(task, loop = loop)
                 active_tasks.append(task)
                 print('Starting Job: {}'.format(task.node))
-                await(asyncio.sleep(1))
+                await(asyncio.sleep(0.2))
+            print('Waiting for jobs to finish...')
             while len(active_tasks) > 0:
                 remove_done_tasks()
                 await asyncio.sleep(0.01)
-            import time
-            time.sleep(10)
 
         try:
             for batch in batches:
@@ -140,7 +139,6 @@ def add_commands(appliance):
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
-                asyncio.ensure_future(start_tasks(tasks), loop = loop)
                 loop.run_until_complete(start_tasks(tasks))
         except concurrent.futures.CancelledError: pass
         finally:
