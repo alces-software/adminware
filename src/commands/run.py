@@ -12,6 +12,8 @@ import asyncio
 import concurrent
 import signal
 
+import os
+
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
     def run():
@@ -101,7 +103,8 @@ def add_commands(appliance):
                 task.cancel()
         loop.add_signal_handler(signal.SIGINT, handler_interrupt)
 
-        max_ssh = 300
+        max_ssh = int(os.environ.setdefault('ADMINWARE_MAX_SSH', '100'))
+        start_delay = float(os.environ.setdefault('ADMINWARE_START_DELAY', '0.2'))
         pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
 
         async def start_tasks(tasks):
@@ -118,7 +121,7 @@ def add_commands(appliance):
                 asyncio.ensure_future(task, loop = loop)
                 active_tasks.append(task)
                 print('Starting Job: {}'.format(task.node))
-                await(asyncio.sleep(0.2))
+                await(asyncio.sleep(start_delay))
             print('Waiting for jobs to finish...')
             while len(active_tasks) > 0:
                 remove_done_tasks()
