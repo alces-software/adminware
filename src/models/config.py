@@ -20,11 +20,11 @@ class Config():
             def __init__(self, callback_func):
                 self.callback = callback_func
 
-            def run(self, callstack, *a):
-                if os.path.isfile(os.path.join(CONFIG_DIR, *callstack, 'config.yaml')):
+            def run(self, callstack, *a, ctx = None):
+                if not ctx:
                     path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
                     self.callback([Config(path)], *a)
-                else:
+                if ctx and not ctx.invoked_subcommand:
                     parts = [CONFIG_DIR, *callstack, '*/config.yaml']
                     paths = glob(os.path.join(*parts))
                     if not paths:
