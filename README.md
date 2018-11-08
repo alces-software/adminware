@@ -146,6 +146,24 @@ families:
 interactive: True
 ```
 
+# Configuring Run Parameters
+
+# Maximum SSH Operations
+There is an inbuilt limit on how many parallel ssh operations can be made. This
+is not strictly the number of open connections, but however the number of actions
+that can be preformed over them.
+
+The default maximum is 100, but it can be set from the environment with:
+`ADMINWARE_MAX_SSH`
+
+# Delay Between Jobs
+There is a minor delay between starting new Jobs, and by extension, opening new
+`SSH` connections. This is useful for spreading out the operations preformed by
+the Jobs.
+
+The delay defaults to 0.2s, but can be changed by setting:
+`ADMINWARE_START_DELAY`
+
 # Development setup
 
 It is recommended that Adminware is developed locally (so you have all your
