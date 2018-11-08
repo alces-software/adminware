@@ -61,6 +61,9 @@ available. Please see documentation for possible causes
             self.add_done_callback(callback)
 
         def report_results(self):
+            # Do not report interactive jobs
+            if self.batch.is_interactive(): return
+
             # Do not print cancelled Tasks. `self.cancelled()` can't be used
             # as the Task is now in the "done" state
             try: self.exception()
