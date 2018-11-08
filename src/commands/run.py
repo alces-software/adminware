@@ -101,13 +101,6 @@ def add_commands(appliance):
                 task.cancel()
         loop.add_signal_handler(signal.SIGINT, handler_interrupt)
 
-        session = Session()
-        async def save_session():
-            while True:
-                await asyncio.sleep(5)
-                # session.commit()
-        asyncio.ensure_future(save_session(), loop = loop)
-
         max_ssh = 300
         pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
         def pool_size():
@@ -133,6 +126,7 @@ def add_commands(appliance):
                 remove_done_tasks()
                 await asyncio.sleep(0.01)
 
+        session = Session()
         try:
             for batch in batches:
                 session.add(batch)
