@@ -107,7 +107,22 @@ def add_commands(appliance):
                 session.commit()
         asyncio.ensure_future(save_session(), loop = loop)
 
-        pool = concurrent.futures.ThreadPoolExecutor()
+        max_ssh = 40
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
+        def pool_size():
+            return pool._work_queue.qsize()
+
+        async def start_tasks(tasks):
+            for task in tasks:
+                while pool_size() > max_ssh: await asyncio.sleep(0.01)
+                asyncio.ensure_future(task, loop = loop)
+                await asyncio.sleep(0.1)
+
+        async def wait_for_tasks(tasks):
+            print('Waiting for Jobs to finish...')
+            while asyncio.Task.all_tasks():
+                print(len(asyncio.Task.all_tasks()))
+                await asyncio.sleep(1)
 
         try:
             for batch in batches:
@@ -115,7 +130,8 @@ def add_commands(appliance):
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
-                loop.run_until_complete(asyncio.gather(*tasks))
+                asyncio.ensure_future(start_tasks(tasks), loop = loop)
+                loop.run_until_complete(wait_for_tasks(tasks))
         except concurrent.futures.CancelledError: pass
         finally:
             print('Cleaning up...')
