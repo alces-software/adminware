@@ -44,7 +44,8 @@ def add_commands(appliance):
     runner_group = {
         'help': (lambda names: "Run tools in {}".format(' '.join(names))),
         'invoke_without_command': True,
-        'options': node_group_options
+        'options': node_group_options,
+        'pass_context': True
     }
 
     @Config.commands(tool, command = runner_cmd, group = runner_group)
