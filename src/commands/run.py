@@ -60,7 +60,8 @@ def add_commands(appliance):
             else:
                 raise ClickException('Please specify a node with --node')
         elif batch.jobs:
-            execute_threaded_batches([batch])
+            report = batch.config_model.report
+            execute_threaded_batches([batch], quite = report)
         else:
             raise ClickException('Please give either --node or --group')
 
