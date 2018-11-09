@@ -16,29 +16,26 @@ exit - exits the CLI.
 help - displays help for the current level's commands.
 
 run - command group used for running tools - works in parallel across nodes.
- - run NAMESPACE(S) TOOL NODE(S) [ARGUMENTS]
+ - run <TOOL...> NODE(S) [ARGUMENTS]
     - Runs tool TOOL on NODE(S).
-    - Alternatively, a namespace can be selected and each tool in that namespace
-      will be ran sequentially.
-    - A tool's namespaces must be specified before its name.
     - If a tool marked as being interactive only (see 'Adding Tools') and you
       attempt to run it on more than one node it will cancel and an error will
       be thrown.
     - Additionally a tool marked as interactive will open an interactive ssh
       session with the node when ran
-    - Optionally, arguments can be provided.
+    - Optionally, arguments for the shell command can be provided.
 
 view - inspect execution history, statuses, groups, and tools.
  - view group [GROUP]
     - Lists all the nodes in group GROUP
     - If no group is given, a list of all groups can be found in the command's
       help display
- - view tool [NAMESPACE(S)] [TOOL]
-    - Shows info about the tool at NAMESPACE(S)/TOOL
+ - view tool [TOOL...]
+    - Shows info about tool TOOL
     - Displays the tool's name, description, command, whether it must
       be ran interactively and the contents of its working directory
-    - If no tool is given, in the command's help display it lists the availible tools
-      and sub-namespaces of the given namespace(s).
+    - If a tool consisting of other tools is given, in the command's help display
+      it lists the sub-tools of that tool.
     - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
  - view result JOB-ID
     - Shows the result (exit code, stdout, stderr) of an instance of a single
@@ -110,7 +107,7 @@ single line output. The full results are logged to the database.
 
 Tools are automatically picked up from config files stored at:
 
-`/var/lib/adminware/tools/[<optional-namespace>/].../<tool-name>/config.yaml`
+`/var/lib/adminware/tools/[<optional-directories>/].../<tool-name>/config.yaml`
 
 The config.yaml files cannot have directories as their siblings, although
 there can be other files in the same directories.
@@ -127,7 +124,7 @@ help: command_help
 
 # A flag stating that this tool's command is only to be ran in an interactive
 # shell. It's value must be "True" for this to take effect. If a tool marked as
-# interactive only is ran as part of a namespace or on more than one node an error
+# interactive only is ran as part of another tool or on more than one node an error
 # will be thrown.
 interactive: True
 
