@@ -40,29 +40,12 @@ No tools found in namespace '{}'
             generate_commands(root_command, config_hash, callback)
         return __commands
 
-    def family_commands(root_command, **kwargs):
-        def __family_commands(callback):
-            families_hash = Config.hashify_all_families(**kwargs)
-            generate_commands(root_command, families_hash, callback)
-        return __family_commands
-
     @lru_cache()
     def cache(*a, **kw): return Config(*a, **kw)
 
     def all():
         glob_path = os.path.join(CONFIG_DIR, '**/*/config.yaml')
         return list(map(lambda p: Config.cache(p), glob(glob_path, recursive=True)))
-
-
-    @lru_cache()
-    def all_families():
-        combined_hash = {}
-        sorted_configs = sorted(Config.all(), key = lambda x: x.__name__())
-        for config in sorted_configs:
-            for family in config.families():
-                combined_hash.setdefault(family, [])
-                combined_hash[family] += [config]
-        return combined_hash
 
     # The commands are hashed into the following structure
     # NOTES: `command` and `group` both supports callable objects as a means
@@ -95,19 +78,6 @@ No tools found in namespace '{}'
             Config.__copy_values(command, build_group_hashes(), config)
 
         return combined_hash[subcommand_key]
-
-    # Generates a similar hash as above but for the command families
-    # Callable objects are called with the family name
-    #   {
-    #       familyX: **<command>,
-    #       ...
-    #   }
-    def hashify_all_families(command = {}):
-        combined_hash = {}
-        for family in Config.all_families():
-            family_hash = combined_hash.setdefault(family, {})
-            Config.__copy_values(command, family_hash, family)
-        return combined_hash
 
     def __copy_values(source, target, args):
         for k, v in source.items():
@@ -148,12 +118,6 @@ No tools found in namespace '{}'
         self.data.setdefault('help', default)
         if not self.data['help']: self.data['help'] = default
         return self.data['help']
-
-    def families(self):
-        default = ''
-        self.data.setdefault('families', default)
-        if not self.data['families']: self.data['families'] = default
-        return self.data['families']
 
     # TODO: Deprecated, avoid usage
     def interactive_only(self):
