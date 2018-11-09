@@ -25,8 +25,8 @@ class Config():
                     path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
                     self.callback([Config(path)], *a)
                 if ctx and not ctx.invoked_subcommand:
-                    parts = [CONFIG_DIR, *callstack, '*/config.yaml']
-                    paths = glob(os.path.join(*parts))
+                    parts = [CONFIG_DIR, *callstack, '**/*/config.yaml']
+                    paths = glob(os.path.join(*parts), recursive = True)
                     if not paths:
                         raise click.ClickException("""
 No tools found in '{}'
