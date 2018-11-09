@@ -19,10 +19,6 @@ def add_commands(appliance):
     def run():
         pass
 
-    @run.group(help='Run a tool over a batch of nodes')
-    def tool():
-        pass
-
     node_group_options = {
         ('--node', '-n'): {
             'help': 'Specify a node, repeat the flag for multiple',
@@ -48,7 +44,7 @@ def add_commands(appliance):
         'pass_context': True
     }
 
-    @Config.commands(tool, command = runner_cmd, group = runner_group)
+    @Config.commands(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     def runner(configs, argv, _, nodes):
         if not argv: argv = [None]
