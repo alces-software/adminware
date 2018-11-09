@@ -3,6 +3,8 @@ from fabric import Connection
 import os
 import glob
 
+import click
+
 import datetime
 from shlex import quote
 from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
@@ -10,6 +12,8 @@ from sqlalchemy.orm import relationship
 
 from database import Base
 
+import asyncio
+import concurrent
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -29,85 +33,127 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
-
-    def run(self):
-        def __check_command(func):
-            def wrapper():
-                if self.batch.command_exists():
-                    func()
-                else:
-                    self.stderr = 'Incorrectly configured command'
-                    self.exit_code = -2
-            return wrapper
-
-        def __with_connection(func):
-            def wrapper():
-                connection = Connection(self.node)
-                try:
-                    connection.open()
-                except:
-                    self.stderr = 'Could not establish ssh connection'
-                    self.exit_code = -1
-                if connection.is_connected:
-                    try:
-                        func(connection)
-                    finally:
-                        connection.close()
-            return wrapper
-
-        @__check_command
-        @__with_connection
-        def __runner(connection):
-            def __set_result(result):
-                if self.batch.is_interactive():
-                    self.stdout = 'Interactive Job: STDOUT is unavailable'
-                    self.stderr = 'Interactive Job: STDERR is unavailable'
-                    self.exit_code = -3
-                else:
-                    self.stdout = result.stdout
-                    self.stderr = result.stderr
-                    self.exit_code = result.return_code
-
-            def __with_tempdir(func):
-                def wrapper(*args):
-                    result = connection.run('mktemp -d', hide='both')
-                    if result:
-                        temp_dir = result.stdout.rstrip()
-                        try:
-                            func(temp_dir, *args)
-                        finally:
-                            connection.run("rm -rf {}".format(temp_dir))
-                    else:
-                        __set_result(result)
-                return wrapper
-
-            @__with_tempdir
-            def __run_command(temp_dir):
-                # Copies the files across
-                parts = [os.path.dirname(self.batch.config), '*']
-                for src_path in glob.glob(os.path.join(*parts)):
-                    result = connection.put(src_path, temp_dir)
-                    if not result:
-                        __set_result(result)
-                        return
-
-                # Runs the command
-                with connection.cd(temp_dir):
-                    kwargs = { 'warn' : True }
-                    if self.batch.is_interactive():
-                        kwargs.update({ 'pty': True })
-                    else:
-                        kwargs.update({ 'hide': 'both' })
-                    cmd = self.batch.command()
-                    if self.batch.arguments: cmd = cmd + ' ' + quote(self.batch.arguments)
-                    result = connection.run(cmd, **kwargs)
-                    __set_result(result)
-            __run_command()
-        __runner()
+    __connection = None
+    __result = None
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
         self.batch = kwargs['batch']
+
+    def connection(self):
+        if not self.__connection: self.__connection = Connection(self.node)
+        return self.__connection
+
+    class JobTask(asyncio.Task):
+        def __init__(self, job, thread_pool = None):
+            self.thread_pool = thread_pool
+            super().__init__(self.run_async())
+            self.job = job
+            self.add_job_callback(lambda job: job.connection().close())
+            self.add_job_callback(lambda job: job.set_ssh_results())
+            self.add_done_callback(type(self).report_results)
+
+        def __getattr__(self, attr):
+            return getattr(self.job, attr)
+
+        def add_job_callback(self, func):
+            callback = lambda task: func(task.job)
+            self.add_done_callback(callback)
+
+        def report_results(self):
+            # Do not print cancelled Tasks. `self.cancelled()` can't be used
+            # as the Task is now in the "done" state
+            try: self.exception()
+            except concurrent.futures.CancelledError: return
+            except Exception as e:
+                # TODO: Setup debugging printing at some point
+                # print(type(e))
+                # print(e)
+                pass
+
+            if self.exit_code == 0:
+                symbol = 'Pass'
+            else:
+                symbol = 'Failed: {}'.format(self.exit_code)
+            args = [self.id, self.node, symbol]
+            click.echo('ID: {}, Node: {}, {}'.format(*args))
+
+        async def __run_thread(self, func, *a):
+            def catch_errors(func, *args):
+                try: func(*args)
+                except: pass
+            run = lambda: catch_errors(func, *a)
+            coroutine = self._loop.run_in_executor(self.thread_pool, run)
+            return await coroutine
+
+        async def run_async(self):
+            if self.check_command():
+                try: await self.__run_thread(self.connection().open)
+                except concurrent.futures.CancelledError as e: raise e
+
+                if self.connection().is_connected:
+                    await self.__run_thread(self.run, self.batch)
+                else:
+                    self.set_ssh_error()
+
+    def task(self, *a, **k): return Job.JobTask(self, *a, **k)
+
+    def check_command(self):
+        if self.batch.command_exists(): return True
+        else:
+            self.stdout = ''
+            self.stderr = 'Incorrectly configured command'
+            self.exit_code = -2
+
+    def set_ssh_error(self):
+        self.stdout = ''
+        self.stderr = 'Could not establish ssh connection'
+        self.exit_code = -1
+
+    def set_ssh_results(self):
+        if self.__result == None: return
+        if self.batch.is_interactive():
+            self.stdout = 'Interactive Job: STDOUT is unavailable'
+            self.stderr = 'Interactive Job: STDERR is unavailable'
+            self.exit_code = -3
+        else:
+            self.stdout = self.__result.stdout
+            self.stderr = self.__result.stderr
+            self.exit_code = self.__result.return_code
+
+    def run(self, batch):
+        def __with_tempdir(func):
+            def wrapper(*args):
+                result = self.connection().run('mktemp -d', hide='both')
+                if result:
+                    temp_dir = ('{}'.format(result.stdout)).rstrip()
+                    try:
+                        result = func(temp_dir, *args)
+                    finally:
+                        self.connection().run("rm -rf {}".format(temp_dir))
+                return result
+            return wrapper
+
+        @__with_tempdir
+        def __run_command(temp_dir):
+            # Copies the files across
+            path = '/var/lib/adminware/tools/namespace/stutool1/config.yaml'
+            parts = [os.path.dirname(batch.config), '*']
+            for src_path in glob.glob(os.path.join(*parts)):
+                result = self.connection().put(src_path, temp_dir)
+                if not result: return result
+
+            # Runs the command
+            with self.connection().cd(temp_dir):
+                kwargs = { 'warn' : True }
+                if batch.is_interactive():
+                    kwargs.update({ 'pty': True })
+                else:
+                    kwargs.update({ 'hide': 'both' })
+                cmd = batch.command()
+                if batch.arguments: cmd = cmd + ' ' + quote(batch.arguments)
+                return self.connection().run(cmd, **kwargs)
+        self.__result = __run_command()
 
 from models.batch import Batch
 

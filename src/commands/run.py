@@ -8,7 +8,11 @@ from models.job import Job
 from models.batch import Batch
 from models.config import Config
 
-import threading
+import asyncio
+import concurrent
+import signal
+
+import os
 
 def add_commands(appliance):
     @appliance.group(help='Run a tool within your cluster')
@@ -52,7 +56,8 @@ def add_commands(appliance):
                 try:
                     session.add(batch)
                     session.add(batch.jobs[0])
-                    batch.jobs[0].run()
+                    loop = asyncio.get_event_loop()
+                    loop.run_until_complete(batch.jobs[0].task())
                 finally:
                     session.commit()
                     Session.remove()
@@ -90,24 +95,37 @@ def add_commands(appliance):
         execute_threaded_batches(batches)
 
     def execute_threaded_batches(batches):
-        class JobRunner:
-            def __init__(self, job):
-                self.unsafe_job = job # This Job object may not thread safe
-                self.thread = threading.Thread(target=self.run)
+        loop = asyncio.get_event_loop()
+        def handler_interrupt():
+            print('Interrupt Received! ')
+            print('Cancelling the jobs...')
+            for task in asyncio.Task.all_tasks(loop = loop):
+                task.cancel()
+        loop.add_signal_handler(signal.SIGINT, handler_interrupt)
 
-            def run(self):
-                local_session = Session()
-                try:
-                    job = local_session.merge(self.unsafe_job)
-                    job.run()
-                    if job.exit_code == 0:
-                        symbol = 'Pass'
-                    else:
-                        symbol = 'Failed: {}'.format(job.exit_code)
-                    click.echo('ID: {}, Node: {}, {}'.format(job.id, job.node, symbol))
-                finally:
-                    local_session.commit()
-                    Session.remove()
+        max_ssh = int(os.environ.setdefault('ADMINWARE_MAX_SSH', '100'))
+        start_delay = float(os.environ.setdefault('ADMINWARE_START_DELAY', '0.2'))
+        pool = concurrent.futures.ThreadPoolExecutor(max_workers = max_ssh)
+
+        async def start_tasks(tasks):
+            active_tasks = []
+            def remove_done_tasks():
+                for active_task in active_tasks:
+                    if active_task._state == 'FINISHED':
+                        active_tasks.remove(active_task)
+                        break
+            for task in tasks:
+                while len(active_tasks) > max_ssh:
+                    remove_done_tasks()
+                    await asyncio.sleep(0.01)
+                asyncio.ensure_future(task, loop = loop)
+                active_tasks.append(task)
+                print('Starting Job: {}'.format(task.node))
+                await(asyncio.sleep(start_delay))
+            print('Waiting for jobs to finish...')
+            while len(active_tasks) > 0:
+                remove_done_tasks()
+                await asyncio.sleep(0.01)
 
         session = Session()
         try:
@@ -115,17 +133,13 @@ def add_commands(appliance):
                 session.add(batch)
                 session.commit()
                 click.echo('Executing: {}'.format(batch.__name__()))
-                threads = list(map(lambda j: JobRunner(j).thread, batch.jobs))
-                threads.reverse()
-                active_threads = []
-                while len(threads) > 0 or len(active_threads) > 0:
-                    while len(active_threads) < 10 and len(threads) > 0:
-                        new_thread = threads.pop()
-                        new_thread.start()
-                        active_threads.append(new_thread)
-                    for thread in active_threads:
-                        if not thread.is_alive():
-                            active_threads.remove(thread)
+                tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
+                loop.run_until_complete(start_tasks(tasks))
+        except concurrent.futures.CancelledError: pass
         finally:
+            print('Cleaning up...')
+            pool.shutdown(wait = True)
+            print('Saving...')
             session.commit()
             Session.remove()
+            print('Done')
