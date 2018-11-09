@@ -16,8 +16,10 @@ exit - exits the CLI.
 help - displays help for the current level's commands.
 
 run - command group used for running tools - works in parallel across nodes.
- - run tool [NAMESPACE(S)] TOOL NODE(S) [ARGUMENTS]
+ - run NAMESPACE(S) TOOL NODE(S) [ARGUMENTS]
     - Runs tool TOOL on NODE(S).
+    - Alternatively, a namespace can be selected and each tool in that namespace
+      will be ran sequentially.
     - A tool's namespaces must be specified before its name.
     - If a tool is selected for a single node it will be automatically ran
       in interactive mode.
@@ -25,8 +27,6 @@ run - command group used for running tools - works in parallel across nodes.
       attempt to run it on more than one node it will cancel and an error will
       be thrown.
     - Optionally, arguments can be provided.
- - run family FAMILY NODE(S)
-    - Runs tool-family FAMILY on NODE(S).
 
 view - inspect execution history, statuses, groups, and tools.
  - view group [GROUP]
@@ -35,15 +35,11 @@ view - inspect execution history, statuses, groups, and tools.
       help display
  - view tool [NAMESPACE(S)] [TOOL]
     - Shows info about the tool at NAMESPACE(S)/TOOL
-    - Displays the tool's name, description, command, families, whether it must
+    - Displays the tool's name, description, command, whether it must
       be ran interactively and the contents of its working directory
     - If no tool is given, in the command's help display it lists the availible tools
       and sub-namespaces of the given namespace(s).
     - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
- - view family [FAMILY]
-    - Displays the members of the tool family FAMILY, as well as their order of
-      execution
-    - If FAMILY is not given, it lists all the system's tool families.
  - view result JOB-ID
     - Shows the result (exit code, stdout, stderr) of an instance of a single
       tool running on a single node.
@@ -129,19 +125,9 @@ command: command_to_run
 # displayed for this tool in `run` commands.
 help: command_help
 
-# A list of any families that the tool is in. A family is a group of tools that
-# can be executed with a single statement using `run family`. Tools within a
-# family are executed in alphanumeric order and each tool is executed on every node
-# before the second tool is executed on any.
-families:
- - family1
- - family2
- - etc..
-
 # A flag stating that this tool's command should never be ran in a non-interactive
-# shell. It's value must be "True" for this to take effect. If a tool is marked as
-# interactive only it will be excluded from tool families and from being run on more
-# than one node at once. If it is attempted to run in on more than one node an error
+# shell. It's value must be "True" for this to take effect. If a tool marked as
+# interactive only is ran as part of a namespace or on more than one node an error
 # will be thrown.
 interactive: True
 
