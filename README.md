@@ -16,34 +16,27 @@ exit - exits the CLI.
 help - displays help for the current level's commands.
 
 run - command group used for running tools - works in parallel across nodes.
- - run tool [NAMESPACE(S)] TOOL NODE(S) [ARGUMENTS]
+ - run <TOOL...> NODE(S) [ARGUMENTS]
     - Runs tool TOOL on NODE(S).
-    - A tool's namespaces must be specified before its name.
-    - If a tool is selected for a single node it will be automatically ran
-      in interactive mode.
     - If a tool marked as being interactive only (see 'Adding Tools') and you
       attempt to run it on more than one node it will cancel and an error will
       be thrown.
-    - Optionally, arguments can be provided.
- - run family FAMILY NODE(S)
-    - Runs tool-family FAMILY on NODE(S).
+    - Additionally a tool marked as interactive will open an interactive ssh
+      session with the node when ran
+    - Optionally, arguments for the shell command can be provided.
 
 view - inspect execution history, statuses, groups, and tools.
  - view group [GROUP]
     - Lists all the nodes in group GROUP
     - If no group is given, a list of all groups can be found in the command's
       help display
- - view tool [NAMESPACE(S)] [TOOL]
-    - Shows info about the tool at NAMESPACE(S)/TOOL
-    - Displays the tool's name, description, command, families, whether it must
+ - view tool [TOOL...]
+    - Shows info about tool TOOL
+    - Displays the tool's name, description, command, whether it must
       be ran interactively and the contents of its working directory
-    - If no tool is given, in the command's help display it lists the availible tools
-      and sub-namespaces of the given namespace(s).
+    - If a tool consisting of other tools is given, in the command's help display
+      it lists the sub-tools of that tool.
     - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
- - view family [FAMILY]
-    - Displays the members of the tool family FAMILY, as well as their order of
-      execution
-    - If FAMILY is not given, it lists all the system's tool families.
  - view result JOB-ID
     - Shows the result (exit code, stdout, stderr) of an instance of a single
       tool running on a single node.
@@ -114,7 +107,7 @@ single line output. The full results are logged to the database.
 
 Tools are automatically picked up from config files stored at:
 
-`/var/lib/adminware/tools/[<optional-namespace>/].../<tool-name>/config.yaml`
+`/var/lib/adminware/tools/[<optional-directories>/].../<tool-name>/config.yaml`
 
 The config.yaml files cannot have directories as their siblings, although
 there can be other files in the same directories.
@@ -125,23 +118,13 @@ The config files should follow the following format:
 # `./script.rb`.
 command: command_to_run
 
-# Full help text for this tool, it will be picked up and displayed in full when `help` is
-# displayed for this tool in `run` commands.
+# Full help text for this tool, it will be picked up and displayed in full when `help
+# is displayed for this tool in `run` commands.
 help: command_help
 
-# A list of any families that the tool is in. A family is a group of tools that
-# can be executed with a single statement using `run family`. Tools within a
-# family are executed in alphanumeric order and each tool is executed on every node
-# before the second tool is executed on any.
-families:
- - family1
- - family2
- - etc..
-
-# A flag stating that this tool's command should never be ran in a non-interactive
-# shell. It's value must be "True" for this to take effect. If a tool is marked as
-# interactive only it will be excluded from tool families and from being run on more
-# than one node at once. If it is attempted to run in on more than one node an error
+# A flag stating that this tool's command is only to be ran in an interactive
+# shell. It's value must be "True" for this to take effect. If a tool marked as
+# interactive only is ran as part of another tool or on more than one node an error
 # will be thrown.
 interactive: True
 

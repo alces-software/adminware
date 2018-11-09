@@ -19,10 +19,6 @@ def add_commands(appliance):
     def run():
         pass
 
-    @run.group(help='Run a tool over a batch of nodes')
-    def tool():
-        pass
-
     node_group_options = {
         ('--node', '-n'): {
             'help': 'Specify a node, repeat the flag for multiple',
@@ -42,50 +38,39 @@ def add_commands(appliance):
         'options': node_group_options
     }
     runner_group = {
-        'help': (lambda names: "Run further tools: '{}'".format(' '.join(names)))
+        'help': (lambda names: "Run tools in {}".format(' '.join(names))),
+        'invoke_without_command': True,
+        'options': node_group_options,
+        'pass_context': True
     }
 
-    @Config.commands(tool, command = runner_cmd, group = runner_group)
+    @Config.commands(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
-    def runner(config, argv, _, nodes):
-        batch = Batch(config = config.path, arguments = (argv[0] or ''))
-        batch.build_jobs(*nodes)
-        if batch.is_interactive():
-            if len(batch.jobs) == 1:
-                execute_threaded_batches([batch], quiet = True)
-            elif batch.jobs:
-                raise ClickException('''
+    def runner(configs, argv, _, nodes):
+        if not argv: argv = [None]
+        if len(configs) > 1:
+            for config in configs:
+                if config.interactive():
+                    raise ClickException('''
+'{}' is an interactive tool and cannot be ran as part of a group
+'''.format(config.__name__()).strip())
+        for config in configs:
+            batch = Batch(config = config.path, arguments = (argv[0] or ''))
+            batch.build_jobs(*nodes)
+            if batch.is_interactive():
+                if len(batch.jobs) == 1:
+                    execute_threaded_batches([batch], quiet = True)
+                elif batch.jobs:
+                    raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
 '''.format(config.name()).strip())
+                else:
+                    raise ClickException('Please specify a node with --node')
+            elif batch.jobs:
+                report = batch.config_model.report
+                execute_threaded_batches([batch], quiet = report)
             else:
-                raise ClickException('Please specify a node with --node')
-        elif batch.jobs:
-            report = batch.config_model.report
-            execute_threaded_batches([batch], quiet = report)
-        else:
-            raise ClickException('Please give either --node or --group')
-
-    @run.group(help='Run a family of tools on node(s) or group(s)')
-    def family(): pass
-
-    family_runner = {
-        'help': 'Runs the tool over the group',
-        'options': node_group_options
-    }
-
-    @Config.family_commands(family, command = family_runner)
-    @cli_utils.with__node__group
-    def family_runner(callstack, _a, _o, nodes):
-        family = callstack[0]
-        if not nodes:
-            raise ClickException('Please give either --node or --group')
-        batches = []
-        for config in Config.all_families()[family]:
-            #create batch w/ relevant config for tool
-            batch = Batch(config = config.path)
-            batch.build_jobs(*nodes)
-            batches += [batch]
-        execute_threaded_batches(batches)
+                raise ClickException('Please give either --node or --group')
 
     def execute_threaded_batches(batches, quiet = False):
         def run_print(string):

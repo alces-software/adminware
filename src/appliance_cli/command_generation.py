@@ -131,7 +131,7 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
 
     # Define function to be passed as 'callback' parameter to click.Command,
     # transforming its arguments suitable to be passed to our own callback.
-    def click_callback(**params):
+    def click_callback(ctx, **params):
         argument_values = [
             params[arg_name] for arg_name in arguments.keys()
         ]
@@ -147,11 +147,16 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
         new_commands = deepcopy(ancestor_commands)
         new_options = deepcopy(options)
 
-        callback(new_commands, argument_values, new_options)
+        callback_args = [new_commands, argument_values, new_options]
+
+        if config.get('pass_context'):
+            callback(*callback_args, ctx=ctx)
+        else:
+            callback(*callback_args)
 
     return {
         'params': click_params,
-        'callback': click_callback
+        'callback': click.pass_context(click_callback)
     }
 
 
@@ -200,6 +205,15 @@ def _parse_group_command_config(ancestor_commands, config, callback):
         in config['commands'].items()
     }
 
-    return {
-        'commands': commands
-    }
+    config.setdefault('invoke_without_command', False)
+
+    return_hash = { 'commands': commands }
+
+    if config['invoke_without_command']:
+        return_hash['invoke_without_command'] = True
+        return_hash = {
+            **return_hash,
+            **_parse_simple_command_config(ancestor_commands, config, callback)
+        }
+
+    return return_hash
