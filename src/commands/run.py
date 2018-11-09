@@ -52,15 +52,7 @@ def add_commands(appliance):
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             if len(batch.jobs) == 1:
-                session = Session()
-                try:
-                    session.add(batch)
-                    session.add(batch.jobs[0])
-                    loop = asyncio.get_event_loop()
-                    loop.run_until_complete(batch.jobs[0].task())
-                finally:
-                    session.commit()
-                    Session.remove()
+                execute_threaded_batches([batch], quiet = True)
             elif batch.jobs:
                 raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
@@ -68,7 +60,8 @@ def add_commands(appliance):
             else:
                 raise ClickException('Please specify a node with --node')
         elif batch.jobs:
-            execute_threaded_batches([batch])
+            report = batch.config_model.report
+            execute_threaded_batches([batch], quiet = report)
         else:
             raise ClickException('Please give either --node or --group')
 
@@ -94,11 +87,15 @@ def add_commands(appliance):
             batches += [batch]
         execute_threaded_batches(batches)
 
-    def execute_threaded_batches(batches):
+    def execute_threaded_batches(batches, quiet = False):
+        def run_print(string):
+            if quiet: return
+            click.echo(string)
+
         loop = asyncio.get_event_loop()
         def handler_interrupt():
-            print('Interrupt Received! ')
-            print('Cancelling the jobs...')
+            run_print('Interrupt Received! ')
+            run_print('Cancelling the jobs...')
             for task in asyncio.Task.all_tasks(loop = loop):
                 task.cancel()
         loop.add_signal_handler(signal.SIGINT, handler_interrupt)
@@ -120,9 +117,9 @@ def add_commands(appliance):
                     await asyncio.sleep(0.01)
                 asyncio.ensure_future(task, loop = loop)
                 active_tasks.append(task)
-                print('Starting Job: {}'.format(task.node))
+                run_print('Starting Job: {}'.format(task.node))
                 await(asyncio.sleep(start_delay))
-            print('Waiting for jobs to finish...')
+            run_print('Waiting for jobs to finish...')
             while len(active_tasks) > 0:
                 remove_done_tasks()
                 await asyncio.sleep(0.01)
@@ -132,14 +129,14 @@ def add_commands(appliance):
             for batch in batches:
                 session.add(batch)
                 session.commit()
-                click.echo('Executing: {}'.format(batch.__name__()))
+                run_print('Executing: {}'.format(batch.__name__()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 loop.run_until_complete(start_tasks(tasks))
         except concurrent.futures.CancelledError: pass
         finally:
-            print('Cleaning up...')
+            run_print('Cleaning up...')
             pool.shutdown(wait = True)
-            print('Saving...')
+            run_print('Saving...')
             session.commit()
             Session.remove()
-            print('Done')
+            run_print('Done')

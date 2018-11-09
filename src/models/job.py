@@ -60,7 +60,16 @@ available. Please see documentation for possible causes
             callback = lambda task: func(task.job)
             self.add_done_callback(callback)
 
+        # TODO: Set different "report" callbacks for the three different commands:
+        # Possible use inheritance?
+        # Exit Code Commands: print_exit_code
+        # Report Commands:    print_report
+        # Interactive:        noop - do not set the callback
+        # This will remove the logic at runtime
         def report_results(self):
+            # Do not report interactive jobs
+            if self.batch.is_interactive(): return
+
             # Do not print cancelled Tasks. `self.cancelled()` can't be used
             # as the Task is now in the "done" state
             try: self.exception()
@@ -71,12 +80,17 @@ available. Please see documentation for possible causes
                 # print(e)
                 pass
 
-            if self.exit_code == 0:
-                symbol = 'Pass'
+            if self.batch.config_model.report:
+                click.echo('Node: {}'.format(self.node))
+                click.echo(self.stdout)
+                click.echo()
             else:
-                symbol = 'Failed: {}'.format(self.exit_code)
-            args = [self.id, self.node, symbol]
-            click.echo('ID: {}, Node: {}, {}'.format(*args))
+                if self.exit_code == 0:
+                    symbol = 'Pass'
+                else:
+                    symbol = 'Failed: {}'.format(self.exit_code)
+                args = [self.id, self.node, symbol]
+                click.echo('ID: {}, Node: {}, {}'.format(*args))
 
         async def __run_thread(self, func, *a):
             def catch_errors(func, *args):
@@ -137,7 +151,6 @@ available. Please see documentation for possible causes
         @__with_tempdir
         def __run_command(temp_dir):
             # Copies the files across
-            path = '/var/lib/adminware/tools/namespace/stutool1/config.yaml'
             parts = [os.path.dirname(batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
                 result = self.connection().put(src_path, temp_dir)
