@@ -80,12 +80,15 @@ available. Please see documentation for possible causes
                 # print(e)
                 pass
 
-            if self.exit_code == 0:
-                symbol = 'Pass'
+            if self.batch.config_model.report:
+                pass
             else:
-                symbol = 'Failed: {}'.format(self.exit_code)
-            args = [self.id, self.node, symbol]
-            click.echo('ID: {}, Node: {}, {}'.format(*args))
+                if self.exit_code == 0:
+                    symbol = 'Pass'
+                else:
+                    symbol = 'Failed: {}'.format(self.exit_code)
+                args = [self.id, self.node, symbol]
+                click.echo('ID: {}, Node: {}, {}'.format(*args))
 
         async def __run_thread(self, func, *a):
             def catch_errors(func, *args):
