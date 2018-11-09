@@ -148,6 +148,10 @@ class Config():
     def interactive_only(self):
         return self.interactive()
 
+    def __getattr__(self, attr):
+        return self.data.setdefault(attr)
+
+    # TODO: Use __getattr__ here
     def interactive(self):
         return 'interactive' in self.data and self.data['interactive'] == True
 
