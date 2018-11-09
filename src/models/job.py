@@ -60,6 +60,12 @@ available. Please see documentation for possible causes
             callback = lambda task: func(task.job)
             self.add_done_callback(callback)
 
+        # TODO: Set different "report" callbacks for the three different commands:
+        # Possible use inheritance?
+        # Exit Code Commands: print_exit_code
+        # Report Commands:    print_report
+        # Interactive:        noop - do not set the callback
+        # This will remove the logic at runtime
         def report_results(self):
             # Do not report interactive jobs
             if self.batch.is_interactive(): return

@@ -144,7 +144,7 @@ class Config():
         if not self.data['families']: self.data['families'] = default
         return self.data['families']
 
-    # Deprecated, avoid usage
+    # TODO: Deprecated, avoid usage
     def interactive_only(self):
         return self.interactive()
 
