@@ -52,7 +52,7 @@ def add_commands(appliance):
         batch.build_jobs(*nodes)
         if batch.is_interactive():
             if len(batch.jobs) == 1:
-                execute_threaded_batches([batch], quite = True)
+                execute_threaded_batches([batch], quiet = True)
             elif batch.jobs:
                 raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
@@ -61,7 +61,7 @@ def add_commands(appliance):
                 raise ClickException('Please specify a node with --node')
         elif batch.jobs:
             report = batch.config_model.report
-            execute_threaded_batches([batch], quite = report)
+            execute_threaded_batches([batch], quiet = report)
         else:
             raise ClickException('Please give either --node or --group')
 
@@ -87,9 +87,9 @@ def add_commands(appliance):
             batches += [batch]
         execute_threaded_batches(batches)
 
-    def execute_threaded_batches(batches, quite = False):
+    def execute_threaded_batches(batches, quiet = False):
         def run_print(string):
-            if quite: return
+            if quiet: return
             click.echo(string)
 
         loop = asyncio.get_event_loop()
