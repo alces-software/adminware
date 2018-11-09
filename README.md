@@ -144,6 +144,10 @@ families:
 # than one node at once. If it is attempted to run in on more than one node an error
 # will be thrown.
 interactive: True
+
+# Runs the command in reporting mode. The standard output of the remote command will
+# be dumped to the screen instead of the exit code.
+report: True
 ```
 
 # Configuring Run Parameters
