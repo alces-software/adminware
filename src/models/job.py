@@ -151,7 +151,6 @@ available. Please see documentation for possible causes
         @__with_tempdir
         def __run_command(temp_dir):
             # Copies the files across
-            path = '/var/lib/adminware/tools/namespace/stutool1/config.yaml'
             parts = [os.path.dirname(batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
                 result = self.connection().put(src_path, temp_dir)
