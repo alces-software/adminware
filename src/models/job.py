@@ -81,6 +81,9 @@ available. Please see documentation for possible causes
                 pass
 
             if self.batch.config_model.report:
+                click.echo('Node: {}'.format(self.node))
+                click.echo(self.stdout)
+                click.echo()
                 pass
             else:
                 if self.exit_code == 0:
