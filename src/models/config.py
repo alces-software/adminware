@@ -29,7 +29,7 @@ class Config():
                     paths = glob(os.path.join(*parts))
                     if not paths:
                         raise click.ClickException("""
-No tools found in namespace '{}'
+No tools found in '{}'
 """.format('/'.join(callstack)).strip())
                     configs = list(map(lambda x: Config(x), paths))
                     self.callback(configs, *a)
