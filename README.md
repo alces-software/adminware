@@ -21,11 +21,11 @@ run - command group used for running tools - works in parallel across nodes.
     - Alternatively, a namespace can be selected and each tool in that namespace
       will be ran sequentially.
     - A tool's namespaces must be specified before its name.
-    - If a tool is selected for a single node it will be automatically ran
-      in interactive mode.
     - If a tool marked as being interactive only (see 'Adding Tools') and you
       attempt to run it on more than one node it will cancel and an error will
       be thrown.
+    - Additionally a tool marked as interactive will open an interactive ssh
+      session with the node when ran
     - Optionally, arguments can be provided.
 
 view - inspect execution history, statuses, groups, and tools.
@@ -121,11 +121,11 @@ The config files should follow the following format:
 # `./script.rb`.
 command: command_to_run
 
-# Full help text for this tool, it will be picked up and displayed in full when `help` is
-# displayed for this tool in `run` commands.
+# Full help text for this tool, it will be picked up and displayed in full when `help
+# is displayed for this tool in `run` commands.
 help: command_help
 
-# A flag stating that this tool's command should never be ran in a non-interactive
+# A flag stating that this tool's command is only to be ran in an interactive
 # shell. It's value must be "True" for this to take effect. If a tool marked as
 # interactive only is ran as part of a namespace or on more than one node an error
 # will be thrown.
