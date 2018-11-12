@@ -20,6 +20,7 @@ def add_commands(appliance):
 
     status_grp = {
         'help': 'FIX ME',
+        'invoke_without_command': True,
         'options': cli_utils.hash__node__group,
     }
 
@@ -31,16 +32,17 @@ def add_commands(appliance):
     @cli_utils.with__node__group
     def get_status(configs, _a, _o, nodes):
         session = Session()
+
         # Returns the most recent job for each tool and number of times it's been ran
         # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
         #       https://www.w3schools.com/sql/func_sqlserver_count.asp
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        job_data = session.query(Job, sqlalchemy.func.count(Batch.config))\
-                           .filter(Job.node.in_(nodes))\
-                           .join("batch")\
-                           .order_by(Job.created_date.desc())\
-                           .group_by(Job.node, Batch.config)\
-                           .all()
+        node_query = session.query(Job, sqlalchemy.func.count(Batch.config))
+        if nodes: node_query = node_query.filter(Job.node.in_(nodes))
+        job_data = node_query.join(Batch)\
+                             .order_by(Job.created_date.desc())\
+                             .group_by(Job.node, Batch.config)\
+                             .all()
         if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
