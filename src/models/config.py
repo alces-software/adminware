@@ -30,8 +30,15 @@ class Config():
 No tools found in '{}'
 """.format('/'.join(callstack)).strip())
                     configs = list(map(lambda x: Config(x), paths))
-                    self.callback(configs, *a)
+                    if wants_context:
+                        self.callback(configs, *a, ctx = ctx)
+                    else:
+                        self.callback(configs, *a)
 
+        wants_context = False
+        if kwargs['group'].get('pass_context')\
+          or kwargs['command'].get('pass_context'):
+            wants_context = True
         kwargs['group'].setdefault('pass_context', True)
         kwargs['command'].setdefault('pass_context', True)
 
