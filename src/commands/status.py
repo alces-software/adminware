@@ -27,10 +27,10 @@ def add_commands(appliance):
         #       https://www.w3schools.com/sql/func_sqlserver_count.asp
         # => [(latest_job1, count1), (lastest_job2, count2), ...]
         job_data = session.query(Job, sqlalchemy.func.count(Batch.config))\
-                           .filter(Job.node == node)\
+                           .filter(Job.node.in_(nodes))\
                            .join("batch")\
                            .order_by(Job.created_date.desc())\
-                           .group_by(Batch.config)\
+                           .group_by(Job.node, Batch.config)\
                            .all()
         if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
         job_objects = [i for i, j in job_data]
