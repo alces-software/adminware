@@ -3,6 +3,7 @@ import re
 import click
 from os.path import basename, dirname
 
+from collections import defaultdict
 import os.path
 from glob import glob
 
@@ -88,7 +89,10 @@ No tools found in '{}'
         def __read_data():
             with open(self.path, 'r') as stream:
                 return yaml.load(stream) or {}
-        self.data = __read_data()
+        try:
+            self.data = __read_data()
+        except FileNotFoundError:
+            self.data = defaultdict(lambda: 'File not found')
 
     def __name__(self):
         return basename(dirname(self.path))
