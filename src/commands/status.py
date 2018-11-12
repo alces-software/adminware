@@ -35,15 +35,32 @@ def add_commands(appliance):
 
         paths = list(map(lambda c: c.path, configs))
         tool_query = session.query(Batch)
-        if paths: tool_query.filter(Batch.config.in_(paths))
+        if paths: tool_query = tool_query.filter(Batch.config.in_(paths))
+        tool_subquery = tool_query.subquery()
 
         node_query = session.query(Job)
-        if nodes: node_query.filter(Job.node.in_(nodes))
+        if nodes: node_query = node_query.filter(Job.node.in_(nodes))
+        node_subquery = node_query.subquery()
 
-        subquery = node_query.join(tool_query)
+        columns = [
+            node_subquery.c.id.label('id'),
+            tool_subquery.c.config.label('config')
+        ]
+        id_query = session.query(*columns)\
+                          .select_from(node_subquery)\
+                          .join(tool_subquery)\
+                          .subquery()
 
-        job_data = list(map(lambda j: [j, None], subquery.all()))
-        if not job_data: raise click.ClickException('No jobs found for node {}'.format(nodes))
+        max_func = sqlalchemy.func.max(Job.created_date)
+        count_func = sqlalchemy.func.count()
+        job_data = session.query(Job, max_func, count_func)\
+                          .select_from(id_query)\
+                          .filter(Job.id == id_query.c.id)\
+                          .group_by(Job.node, id_query.c.config)\
+                          .all()
+
+        job_data = list(map(lambda d: [d[0], d[2]], job_data))
+        if not job_data: raise click.ClickException('No jobs found')
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
         headers = headers + ['No. Runs']
