@@ -7,12 +7,20 @@ from models.batch import Batch
 from models.job import Job
 from models.config import Config
 
+import groups
+
 import sqlalchemy
 
 def add_commands(appliance):
     @appliance.command(help='FIX ME')
-    @click.argument('node', type=str)
-    def status(node):
+    @click.option('--node', '-n', multiple=True, metavar='NODE',
+                  help='Retrieve the previous result for a node')
+    @click.option('--group', '-g', multiple=True, metavar='GROUP',
+                  help='Retrieve the results for all nodes in group')
+    def status(node = [], group = []):
+        nodes = list(node)
+        for g in group: nodes += list(groups.nodes_in(g))
+        node = nodes[0]
         session = Session()
         # Returns the most recent job for each tool and number of times it's been ran
         # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
