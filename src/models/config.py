@@ -21,12 +21,9 @@ class Config():
             def __init__(self, callback_func):
                 self.callback = callback_func
 
-            def run(self, callstack, *a, ctx = None):
-                if not ctx:
-                    path = os.path.join(CONFIG_DIR, *callstack, 'config.yaml')
-                    self.callback([Config(path)], *a)
-                if ctx and not ctx.invoked_subcommand:
-                    parts = [CONFIG_DIR, *callstack, '**/*/config.yaml']
+            def run(self, callstack, *a, ctx):
+                if not ctx.invoked_subcommand:
+                    parts = [CONFIG_DIR, *callstack, '**/config.yaml']
                     paths = glob(os.path.join(*parts), recursive = True)
                     if not paths:
                         raise click.ClickException("""
@@ -34,6 +31,9 @@ No tools found in '{}'
 """.format('/'.join(callstack)).strip())
                     configs = list(map(lambda x: Config(x), paths))
                     self.callback(configs, *a)
+
+        kwargs['group'].setdefault('pass_context', True)
+        kwargs['command'].setdefault('pass_context', True)
 
         def __commands(config_callback):
             config_hash = Config.hashify_all(subcommand_key = 'commands', **kwargs)

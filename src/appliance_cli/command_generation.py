@@ -210,8 +210,7 @@ def _parse_group_command_config(ancestor_commands, config, callback):
     return_hash = { 'commands': commands }
 
     if config['invoke_without_command']:
-        return_hash['invoke_without_command'] = True,
-        config['pass_context'] = True
+        return_hash['invoke_without_command'] = True
         return_hash = {
             **return_hash,
             **_parse_simple_command_config(ancestor_commands, config, callback)
