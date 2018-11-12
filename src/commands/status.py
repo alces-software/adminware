@@ -44,6 +44,7 @@ def add_commands(appliance):
 
     def shared_job_data_table(data):
         headers = ['Job ID',
+                   'Node',
                    'Tool',
                    'Exit Code',
                    'Arguments',
@@ -52,9 +53,11 @@ def add_commands(appliance):
         for job in data:
             arguments = None if not job.batch.arguments else job.batch.arguments
             row = [job.id,
+                   job.node,
                    job.batch.config_model.name(),
                    job.exit_code,
                    arguments,
                    job.created_date]
             rows += [row]
         return (headers, rows)
+
