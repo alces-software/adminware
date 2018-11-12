@@ -22,12 +22,12 @@ def group_commands(root_command, **kwargs):
 #   }
 def __hashify_all_groups(command = {}):
     combined_hash = {}
-    for group in list():
+    for group in list_groups():
         group_hash = combined_hash.setdefault(group, {})
         Config._Config__copy_values(command, group_hash, group)
     return combined_hash
 
-def list():
+def list_groups():
     groups = __nodeattr(arguments=['-l'])
     groups.remove('')
     return groups
