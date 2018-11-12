@@ -20,28 +20,15 @@ def add_commands(appliance):
     def run():
         pass
 
-    node_group_options = {
-        ('--node', '-n'): {
-            'help': 'Specify a node, repeat the flag for multiple',
-            'multiple': True,
-            'metavar': 'NODE'
-        },
-        ('--group', '-g'): {
-            'help': 'Specify a group, repeat the flag for multiple',
-            'multiple': True,
-            'metavar': 'GROUP'
-        }
-    }
-
     runner_cmd = {
         'help': Config.help,
         'arguments': [['remote_arguments']], # [[]]: Optional Arg
-        'options': node_group_options
+        'options': cli_utils.hash__node__group
     }
     runner_group = {
         'help': (lambda names: "Run tools in {}".format(' '.join(names))),
         'invoke_without_command': True,
-        'options': node_group_options,
+        'options': cli_utils.hash__node__group
     }
 
     @command_creator.tool_commands(run,
