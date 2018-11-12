@@ -42,10 +42,9 @@ def expand_nodes(node_list):
     #   before invalid nodenames are caught generically in __nodeattr
     for node in node_list:
         if search(r'[^A-z0-9,\[\]]',node):
-            raise ClickException(
-                    "Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'"
-                    .format(node))
-
+            raise ClickException("""
+Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
+""".strip().format(node))
     # build and parse a genders file of the nodes
     tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
     with open(tmp_file.name, 'w') as f:
