@@ -89,9 +89,9 @@ No tools found in '{}'
         def __read_data():
             with open(self.path, 'r') as stream:
                 return yaml.load(stream) or {}
-        try:
+        if os.path.isfile(path):
             self.data = __read_data()
-        except FileNotFoundError:
+        else:
             self.data = defaultdict(lambda: 'File not found')
 
     def __name__(self):
