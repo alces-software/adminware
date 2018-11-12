@@ -35,15 +35,16 @@ def add_commands(appliance):
         if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
-        headers = ['Tool'] + headers + ['No. Runs']
+        headers = headers + ['No. Runs']
         for i, (job, count) in enumerate(job_data):
-            rows[i] = [job.batch.__name__()] + rows[i] + [count]
+            rows[i] = rows[i] + [count]
         # sort by first column
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
 
     def shared_job_data_table(data):
         headers = ['Job ID',
+                   'Tool',
                    'Exit Code',
                    'Arguments',
                    'Date']
@@ -51,6 +52,7 @@ def add_commands(appliance):
         for job in data:
             arguments = None if not job.batch.arguments else job.batch.arguments
             row = [job.id,
+                   job.batch.config_model.name(),
                    job.exit_code,
                    arguments,
                    job.created_date]
