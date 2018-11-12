@@ -35,6 +35,7 @@ def add_commands(appliance):
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, argv, _, nodes):
+        if not get_confirmation(configs, nodes): return
         if not argv: argv = [None]
         if len(configs) > 1:
             for config in configs:
@@ -113,3 +114,21 @@ def add_commands(appliance):
             session.commit()
             Session.remove()
             run_print('Done')
+
+    def get_confirmation(configs, nodes):
+        click.echo("""
+You are about to run: {}\nOver nodes: {}\n
+""".strip().format(', '.join([c.name() for c in configs]),
+                   ', '.join(nodes)))
+        question = "Please enter [y/n] or 'more' for more info"
+        while "answer is invalid":
+            reply = click.prompt(question)
+            if reply == 'y':
+                return True
+            if reply == 'n':
+                return False
+            if reply == 'more':
+                for config in configs:
+                    click.echo("\n{}\n{}\n{}".format(config.name(),
+                                                     config.help(),
+                                                     config.command()))
