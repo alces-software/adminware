@@ -1,6 +1,7 @@
 
 from appliance_cli.text import display_table
 import click
+import cli_utils
 
 from database import Session
 from models.batch import Batch
@@ -12,15 +13,23 @@ import groups
 import sqlalchemy
 
 def add_commands(appliance):
-    @appliance.command(help='FIX ME')
-    @click.option('--node', '-n', multiple=True, metavar='NODE',
-                  help='Retrieve the previous result for a node')
-    @click.option('--group', '-g', multiple=True, metavar='GROUP',
-                  help='Retrieve the results for all nodes in group')
-    def status(node = [], group = []):
-        nodes = list(node)
-        for g in group: nodes += list(groups.nodes_in(g))
-        node = nodes[0]
+    status_cmd = {
+        'help': 'FIX ME',
+        'options': cli_utils.hash__node__group
+    }
+
+    status_grp = {
+        'help': 'FIX ME',
+        'options': cli_utils.hash__node__group,
+    }
+
+    @appliance.group(help='FIX ME')
+    def status():
+        pass
+
+    @Config.commands(status, command = status_cmd, group = status_grp)
+    @cli_utils.with__node__group
+    def get_status(configs, _a, _o, nodes):
         session = Session()
         # Returns the most recent job for each tool and number of times it's been ran
         # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
