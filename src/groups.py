@@ -22,12 +22,12 @@ def group_commands(root_command, **kwargs):
 #   }
 def __hashify_all_groups(command = {}):
     combined_hash = {}
-    for group in list():
+    for group in list_groups():
         group_hash = combined_hash.setdefault(group, {})
         Config._Config__copy_values(command, group_hash, group)
     return combined_hash
 
-def list():
+def list_groups():
     groups = __nodeattr(arguments=['-l'])
     groups.remove('')
     return groups
@@ -42,10 +42,9 @@ def expand_nodes(node_list):
     #   before invalid nodenames are caught generically in __nodeattr
     for node in node_list:
         if search(r'[^A-z0-9,\[\]]',node):
-            raise ClickException(
-                    "Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'"
-                    .format(node))
-
+            raise ClickException("""
+Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
+""".strip().format(node))
     # build and parse a genders file of the nodes
     tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
     with open(tmp_file.name, 'w') as f:
