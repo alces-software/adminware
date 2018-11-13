@@ -20,22 +20,31 @@ def add_commands(appliance):
     def run():
         pass
 
+    run_options = {
+        **cli_utils.hash__node__group,
+        ('--yes', '-y'): {
+            'help': 'Skip the confirmation prompt',
+            'is_flag': True
+        }
+    }
+
     runner_cmd = {
         'help': Config.help,
         'arguments': [['remote_arguments']], # [[]]: Optional Arg
-        'options': cli_utils.hash__node__group
+        'options': run_options
     }
     runner_group = {
         'help': (lambda names: "Run tools in {}".format(' '.join(names))),
         'invoke_without_command': True,
-        'options': cli_utils.hash__node__group
+        'options': run_options
     }
 
     @command_creator.tools(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
-    def runner(_ctx, configs, argv, _, nodes):
-        if not get_confirmation(configs, nodes): return
+    def runner(_ctx, configs, argv, options, nodes):
+        if not options['yes'].value:
+            if not get_confirmation(configs, nodes): return
         if not argv: argv = [None]
         if len(configs) > 1:
             for config in configs:
