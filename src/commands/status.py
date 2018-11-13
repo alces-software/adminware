@@ -14,12 +14,14 @@ import sqlalchemy
 
 from appliance_cli.command_generation import generate_commands
 
+cmd_name = 'status'
+
 def add_commands(appliance):
     def root_status(_c, *a):
         get_status([], *a)
 
     root_hash = {
-        'status': {
+        cmd_name: {
             'help': 'FIX MY TOP LEVEL HELP',
             'options': cli_utils.hash__node__group,
             'invoke_without_command': True,
@@ -27,6 +29,7 @@ def add_commands(appliance):
         }
     }
     generate_commands(appliance, root_hash, root_status)
+    click_cmd = appliance.commands[cmd_name]
 
     status_cmd = {
         'help': 'FIX ME',
@@ -39,7 +42,9 @@ def add_commands(appliance):
         'options': cli_utils.hash__node__group,
     }
 
-    # @Config.commands(status, command = status_cmd, group = status_grp)
+    @Config.commands(click_cmd, command = status_cmd, group = status_grp)
+    def get_tool_status(*a): get_status(*a)
+
     @cli_utils.with__node__group
     def get_status(configs, _a, _o, nodes):
         session = Session()
