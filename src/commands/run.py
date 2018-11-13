@@ -7,6 +7,7 @@ from database import Session
 from models.job import Job
 from models.batch import Batch
 from models.config import Config
+import command_dict_creator
 
 import asyncio
 import concurrent
@@ -43,7 +44,9 @@ def add_commands(appliance):
         'options': node_group_options,
     }
 
-    @Config.commands(run, command = runner_cmd, group = runner_group)
+    @command_dict_creator.tool_commands(run,
+                                        command = runner_cmd,
+                                        group = runner_group)
     @cli_utils.with__node__group
     def runner(configs, argv, _, nodes, ctx = None):
         if not argv: argv = [None]
