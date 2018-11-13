@@ -98,9 +98,11 @@ def add_commands(appliance):
             counts += list(map(lambda d: d[2], raw_data))
 
         headers, rows = shared_job_data_table(jobs)
-        headers = headers + ['No. Runs']
-        for i, count in enumerate(counts):
-            rows[i] = rows[i] + [count]
+        if counts:
+            headers = headers + ['No. Runs']
+            for i, count in enumerate(counts):
+                rows[i] = rows[i] + [count]
+
         # sort by first column
         rows.sort(key=lambda x:x[0])
         display_table(headers, rows)
