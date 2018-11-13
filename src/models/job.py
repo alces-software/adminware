@@ -44,6 +44,9 @@ available. Please see documentation for possible causes
     __connection = None
     __result = None
 
+    def config(self):
+        return self.batch.config_model
+
     def __init__(self, **kwargs):
         self.node = kwargs['node']
         self.batch = kwargs['batch']
@@ -53,7 +56,10 @@ available. Please see documentation for possible causes
         return (self.id == other.id)
 
     def __lt__(self, other):
-        return self.node < other.node
+        if self.node == other.node:
+            return self.config().name() < other.config().name()
+        else:
+            return self.node < other.node
 
     def connection(self):
         if not self.__connection: self.__connection = Connection(self.node)
