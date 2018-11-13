@@ -64,37 +64,6 @@ def add_commands(appliance):
         ]
         display_table([], table_data)
 
-    @view.group(name='tool-status', help='View the execution history of a single tool')
-    def tool_status():
-        pass
-
-    tool_status_cmd = { 'help': 'List the status across the nodes' }
-    tool_status_grp = { 'help': 'See the status of further tools' }
-    @command_creator.tool_commands(tool_status,
-                                   command = tool_status_cmd,
-                                   group = tool_status_grp)
-    def tool_status_runner(_ctx, configs, _a, _o):
-        config = configs[0]
-        session = Session()
-        # Returns the most recent job for each node and the number of times the tool's been ran
-        # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        job_data = session.query(Job, func.count(Job.node))\
-                           .select_from(Batch)\
-                           .filter(Batch.config == config.path)\
-                           .join(Job.batch)\
-                           .order_by(Job.created_date.desc())\
-                           .group_by(Job.node)\
-                           .all()
-        if not job_data: raise click.ClickException('No jobs found for tool {}'.format(config.__name__()))
-        job_objects = [i for i, j in job_data]
-        headers, rows = shared_job_data_table(job_objects)
-        headers = ['Node'] + headers + ['No. Runs']
-        for i, (job, count) in enumerate(job_data):
-            rows[i] = [job.node] + rows[i] + [count]
-        # sort by first column
-        rows.sort(key=lambda x:x[0])
-        display_table(headers, rows)
-
     @view.command(name='node-history', help='View all executions on a single node')
     @click.argument('node', type=str)
     def node_history(node):
