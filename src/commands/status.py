@@ -75,15 +75,18 @@ def add_commands(appliance):
                           .join(tool_subquery)\
                           .subquery()
 
+        def job_query(funcs = []):
+            query = session.query(Job, *funcs)\
+                           .select_from(id_query)\
+                           .filter(Job.id == id_query.c.id)
+            if funcs: query = query.group_by(Job.node, id_query.c.config)
+            return query
+
         max_func = sqlalchemy.func.max(Job.created_date)
         count_func = sqlalchemy.func.count()
-        job_data = session.query(Job, max_func, count_func)\
-                          .select_from(id_query)\
-                          .filter(Job.id == id_query.c.id)\
-                          .group_by(Job.node, id_query.c.config)\
-                          .all()
+        raw_data = job_query(funcs = [max_func, count_func]).all()
 
-        job_data = list(map(lambda d: [d[0], d[2]], job_data))
+        job_data = list(map(lambda d: [d[0], d[2]], raw_data))
         if not job_data: raise click.ClickException('No jobs found')
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
