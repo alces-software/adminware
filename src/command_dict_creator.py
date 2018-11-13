@@ -71,9 +71,9 @@ def group_commands(root_command, **kwargs):
 #   }
 def __hashify_all(group = {}, command = {}, subcommand_key = ''):
     def build_group_hashes():
-        cur_hash = combined_hash 
+        cur_hash = combined_hash
         names = config.names()
-        for idx, name in enumerate(config.names()): 
+        for idx, name in enumerate(config.names()):
             cur_names = names[0:idx]
             __copy_values(group, cur_hash, cur_names)
             cur_hash = cur_hash.setdefault(subcommand_key, {})\
