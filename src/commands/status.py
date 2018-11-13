@@ -98,17 +98,6 @@ def add_commands(appliance):
             jobs += list(map(lambda d: d[0], raw_data))
             counts += list(map(lambda d: d[2], raw_data))
 
-        headers, rows = shared_job_data_table(jobs)
-        if counts:
-            headers = headers + ['No. Runs']
-            for i, count in enumerate(counts):
-                rows[i] = rows[i] + [count]
-
-        # Sort by the first two columns
-        rows.sort(key=lambda r:'{} {}'.format(r[0], r[1]))
-        display_table(headers, rows)
-
-    def shared_job_data_table(data):
         headers = ['Node',
                    'Tool',
                    'Job ID',
@@ -116,7 +105,7 @@ def add_commands(appliance):
                    'Arguments',
                    'Date']
         rows = []
-        for job in data:
+        for job in jobs:
             arguments = None if not job.batch.arguments else job.batch.arguments
             row = [job.node,
                    job.batch.config_model.name(),
@@ -125,5 +114,13 @@ def add_commands(appliance):
                    arguments,
                    job.created_date]
             rows += [row]
-        return (headers, rows)
+
+        if counts:
+            headers = headers + ['No. Runs']
+            for i, count in enumerate(counts):
+                rows[i] = rows[i] + [count]
+
+        # Sort by the first two columns
+        rows.sort(key=lambda r:'{} {}'.format(r[0], r[1]))
+        display_table(headers, rows)
 
