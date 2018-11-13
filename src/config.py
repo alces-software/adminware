@@ -18,9 +18,9 @@ CONFIG = appliance_cli.config.finalize_config(_STANDARD_CONFIG)
 
 LEADER = '/var/lib/adminware/'
 
-TOOL_LOCATION = 'tools/'
+TOOL_LOCATION = 'tools'
 
-TOOL_DIR = os.path.join(LEADER, TOOL_LOCATION).strip('/')
+TOOL_DIR = os.path.join(LEADER, TOOL_LOCATION)
 
 def join_with_tool_location(namespace):
     return os.path.join(LEADER, TOOL_LOCATION, namespace)
