@@ -15,6 +15,9 @@ from database import Base
 import asyncio
 import concurrent
 
+import functools
+
+@functools.total_ordering
 class Job(Base):
     __tablename__ = 'jobs'
 
@@ -44,6 +47,13 @@ available. Please see documentation for possible causes
     def __init__(self, **kwargs):
         self.node = kwargs['node']
         self.batch = kwargs['batch']
+
+    def __eq__(self, other):
+        if isinstance(self.id, None): return False
+        return (self.id == other.id)
+
+    def __lt__(self, other):
+        return self.node < other.node
 
     def connection(self):
         if not self.__connection: self.__connection = Connection(self.node)

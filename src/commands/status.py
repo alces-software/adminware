@@ -110,6 +110,8 @@ def add_commands(appliance):
             # Add the count terminal table column
             headers.append('No. Runs')
 
+        jobs.sort()
+
         rows = []
         for job in jobs:
             arguments = None if not job.batch.arguments else job.batch.arguments
@@ -122,7 +124,5 @@ def add_commands(appliance):
             if isinstance(job.count, int): row.append(job.count)
             rows += [row]
 
-        # Sort by the first two columns
-        rows.sort(key=lambda r:'{} {}'.format(r[0], r[1]))
         display_table(headers, rows)
 
