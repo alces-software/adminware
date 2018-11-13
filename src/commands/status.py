@@ -75,18 +75,21 @@ def add_commands(appliance):
                           .join(tool_subquery)\
                           .subquery()
 
-        def job_query(funcs = []):
-            query = session.query(Job, *funcs)\
-                           .select_from(id_query)\
-                           .filter(Job.id == id_query.c.id)
-            if funcs: query = query.group_by(Job.node, id_query.c.config)
-            return query
+        def run_query(**k):
+            def job_query(funcs = []):
+                query = session.query(Job, *funcs)\
+                               .select_from(id_query)\
+                               .filter(Job.id == id_query.c.id)
+                if funcs: query = query.group_by(Job.node, id_query.c.config)
+                return query
+
+            data = job_query(**k).all()
+            if not data: raise click.ClickException('No jobs found')
+            return data
 
         max_func = sqlalchemy.func.max(Job.created_date)
         count_func = sqlalchemy.func.count()
-        raw_data = job_query(funcs = [max_func, count_func]).all()
-
-        if not raw_data: raise click.ClickException('No jobs found')
+        raw_data = run_query(funcs = [max_func, count_func])
 
         jobs = list(map(lambda d: d[0], raw_data))
         counts = list(map(lambda d: d[2], raw_data))
