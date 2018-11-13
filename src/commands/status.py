@@ -54,7 +54,7 @@ def add_commands(appliance):
     def get_tool_status(*a): get_status(*a)
 
     @cli_utils.with__node__group
-    def get_status(configs, _a, _o, nodes, **a):
+    def get_status(configs, _a, opts, nodes, **a):
         session = Session()
 
         paths = list(map(lambda c: c.path, configs))
@@ -87,12 +87,16 @@ def add_commands(appliance):
             if not data: raise click.ClickException('No jobs found')
             return data
 
-        max_func = sqlalchemy.func.max(Job.created_date)
-        count_func = sqlalchemy.func.count()
-        raw_data = run_query(funcs = [max_func, count_func])
+        jobs = []
+        counts = []
 
-        jobs = list(map(lambda d: d[0], raw_data))
-        counts = list(map(lambda d: d[2], raw_data))
+        if not opts['history'].value:
+            max_func = sqlalchemy.func.max(Job.created_date)
+            count_func = sqlalchemy.func.count()
+            raw_data = run_query(funcs = [max_func, count_func])
+            jobs += list(map(lambda d: d[0], raw_data))
+            counts += list(map(lambda d: d[2], raw_data))
+
         headers, rows = shared_job_data_table(jobs)
         headers = headers + ['No. Runs']
         for i, count in enumerate(counts):
