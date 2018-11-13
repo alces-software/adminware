@@ -90,7 +90,8 @@ def add_commands(appliance):
         jobs = []
         counts = []
 
-        if not opts['history'].value:
+        if opts['history'].value: jobs += run_query()
+        else:
             max_func = sqlalchemy.func.max(Job.created_date)
             count_func = sqlalchemy.func.count()
             raw_data = run_query(funcs = [max_func, count_func])
