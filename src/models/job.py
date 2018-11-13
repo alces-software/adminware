@@ -57,7 +57,12 @@ available. Please see documentation for possible causes
 
     def __lt__(self, other):
         if self.node == other.node:
-            return self.config().name() < other.config().name()
+            tool1 = self.config().name()
+            tool2 = other.config().name()
+            if tool1 == tool2:
+                # Intentionally sort reverse chronologically
+                return self.created_date > other.created_date
+            else: return tool1 < tool2
         else:
             return self.node < other.node
 
