@@ -104,8 +104,8 @@ def add_commands(appliance):
             for i, count in enumerate(counts):
                 rows[i] = rows[i] + [count]
 
-        # sort by first column
-        rows.sort(key=lambda x:x[0])
+        # Sort by the first two columns
+        rows.sort(key=lambda r:'{} {}'.format(r[0], r[1]))
         display_table(headers, rows)
 
     def shared_job_data_table(data):
