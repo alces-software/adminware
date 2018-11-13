@@ -138,6 +138,7 @@ You are about to run: {}\nOver nodes: {}\n
                 return False
             if reply == 'more':
                 for config in configs:
-                    click.echo("\n{}\n{}\n{}".format(config.name(),
-                                                     config.help(),
-                                                     config.command()))
+                    click.echo("\nTool: {}".format(config.name()) + \
+                               "\nHelp: {}".format(config.help()) + \
+                               "\nCommand: {}".format(config.command()))
+                click.echo()
