@@ -46,7 +46,7 @@ def add_commands(appliance):
     def get_tool_status(*a): get_status(*a)
 
     @cli_utils.with__node__group
-    def get_status(configs, _a, _o, nodes):
+    def get_status(configs, _a, _o, nodes, **a):
         session = Session()
 
         paths = list(map(lambda c: c.path, configs))
