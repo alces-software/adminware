@@ -13,6 +13,10 @@ import groups
 import sqlalchemy
 
 def add_commands(appliance):
+    @appliance.group(help='FIX ME')
+    def status():
+        pass
+
     status_cmd = {
         'help': 'FIX ME',
         'options': cli_utils.hash__node__group
@@ -23,10 +27,6 @@ def add_commands(appliance):
         'invoke_without_command': True,
         'options': cli_utils.hash__node__group,
     }
-
-    @appliance.group(help='FIX ME')
-    def status():
-        pass
 
     @Config.commands(status, command = status_cmd, group = status_grp)
     @cli_utils.with__node__group
