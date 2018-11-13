@@ -86,8 +86,9 @@ def add_commands(appliance):
         count_func = sqlalchemy.func.count()
         raw_data = job_query(funcs = [max_func, count_func]).all()
 
+        if not raw_data: raise click.ClickException('No jobs found')
+
         job_data = list(map(lambda d: [d[0], d[2]], raw_data))
-        if not job_data: raise click.ClickException('No jobs found')
         job_objects = [i for i, j in job_data]
         headers, rows = shared_job_data_table(job_objects)
         headers = headers + ['No. Runs']
