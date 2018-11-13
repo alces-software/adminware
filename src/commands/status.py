@@ -88,22 +88,28 @@ def add_commands(appliance):
             return data
 
         jobs = []
-        counts = []
-
-        if opts['history'].value: jobs += run_query()
-        else:
-            max_func = sqlalchemy.func.max(Job.created_date)
-            count_func = sqlalchemy.func.count()
-            raw_data = run_query(funcs = [max_func, count_func])
-            jobs += list(map(lambda d: d[0], raw_data))
-            counts += list(map(lambda d: d[2], raw_data))
-
         headers = ['Node',
                    'Tool',
                    'Job ID',
                    'Exit Code',
                    'Arguments',
                    'Date']
+
+        if opts['history'].value: jobs += run_query()
+        else:
+            # Query the db (including the job count)
+            max_func = sqlalchemy.func.max(Job.created_date)
+            count_func = sqlalchemy.func.count()
+            raw_data = run_query(funcs = [max_func, count_func])
+
+            # Store the counts on the job objects
+            for (job, _, count) in raw_data:
+                job.count = count
+                jobs.append(job)
+
+            # Add the count terminal table column
+            headers.append('No. Runs')
+
         rows = []
         for job in jobs:
             arguments = None if not job.batch.arguments else job.batch.arguments
@@ -113,12 +119,8 @@ def add_commands(appliance):
                    job.exit_code,
                    arguments,
                    job.created_date]
+            if isinstance(job.count, int): row.append(job.count)
             rows += [row]
-
-        if counts:
-            headers = headers + ['No. Runs']
-            for i, count in enumerate(counts):
-                rows[i] = rows[i] + [count]
 
         # Sort by the first two columns
         rows.sort(key=lambda r:'{} {}'.format(r[0], r[1]))

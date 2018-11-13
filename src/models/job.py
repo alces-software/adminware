@@ -33,6 +33,11 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+    # The count is not automatically set as the it needs to preform an
+    # aggregate query. However the result of the query is stored on the Job
+    # object for readability purposes
+    count = None
+
     __connection = None
     __result = None
 
