@@ -88,11 +88,11 @@ def add_commands(appliance):
 
         if not raw_data: raise click.ClickException('No jobs found')
 
-        job_data = list(map(lambda d: [d[0], d[2]], raw_data))
-        job_objects = [i for i, j in job_data]
-        headers, rows = shared_job_data_table(job_objects)
+        jobs = list(map(lambda d: d[0], raw_data))
+        counts = list(map(lambda d: d[2], raw_data))
+        headers, rows = shared_job_data_table(jobs)
         headers = headers + ['No. Runs']
-        for i, (job, count) in enumerate(job_data):
+        for i, count in enumerate(counts):
             rows[i] = rows[i] + [count]
         # sort by first column
         rows.sort(key=lambda x:x[0])
