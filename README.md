@@ -25,7 +25,7 @@ run - command group used for running tools - works in parallel across nodes.
       session with the node when ran
     - Optionally, arguments for the shell command can be provided.
 
-view - inspect execution history, statuses, groups, and tools.
+view - inspect groups and tools.
  - view group [GROUP]
     - Lists all the nodes in group GROUP
     - If no group is given, a list of all groups can be found in the command's
@@ -46,6 +46,7 @@ status - retrieve the past job results
    - All the past results are retrieved by the `--history` flag. Without this
      flag only the most recent job is returned for each node/tool combination.
    - The special `--job` input will retrieve a single job by id
+
 # Error Codes
 
 The exit code for the remote command is saved within the database. The meaning
