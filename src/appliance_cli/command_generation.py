@@ -150,7 +150,7 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
         callback_args = [new_commands, argument_values, new_options]
 
         if config.get('pass_context'):
-            callback(*callback_args, ctx=ctx)
+            callback(ctx, *callback_args)
         else:
             callback(*callback_args)
 

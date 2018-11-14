@@ -7,6 +7,7 @@ from database import Session
 from models.job import Job
 from models.batch import Batch
 from models.config import Config
+import command_creator
 
 import asyncio
 import concurrent
@@ -41,12 +42,14 @@ def add_commands(appliance):
         'help': (lambda names: "Run tools in {}".format(' '.join(names))),
         'invoke_without_command': True,
         'options': node_group_options,
-        'pass_context': True
     }
 
-    @Config.commands(run, command = runner_cmd, group = runner_group)
+    @command_creator.tool_commands(run,
+                                   command = runner_cmd,
+                                   group = runner_group)
     @cli_utils.with__node__group
-    def runner(configs, argv, _, nodes):
+    @cli_utils.ignore_parent_commands
+    def runner(_ctx, configs, argv, _, nodes):
         if not argv: argv = [None]
         if len(configs) > 1:
             for config in configs:

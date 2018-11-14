@@ -1,11 +1,11 @@
 
 import cli_utils
 import groups as groups_util
+import command_creator
 
 from appliance_cli.text import display_table
 from models.batch import Batch
 from models.job import Job
-from models.config import Config
 
 import click
 import os.path
@@ -24,8 +24,8 @@ def add_commands(appliance):
         pass
 
     group_command = { 'help': 'View the nodes in this group' }
-    @groups_util.group_commands(group, command = group_command)
-    def get_group_info(callstack, _a, _o):
+    @command_creator.group_commands(group, command = group_command)
+    def get_group_info(_ctx, callstack, _a, _o):
         group_name = callstack[0]
         click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
 
@@ -52,8 +52,8 @@ def add_commands(appliance):
 
     tool_cmd = { 'help': "See tool's details" }
     tool_grp = { 'help': 'List details for further tools' }
-    @Config.commands(tool, command = tool_cmd, group = tool_grp)
-    def get_tool_info(configs, _a, _o):
+    @command_creator.tool_commands(tool, command = tool_cmd, group = tool_grp)
+    def get_tool_info(_ctx, configs, _a, _o):
         config = configs[0]
         table_data = [
             ['Name', config.name()],
@@ -96,8 +96,10 @@ def add_commands(appliance):
 
     tool_status_cmd = { 'help': 'List the status across the nodes' }
     tool_status_grp = { 'help': 'See the status of further tools' }
-    @Config.commands(tool_status, command = tool_status_cmd, group = tool_status_grp)
-    def tool_status_runner(configs, _a, _o):
+    @command_creator.tool_commands(tool_status,
+                                   command = tool_status_cmd,
+                                   group = tool_status_grp)
+    def tool_status_runner(_ctx, configs, _a, _o):
         config = configs[0]
         session = Session()
         # Returns the most recent job for each node and the number of times the tool's been ran
@@ -141,8 +143,10 @@ def add_commands(appliance):
 
     tool_history_cmd = { 'help': 'List the history across the nodes' }
     tool_history_grp = { 'help': 'See the history of further tools' }
-    @Config.commands(tool_history, command = tool_history_cmd, group = tool_history_grp)
-    def tool_history_runner(configs, _a, _o):
+    @command_creator.tool_commands(tool_history,
+                                   command = tool_history_cmd,
+                                   group = tool_history_grp)
+    def tool_history_runner(_ctx, configs, _a, _o):
         config = configs[0]
         session = Session()
         job_data = session.query(Job)\

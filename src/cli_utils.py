@@ -6,9 +6,9 @@ from collections import OrderedDict
 import re
 
 def with__node__group(cmd_func):
-    def __with__node__group(config, argv, options, *a):
+    def __with__node__group(ctx, config, argv, options, *a):
         nodes = nodes_in__node__group(options)
-        cmd_func(config, argv, options, *a, nodes)
+        cmd_func(ctx, config, argv, options, *a, nodes)
     return __with__node__group
 
 def nodes_in__node__group(options):
@@ -23,3 +23,9 @@ def nodes_in__node__group(options):
 def __remove_duplicates(target_list):
     # gone for the slightly more intensive method that preserves order for pretty output
     return OrderedDict((x, True) for x in target_list).keys()
+
+def ignore_parent_commands(func):
+    def __wrapper(ctx, *args, **kwargs):
+        if not ctx.invoked_subcommand:
+            func(ctx, *args, **kwargs)
+    return __wrapper
