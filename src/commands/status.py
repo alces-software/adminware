@@ -14,16 +14,18 @@ import sqlalchemy
 cmd_name = 'status'
 
 def add_commands(appliance):
-    shared_options = {
-        **cli_utils.hash__node__group,
-        '--history': {
-            'help': 'Return all the past results',
-            'is_flag': True
-        },
-        ('--job', '-j'): {
-            'help': 'Retrieve the result for the specified job',
-            'metavar': 'JOB_ID',
-            'type': int
+    options = {
+        'options': {
+            **cli_utils.hash__node__group,
+            '--history': {
+                'help': 'Return all the past results',
+                'is_flag': True
+            },
+            ('--job', '-j'): {
+                'help': 'Retrieve the result for the specified job',
+                'metavar': 'JOB_ID',
+                'type': int
+            }
         }
     }
 
@@ -32,9 +34,7 @@ def add_commands(appliance):
     root_hash = {
         cmd_name: {
             **short_help,
-            'options': {
-                **shared_options,
-            },
+            **options,
             'invoke_without_command': True,
             'pass_context': True,
             'commands': {}
@@ -48,13 +48,13 @@ def add_commands(appliance):
 
     status_cmd = {
         **short_help,
-        'options': shared_options
+        **options
     }
 
     status_grp = {
         **short_help,
+        **options,
         'invoke_without_command': True,
-        'options': shared_options
     }
 
     @command_creator.tools(click_cmd, command = status_cmd, group = status_grp)
