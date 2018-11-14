@@ -31,14 +31,6 @@ No tools found in '{}'
         generate_commands(root_command, config_hash, callback)
     return __tool_commands
 
-def __all_configs():
-    glob_path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
-    return list(map(lambda p: Config.cache(p), glob(glob_path, recursive=True)))
-
-def __copy_values(source, target, args):
-   for k, v in source.items():
-       target[k] = (v(args) if callable(v) else v)
-
 def group_commands(root_command, **kwargs):
     kwargs['command']['pass_context'] = True
 
@@ -79,6 +71,10 @@ def __hashify_all(group = {}, command = {}, subcommand_key = ''):
 
     return combined_hash[subcommand_key]
 
+def __all_configs():
+    glob_path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
+    return list(map(lambda p: Config.cache(p), glob(glob_path, recursive=True)))
+
 # Generates a similar hash to Config hasify func - for node groups
 #   {
 #       groupX: **<node>,
@@ -90,3 +86,7 @@ def __hashify_all_groups(command = {}):
          group_hash = combined_hash.setdefault(group, {})
          __copy_values(command, group_hash, group)
      return combined_hash
+
+def __copy_values(source, target, args):
+   for k, v in source.items():
+       target[k] = (v(args) if callable(v) else v)
