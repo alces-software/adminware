@@ -31,7 +31,14 @@ def add_commands(appliance):
     root_hash = {
         cmd_name: {
             'help': 'FIX MY TOP LEVEL HELP',
-            'options': shared_options,
+            'options': {
+                **shared_options,
+                ('--job', '-j'): {
+                    'help': 'Retrieve the result for the specified job',
+                    'metavar': 'JOB_ID',
+                    'type': int
+                }
+            },
             'invoke_without_command': True,
             'commands': {}
         }
