@@ -19,6 +19,11 @@ def add_commands(appliance):
         '--history': {
             'help': 'Return all the past results',
             'is_flag': True
+        },
+        ('--job', '-j'): {
+            'help': 'Retrieve the result for the specified job',
+            'metavar': 'JOB_ID',
+            'type': int
         }
     }
 
@@ -29,11 +34,6 @@ def add_commands(appliance):
             **short_help,
             'options': {
                 **shared_options,
-                ('--job', '-j'): {
-                    'help': 'Retrieve the result for the specified job',
-                    'metavar': 'JOB_ID',
-                    'type': int
-                }
             },
             'invoke_without_command': True,
             'pass_context': True,
@@ -41,8 +41,27 @@ def add_commands(appliance):
         }
     }
 
+    def root_status(c, _, *a): run_status(c, [], *a)
+
+    generate_commands(appliance, root_hash, root_status)
+    click_cmd = appliance.commands[cmd_name]
+
+    status_cmd = {
+        **short_help,
+        'options': shared_options
+    }
+
+    status_grp = {
+        **short_help,
+        'invoke_without_command': True,
+        'options': shared_options
+    }
+
+    @command_creator.tools(click_cmd, command = status_cmd, group = status_grp)
+    def __run_status(*a): run_status(*a)
+
     @cli_utils.ignore_parent_commands
-    def root_status(ctx, _, argv, opts):
+    def run_status(ctx, _, argv, opts):
         job_id = opts['job'].value
         if isinstance(job_id, int): view_job(job_id)
         else: get_status(ctx, [], argv, opts)
@@ -61,24 +80,6 @@ def add_commands(appliance):
             ['STDERR', job.stderr]
         ]
         display_table([], table_data)
-
-    generate_commands(appliance, root_hash, root_status)
-    click_cmd = appliance.commands[cmd_name]
-
-    status_cmd = {
-        **short_help,
-        'options': shared_options
-    }
-
-    status_grp = {
-        **short_help,
-        'invoke_without_command': True,
-        'options': shared_options
-    }
-
-    @command_creator.tools(click_cmd, command = status_cmd, group = status_grp)
-    @cli_utils.ignore_parent_commands
-    def get_tool_status(*a): get_status(*a)
 
     @cli_utils.with__node__group
     def get_status(_c, configs, _a, opts, nodes):
