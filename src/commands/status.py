@@ -18,7 +18,9 @@ cmd_name = 'status'
 
 def add_commands(appliance):
     def root_status(_c, argv, opts):
-        get_status([], argv, opts)
+        if isinstance(opts['job'].value, int):
+            pass
+        else: get_status([], argv, opts)
 
     shared_options = {
         **cli_utils.hash__node__group,
