@@ -1,7 +1,7 @@
 
 import cli_utils
 import groups as groups_util
-import command_dict_creator
+import command_creator
 
 from appliance_cli.text import display_table
 from models.batch import Batch
@@ -24,7 +24,7 @@ def add_commands(appliance):
         pass
 
     group_command = { 'help': 'View the nodes in this group' }
-    @command_dict_creator.group_commands(group, command = group_command)
+    @command_creator.group_commands(group, command = group_command)
     def get_group_info(callstack, _a, _o):
         group_name = callstack[0]
         click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
@@ -52,7 +52,7 @@ def add_commands(appliance):
 
     tool_cmd = { 'help': "See tool's details" }
     tool_grp = { 'help': 'List details for further tools' }
-    @command_dict_creator.tool_commands(tool, command = tool_cmd, group = tool_grp)
+    @command_creator.tool_commands(tool, command = tool_cmd, group = tool_grp)
     def get_tool_info(_ctx, configs, _a, _o):
         config = configs[0]
         table_data = [
@@ -96,9 +96,9 @@ def add_commands(appliance):
 
     tool_status_cmd = { 'help': 'List the status across the nodes' }
     tool_status_grp = { 'help': 'See the status of further tools' }
-    @command_dict_creator.tool_commands(tool_status,
-                                        command = tool_status_cmd,
-                                        group = tool_status_grp)
+    @command_creator.tool_commands(tool_status,
+                                   command = tool_status_cmd,
+                                   group = tool_status_grp)
     def tool_status_runner(_ctx, configs, _a, _o):
         config = configs[0]
         session = Session()
@@ -143,9 +143,9 @@ def add_commands(appliance):
 
     tool_history_cmd = { 'help': 'List the history across the nodes' }
     tool_history_grp = { 'help': 'See the history of further tools' }
-    @command_dict_creator.tool_commands(tool_history,
-                                        command = tool_history_cmd,
-                                        group = tool_history_grp)
+    @command_creator.tool_commands(tool_history,
+                                   command = tool_history_cmd,
+                                   group = tool_history_grp)
     def tool_history_runner(_ctx, configs, _a, _o):
         config = configs[0]
         session = Session()
