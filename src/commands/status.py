@@ -1,42 +1,19 @@
 
-from appliance_cli.text import display_table
 import click
+from appliance_cli.command_generation import generate_commands
+import command_creator
+from appliance_cli.text import display_table
+
 import cli_utils
 
 from database import Session
 from models.batch import Batch
 from models.job import Job
-from models.config import Config
-
-import groups
-
 import sqlalchemy
-
-from appliance_cli.command_generation import generate_commands
 
 cmd_name = 'status'
 
 def add_commands(appliance):
-    def root_status(_c, argv, opts):
-        job_id = opts['job'].value
-        if isinstance(job_id, int): view_job(job_id)
-        else: get_status([], argv, opts)
-
-    def view_job(job_id):
-        job = Session().query(Job).get(job_id)
-        if job == None: raise click.ClickException('No job found')
-        table_data = [
-            ['Date', job.created_date],
-            ['Job ID', job.id],
-            ['Node', job.node],
-            ['Exit Code', job.exit_code],
-            ['Tool', job.batch.__name__()],
-            ['Arguments', job.batch.arguments],
-            ['STDOUT', job.stdout],
-            ['STDERR', job.stderr]
-        ]
-        display_table([], table_data)
-
     shared_options = {
         **cli_utils.hash__node__group,
         '--history': {
@@ -59,9 +36,32 @@ def add_commands(appliance):
                 }
             },
             'invoke_without_command': True,
+            'pass_context': True,
             'commands': {}
         }
     }
+
+    @cli_utils.ignore_parent_commands
+    def root_status(ctx, _, argv, opts):
+        job_id = opts['job'].value
+        if isinstance(job_id, int): view_job(job_id)
+        else: get_status(ctx, [], argv, opts)
+
+    def view_job(job_id):
+        job = Session().query(Job).get(job_id)
+        if job == None: raise click.ClickException('No job found')
+        table_data = [
+            ['Date', job.created_date],
+            ['Job ID', job.id],
+            ['Node', job.node],
+            ['Exit Code', job.exit_code],
+            ['Tool', job.batch.__name__()],
+            ['Arguments', job.batch.arguments],
+            ['STDOUT', job.stdout],
+            ['STDERR', job.stderr]
+        ]
+        display_table([], table_data)
+
     generate_commands(appliance, root_hash, root_status)
     click_cmd = appliance.commands[cmd_name]
 
@@ -76,11 +76,12 @@ def add_commands(appliance):
         'options': shared_options
     }
 
-    @Config.commands(click_cmd, command = status_cmd, group = status_grp)
+    @command_creator.tools(click_cmd, command = status_cmd, group = status_grp)
+    @cli_utils.ignore_parent_commands
     def get_tool_status(*a): get_status(*a)
 
     @cli_utils.with__node__group
-    def get_status(configs, _a, opts, nodes, **a):
+    def get_status(_c, configs, _a, opts, nodes):
         session = Session()
 
         paths = list(map(lambda c: c.path, configs))
