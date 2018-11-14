@@ -51,10 +51,6 @@ available. Please see documentation for possible causes
         self.node = kwargs['node']
         self.batch = kwargs['batch']
 
-    def __eq__(self, other):
-        if isinstance(self.id, None): return False
-        return (self.id == other.id)
-
     def __lt__(self, other):
         if self.node == other.node:
             tool1 = self.config().name()
