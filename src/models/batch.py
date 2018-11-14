@@ -12,7 +12,6 @@ class Batch(Base):
 
     id = Column(Integer, primary_key=True)
     config = Column(String)
-    arguments = Column(String)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
 
@@ -39,7 +38,6 @@ class Batch(Base):
 
     def __init__(self, **kwargs):
         self.config = kwargs['config']
-        self.arguments = kwargs.setdefault('arguments')
         self.__init_or_load()
 
     @orm.reconstructor

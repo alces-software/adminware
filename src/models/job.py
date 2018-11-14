@@ -186,7 +186,6 @@ available. Please see documentation for possible causes
                 else:
                     kwargs.update({ 'hide': 'both' })
                 cmd = batch.command()
-                if batch.arguments: cmd = cmd + ' ' + quote(batch.arguments)
                 return self.connection().run(cmd, **kwargs)
         self.__result = __run_command()
 
