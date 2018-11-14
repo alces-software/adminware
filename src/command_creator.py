@@ -7,6 +7,8 @@ import config
 from models.config import Config
 from appliance_cli.command_generation import generate_commands
 
+from functools import lru_cache
+
 def tools(root_command, **kwargs):
     class ConfigCallback():
         def __init__(self, callback_func):
@@ -72,8 +74,11 @@ def __hashify_all(group = {}, command = {}, subcommand_key = ''):
     return combined_hash[subcommand_key]
 
 def __all_configs():
-    glob_path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
-    return list(map(lambda p: Config.cache(p), glob(glob_path, recursive=True)))
+    @lru_cache()
+    def glob_paths():
+        path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
+        return glob(path, recursive=True)
+    return list(map(lambda p: Config.cache(p), glob_paths()))
 
 # Generates a similar hash to Config hasify func - for node groups
 #   {
