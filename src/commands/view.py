@@ -35,7 +35,7 @@ def add_commands(appliance):
 
     tool_cmd = { 'help': "See tool's details" }
     tool_grp = { 'help': 'List details for further tools' }
-    @command_creator.tool_commands(tool, command = tool_cmd, group = tool_grp)
+    @command_creator.tools(tool, command = tool_cmd, group = tool_grp)
     def get_tool_info(_ctx, configs, _a, _o):
         config = configs[0]
         table_data = [

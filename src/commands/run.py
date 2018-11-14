@@ -31,9 +31,7 @@ def add_commands(appliance):
         'options': cli_utils.hash__node__group
     }
 
-    @command_creator.tool_commands(run,
-                                   command = runner_cmd,
-                                   group = runner_group)
+    @command_creator.tools(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, argv, _, nodes):

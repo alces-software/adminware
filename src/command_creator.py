@@ -7,7 +7,7 @@ import config
 from models.config import Config
 from appliance_cli.command_generation import generate_commands
 
-def tool_commands(root_command, **kwargs):
+def tools(root_command, **kwargs):
     class ConfigCallback():
         def __init__(self, callback_func):
             self.callback = callback_func
@@ -25,11 +25,11 @@ No tools found in '{}'
     kwargs['group']['pass_context'] = True
     kwargs['command']['pass_context'] = True
 
-    def __tool_commands(config_callback):
+    def __tools(config_callback):
         config_hash = __hashify_all(subcommand_key = 'commands', **kwargs)
         callback = ConfigCallback(config_callback).run
         generate_commands(root_command, config_hash, callback)
-    return __tool_commands
+    return __tools
 
 def group_commands(root_command, **kwargs):
     kwargs['command']['pass_context'] = True
