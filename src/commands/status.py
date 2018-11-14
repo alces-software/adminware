@@ -20,7 +20,7 @@ def add_commands(appliance):
     def root_status(_c, *a):
         get_status([], *a)
 
-    options = {
+    shared_options = {
         **cli_utils.hash__node__group,
         '--history': {
             'help': 'Return all the past results',
@@ -31,7 +31,7 @@ def add_commands(appliance):
     root_hash = {
         cmd_name: {
             'help': 'FIX MY TOP LEVEL HELP',
-            'options': options,
+            'options': shared_options,
             'invoke_without_command': True,
             'commands': {}
         }
@@ -41,13 +41,13 @@ def add_commands(appliance):
 
     status_cmd = {
         'help': 'FIX ME',
-        'options': options
+        'options': shared_options
     }
 
     status_grp = {
         'help': 'FIX ME',
         'invoke_without_command': True,
-        'options': options
+        'options': shared_options
     }
 
     @Config.commands(click_cmd, command = status_cmd, group = status_grp)
