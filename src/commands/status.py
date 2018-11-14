@@ -18,9 +18,24 @@ cmd_name = 'status'
 
 def add_commands(appliance):
     def root_status(_c, argv, opts):
-        if isinstance(opts['job'].value, int):
-            pass
+        job_id = opts['job'].value
+        if isinstance(job_id, int): view_job(job_id)
         else: get_status([], argv, opts)
+
+    def view_job(job_id):
+        job = Session().query(Job).get(job_id)
+        if job == None: raise click.ClickException('No job found')
+        table_data = [
+            ['Date', job.created_date],
+            ['Job ID', job.id],
+            ['Node', job.node],
+            ['Exit Code', job.exit_code],
+            ['Tool', job.batch.__name__()],
+            ['Arguments', job.batch.arguments],
+            ['STDOUT', job.stdout],
+            ['STDERR', job.stderr]
+        ]
+        display_table([], table_data)
 
     shared_options = {
         **cli_utils.hash__node__group,
