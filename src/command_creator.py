@@ -40,6 +40,8 @@ def __copy_values(source, target, args):
        target[k] = (v(args) if callable(v) else v)
 
 def group_commands(root_command, **kwargs):
+    kwargs['command']['pass_context'] = True
+
     def __group_commands(callback):
         groups_hash = __hashify_all_groups(**kwargs)
         generate_commands(root_command, groups_hash, callback)
