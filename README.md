@@ -37,24 +37,15 @@ view - inspect execution history, statuses, groups, and tools.
     - If a tool consisting of other tools is given, in the command's help display
       it lists the sub-tools of that tool.
     - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
- - view result JOB-ID
-    - Shows the result (exit code, stdout, stderr) of an instance of a single
-      tool running on a single node.
- - view node-status NODE
-    - Shows the last execution of each tool on NODE.
-    - Includes the date, exit code, job ID, arguments used and the total number
-      of times ran.
- - view tool-status TOOL
-    - Shows the last execution of TOOL on each node TOOL has been run on.
-    - Includes the date, exit code, job ID, arguments used and the total number
-      of times ran.
- - view node-history NODE
-    - Shows all past executions of all tools on the given node.
-    - Displays the tool, the job ID, exit code, arguments and date.
- - view tool-history TOOL
-    - Shows all past executions of the given tool across all nodes.
-    - Displays the tool, the job ID, exit code, arguments and date.
 
+status - retrieve the past job results
+ - status [TOOL...]
+   - By default it returns the last run of each tool on all the nodes
+   - The nodes can be filtered using `--node` and `--group`
+   - The TOOL input will filter by tool name/group
+   - All the past results are retrieved by the `--history` flag. Without this
+     flag only the most recent job is returned for each node/tool combination.
+   - The special `--job` input will retrieve a single job by id
 # Error Codes
 
 The exit code for the remote command is saved within the database. The meaning
