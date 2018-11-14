@@ -28,6 +28,4 @@ def ignore_parent_commands(func):
     def __wrapper(ctx, *args, **kwargs):
         if not ctx.invoked_subcommand:
             func(ctx, *args, **kwargs)
-        else:
-            pass
     return __wrapper
