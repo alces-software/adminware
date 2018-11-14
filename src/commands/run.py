@@ -48,6 +48,7 @@ def add_commands(appliance):
                                    command = runner_cmd,
                                    group = runner_group)
     @cli_utils.with__node__group
+    @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, argv, _, nodes):
         if not argv: argv = [None]
         if len(configs) > 1:

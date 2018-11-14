@@ -23,3 +23,11 @@ def nodes_in__node__group(options):
 def __remove_duplicates(target_list):
     # gone for the slightly more intensive method that preserves order for pretty output
     return OrderedDict((x, True) for x in target_list).keys()
+
+def ignore_parent_commands(func):
+    def __wrapper(ctx, *args, **kwargs):
+        if not ctx.invoked_subcommand:
+            func(ctx, *args, **kwargs)
+        else:
+            pass
+    return __wrapper

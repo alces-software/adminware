@@ -13,15 +13,14 @@ def tool_commands(root_command, **kwargs):
             self.callback = callback_func
 
         def run(self, ctx, callstack, *a):
-            if not ctx.invoked_subcommand:
-                parts = [config.TOOL_DIR, *callstack, '**/config.yaml']
-                paths = glob(os.path.join(*parts), recursive = True)
-                if not paths:
-                    raise click.ClickException("""
+            parts = [config.TOOL_DIR, *callstack, '**/config.yaml']
+            paths = glob(os.path.join(*parts), recursive = True)
+            if not paths:
+                raise click.ClickException("""
 No tools found in '{}'
 """.format('/'.join(callstack)).strip())
-                configs = list(map(lambda x: Config(x), paths))
-                self.callback(ctx, configs, *a)
+            configs = list(map(lambda x: Config(x), paths))
+            self.callback(ctx, configs, *a)
 
     kwargs['group']['pass_context'] = True
     kwargs['command']['pass_context'] = True
