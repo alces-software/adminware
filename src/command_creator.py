@@ -2,6 +2,8 @@
 import os.path
 from glob import glob
 
+import click
+
 import groups as groups_util
 import config
 from models.config import Config
@@ -15,13 +17,11 @@ def tools(root_command, **kwargs):
             self.callback = callback_func
 
         def run(self, ctx, callstack, *a):
-            parts = [config.TOOL_DIR, *callstack, '**/config.yaml']
-            paths = glob(os.path.join(*parts), recursive = True)
-            if not paths:
+            configs = glob_configs(callstack)
+            if not configs:
                 raise click.ClickException("""
 No tools found in '{}'
 """.format('/'.join(callstack)).strip())
-            configs = list(map(lambda x: Config(x), paths))
             self.callback(ctx, configs, *a)
 
     kwargs['group']['pass_context'] = True
@@ -68,17 +68,18 @@ def __hashify_all(group = {}, command = {}, subcommand_key = ''):
         return cur_hash
 
     combined_hash = {}
-    for config in __all_configs():
+    for config in glob_configs():
         __copy_values(command, build_group_hashes(), config)
 
     return combined_hash[subcommand_key]
 
-def __all_configs():
-    @lru_cache()
-    def glob_paths():
-        path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
-        return glob(path, recursive=True)
-    return list(map(lambda p: Config.cache(p), glob_paths()))
+@lru_cache()
+def __glob_paths(*parts):
+    path = os.path.join(config.TOOL_DIR, *parts, '**/config.yaml')
+    return glob(path, recursive=True)
+
+def glob_configs(parts = []):
+    return list(map(lambda p: Config.cache(p), __glob_paths(*parts)))
 
 # Generates a similar hash to Config hasify func - for node groups
 #   {
