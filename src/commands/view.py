@@ -24,7 +24,7 @@ def add_commands(appliance):
         pass
 
     group_command = { 'help': 'View the nodes in this group' }
-    @command_creator.group_commands(group, command = group_command)
+    @command_creator.groups(group, command = group_command)
     def get_group_info(_ctx, callstack, _a, _o):
         group_name = callstack[0]
         click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))

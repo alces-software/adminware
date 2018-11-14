@@ -2,7 +2,7 @@
 import os.path
 from glob import glob
 
-import groups
+import groups as groups_util
 import config
 from models.config import Config
 from appliance_cli.command_generation import generate_commands
@@ -31,13 +31,13 @@ No tools found in '{}'
         generate_commands(root_command, config_hash, callback)
     return __tools
 
-def group_commands(root_command, **kwargs):
+def groups(root_command, **kwargs):
     kwargs['command']['pass_context'] = True
 
-    def __group_commands(callback):
+    def __groups(callback):
         groups_hash = __hashify_all_groups(**kwargs)
         generate_commands(root_command, groups_hash, callback)
-    return __group_commands
+    return __groups
 
 # The commands are hashed into the following structure
 # NOTES: `command` and `group` both supports callable objects as a means
@@ -82,7 +82,7 @@ def __all_configs():
 #   }
 def __hashify_all_groups(command = {}):
      combined_hash = {}
-     for group in groups.list_groups():
+     for group in groups_util.list_groups():
          group_hash = combined_hash.setdefault(group, {})
          __copy_values(command, group_hash, group)
      return combined_hash
