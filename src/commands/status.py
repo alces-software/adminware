@@ -45,9 +45,11 @@ def add_commands(appliance):
         }
     }
 
+    short_help = { 'help': 'View past job results' }
+
     root_hash = {
         cmd_name: {
-            'help': 'FIX MY TOP LEVEL HELP',
+            **short_help,
             'options': {
                 **shared_options,
                 ('--job', '-j'): {
@@ -64,12 +66,12 @@ def add_commands(appliance):
     click_cmd = appliance.commands[cmd_name]
 
     status_cmd = {
-        'help': 'FIX ME',
+        **short_help,
         'options': shared_options
     }
 
     status_grp = {
-        'help': 'FIX ME',
+        **short_help,
         'invoke_without_command': True,
         'options': shared_options
     }
