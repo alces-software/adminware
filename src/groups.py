@@ -3,6 +3,7 @@
 import config
 
 import click
+import os.path
 from plumbum import local, ProcessExecutionError
 from tempfile import NamedTemporaryFile
 from re import search
@@ -35,9 +36,8 @@ Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
     return nodes
 
 def __nodeattr(file_path = config.GENDERS, arguments=[], split_char="\n"):
+    if not os.path.isfile(file_path): return []
     try:
         return local['nodeattr']['-f', file_path](arguments).split(split_char)
-    # in the case that the genders file can't be accessed, we're acting as if
-    # there's an empty genders file in that location
     except ProcessExecutionError as e:
-        return []
+        raise ClickException(e.stderr.rstrip())
