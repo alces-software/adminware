@@ -17,12 +17,12 @@ def nodes_in(group_name):
     return nodes
 
 def compress_nodes(node_list):
-    return create_tmp_genders_file(node_list, arguments = ['--compress'])
+    return _create_tmp_genders_file(node_list, arguments = ['--compress'])
 
 def expand_nodes(node_list):
-    return create_tmp_genders_file(node_list, arguments = ['--expand'])
+    return _create_tmp_genders_file(node_list, arguments = ['--expand'])
 
-def create_tmp_genders_file(node_list,  arguments = []):
+def _create_tmp_genders_file(node_list,  arguments = []):
     # intercept to generate a more useful error message
     #   before invalid nodenames are caught generically in __nodeattr
     for node in node_list:
