@@ -8,6 +8,7 @@ from models.job import Job
 from models.batch import Batch
 from models.config import Config
 import command_creator
+import groups as groups_util
 
 import asyncio
 import concurrent
@@ -126,7 +127,7 @@ def add_commands(appliance):
 
     def get_confirmation(configs, nodes):
         tool_names = ', '.join([c.name() for c in configs])
-        node_names = ', '.join(nodes)
+        node_names = groups_util.compress_nodes(nodes)[0].replace(',', ', ')
         click.echo("""
 You are about to run: {}
 Over nodes: {}
