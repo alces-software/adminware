@@ -16,9 +16,6 @@ class Batch(Base):
     def __init_or_load__(self):
         self.config_model = Config(self.config)
 
-    def __name__(self):
-        return self.config_model.__name__()
-
     def name(self):
         return self.config_model.name()
 

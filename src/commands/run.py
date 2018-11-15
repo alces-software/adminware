@@ -52,7 +52,7 @@ def add_commands(appliance):
                 if config.interactive():
                     raise ClickException('''
 '{}' is an interactive tool and cannot be ran as part of a group
-'''.format(config.__name__()).strip())
+'''.format(config.name()).strip())
         for config in configs:
             batch = Batch(config = config.path)
             batch.build_jobs(*nodes)
@@ -113,7 +113,7 @@ def add_commands(appliance):
             for batch in batches:
                 session.add(batch)
                 session.commit()
-                run_print('Executing: {}'.format(batch.__name__()))
+                run_print('Executing: {}'.format(batch.name()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 loop.run_until_complete(start_tasks(tasks))
         except concurrent.futures.CancelledError: pass

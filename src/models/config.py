@@ -23,12 +23,10 @@ class Config():
     @lru_cache()
     def cache(*a, **kw): return Config(*a, **kw)
 
-    def __name__(self):
-        return basename(dirname(self.path))
-
     def name(self):
         prefix = (self.additional_namespace() + ' ' if self.additional_namespace() else '')
-        return "{}{}".format(prefix, self.__name__())
+        last_name = basename(dirname(self.path))
+        return "{}{}".format(prefix, last_name)
 
     def names(self):
         return self.name().split()
@@ -41,13 +39,13 @@ class Config():
         return namespace_path.translate(namespace_path.maketrans('/', ' ')).strip()
 
     def command(self):
-        default = 'MISSING: Command for {}'.format(self.__name__())
+        default = 'MISSING: Command for {}'.format(self.name())
         self.data.setdefault('command', default)
         if not self.data['command']: self.data['command'] = default
         return self.data['command']
 
     def help(self):
-        default = 'MISSING: Help for {}'.format(self.__name__())
+        default = 'MISSING: Help for {}'.format(self.name())
         self.data.setdefault('help', default)
         if not self.data['help']: self.data['help'] = default
         return self.data['help']

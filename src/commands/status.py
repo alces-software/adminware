@@ -74,7 +74,7 @@ def add_commands(appliance):
             ['Job ID', job.id],
             ['Node', job.node],
             ['Exit Code', job.exit_code],
-            ['Tool', job.batch.__name__()],
+            ['Tool', job.batch.name()],
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
         ]
