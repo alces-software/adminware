@@ -17,6 +17,9 @@ def nodes_in(group_name):
 def compress_nodes(node_list):
     return _create_tmp_genders_file(node_list, arguments = ['--compress'])[0]
 
+def compress_nodes(node_list):
+    return create_tmp_genders_file(node_list, arguments = ['--compress'])
+
 def expand_nodes(node_list):
     return _create_tmp_genders_file(node_list, arguments = ['--expand'])
 
@@ -33,7 +36,10 @@ May only contain alphanumeric characters and the following symbols: , [ ]
     tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
     with open(tmp_file.name, 'w') as f:
         f.write('\n'.join(node_list))
-    return _nodeattr(file_path = tmp_file.name, arguments = arguments)
+    nodes = _nodeattr(file_path = tmp_file.name, arguments = arguments)
+    # above split adds trailing empty string in array so
+    del nodes[-1]
+    return nodes
 
 def _nodeattr(file_path = config.GENDERS, arguments=[], split_char="\n"):
     if not os.path.isfile(file_path): return []
