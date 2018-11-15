@@ -27,15 +27,15 @@ class Base(object):
 
     def __init__(self, **kwargs):
         declare.api._declarative_constructor(self, **kwargs)
-        self.__init_or_load__()
+        self._init_or_load()
 
     @orm.reconstructor
     def __reconstruct(self):
-        self.__load__()
-        self.__init_or_load__()
+        self._load()
+        self._init_or_load()
 
-    def __load__(self): pass
-    def __init_or_load__(self): pass
+    def _load(self): pass
+    def _init_or_load(self): pass
 
 Base = declare.declarative_base(cls=Base, constructor = None)
 

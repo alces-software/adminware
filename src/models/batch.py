@@ -13,7 +13,7 @@ class Batch(Base):
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
 
-    def __init_or_load__(self):
+    def _init_or_load(self):
         self.config_model = Config(self.config)
 
     def name(self):
