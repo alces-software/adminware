@@ -8,7 +8,7 @@ from plumbum import local, ProcessExecutionError
 from tempfile import NamedTemporaryFile
 from re import search
 
-def list_groups():
+def list_():
     groups = __nodeattr(arguments=['-l'])
     return groups
 
