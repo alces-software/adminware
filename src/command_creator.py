@@ -70,10 +70,8 @@ def __hashify_all(group = {}, command = {}, subcommand_key = ''):
     for config in __all_configs():
         __copy_values(command, build_group_hashes(), config)
 
-    try:
-        return combined_hash[subcommand_key]
-    except KeyError:
-        return {}
+    combined_hash.setdefault(subcommand_key, {})
+    return combined_hash[subcommand_key]
 
 def __all_configs():
     glob_path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
