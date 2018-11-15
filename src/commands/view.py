@@ -24,27 +24,10 @@ def add_commands(appliance):
         pass
 
     group_command = { 'help': 'View the nodes in this group' }
-    @command_creator.group_commands(group, command = group_command)
+    @command_creator.groups(group, command = group_command)
     def get_group_info(_ctx, callstack, _a, _o):
         group_name = callstack[0]
         click.echo_via_pager("\n".join(groups_util.nodes_in(group_name)))
-
-    @view.command(help='View the result from a previous job')
-    @click.argument('job_id', type=int)
-    def result(job_id):
-        job = Session().query(Job).get(job_id)
-        if job == None: raise click.ClickException('No job found')
-        table_data = [
-            ['Date', job.created_date],
-            ['Job ID', job.id],
-            ['Node', job.node],
-            ['Exit Code', job.exit_code],
-            ['Tool', job.batch.__name__()],
-            ['Arguments', job.batch.arguments],
-            ['STDOUT', job.stdout],
-            ['STDERR', job.stderr]
-        ]
-        display_table([], table_data)
 
     @view.group(help="See more details about your tools")
     def tool():
@@ -52,7 +35,7 @@ def add_commands(appliance):
 
     tool_cmd = { 'help': "See tool's details" }
     tool_grp = { 'help': 'List details for further tools' }
-    @command_creator.tool_commands(tool, command = tool_cmd, group = tool_grp)
+    @command_creator.tools(tool, command = tool_cmd, group = tool_grp)
     def get_tool_info(_ctx, configs, _a, _o):
         config = configs[0]
         table_data = [
@@ -64,115 +47,3 @@ def add_commands(appliance):
         ]
         display_table([], table_data)
 
-    @view.command(name='node-status', help='View the execution history of a single node')
-    @click.argument('node', type=str)
-    # note: this works on tool location, not tool name.
-    # Any tools that are moved will be considered distinct.
-    def node_status(node):
-        session = Session()
-        # Returns the most recent job for each tool and number of times it's been ran
-        # Refs: https://docs.sqlalchemy.org/en/latest/core/functions.html#sqlalchemy.sql.functions.count
-        #       https://www.w3schools.com/sql/func_sqlserver_count.asp
-        # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        job_data = session.query(Job, func.count(Batch.config))\
-                           .filter(Job.node == node)\
-                           .join("batch")\
-                           .order_by(Job.created_date.desc())\
-                           .group_by(Batch.config)\
-                           .all()
-        if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
-        job_objects = [i for i, j in job_data]
-        headers, rows = shared_job_data_table(job_objects)
-        headers = ['Tool'] + headers + ['No. Runs']
-        for i, (job, count) in enumerate(job_data):
-            rows[i] = [job.batch.__name__()] + rows[i] + [count]
-        # sort by first column
-        rows.sort(key=lambda x:x[0])
-        display_table(headers, rows)
-
-    @view.group(name='tool-status', help='View the execution history of a single tool')
-    def tool_status():
-        pass
-
-    tool_status_cmd = { 'help': 'List the status across the nodes' }
-    tool_status_grp = { 'help': 'See the status of further tools' }
-    @command_creator.tool_commands(tool_status,
-                                   command = tool_status_cmd,
-                                   group = tool_status_grp)
-    def tool_status_runner(_ctx, configs, _a, _o):
-        config = configs[0]
-        session = Session()
-        # Returns the most recent job for each node and the number of times the tool's been ran
-        # => [(latest_job1, count1), (lastest_job2, count2), ...]
-        job_data = session.query(Job, func.count(Job.node))\
-                           .select_from(Batch)\
-                           .filter(Batch.config == config.path)\
-                           .join(Job.batch)\
-                           .order_by(Job.created_date.desc())\
-                           .group_by(Job.node)\
-                           .all()
-        if not job_data: raise click.ClickException('No jobs found for tool {}'.format(config.__name__()))
-        job_objects = [i for i, j in job_data]
-        headers, rows = shared_job_data_table(job_objects)
-        headers = ['Node'] + headers + ['No. Runs']
-        for i, (job, count) in enumerate(job_data):
-            rows[i] = [job.node] + rows[i] + [count]
-        # sort by first column
-        rows.sort(key=lambda x:x[0])
-        display_table(headers, rows)
-
-    @view.command(name='node-history', help='View all executions on a single node')
-    @click.argument('node', type=str)
-    def node_history(node):
-        session = Session()
-        job_data = session.query(Job)\
-                          .filter(Job.node == node)\
-                          .join("batch")\
-                          .all()
-        if not job_data: raise click.ClickException('No jobs found for node {}'.format(node))
-        headers, rows = shared_job_data_table(job_data)
-        headers = ['Tool'] + headers
-        for i, job in enumerate(job_data):
-            rows[i] = [job.batch.__name__()] + rows[i]
-        rows.sort(key=lambda x:x[1], reverse=True)
-        display_table(headers, rows)
-
-    @view.group(name='tool-history', help='View all executions of a single tool')
-    def tool_history():
-        pass
-
-    tool_history_cmd = { 'help': 'List the history across the nodes' }
-    tool_history_grp = { 'help': 'See the history of further tools' }
-    @command_creator.tool_commands(tool_history,
-                                   command = tool_history_cmd,
-                                   group = tool_history_grp)
-    def tool_history_runner(_ctx, configs, _a, _o):
-        config = configs[0]
-        session = Session()
-        job_data = session.query(Job)\
-                          .select_from(Batch)\
-                          .filter(Batch.config == config.path)\
-                          .join(Job.batch)\
-                          .all()
-        if not job_data: raise click.ClickException('No jobs found for tool {}'.format(config.__name__()))
-        headers, rows = shared_job_data_table(job_data)
-        headers = ['Node'] + headers
-        for i, job in enumerate(job_data):
-            rows[i] = [job.node] + rows[i]
-        rows.sort(key=lambda x:x[1], reverse=True)
-        display_table(headers, rows)
-
-    def shared_job_data_table(data):
-        headers = ['Job ID',
-                   'Exit Code',
-                   'Arguments',
-                   'Date']
-        rows = []
-        for job in data:
-            arguments = None if not job.batch.arguments else job.batch.arguments
-            row = [job.id,
-                   job.exit_code,
-                   arguments,
-                   job.created_date]
-            rows += [row]
-        return (headers, rows)

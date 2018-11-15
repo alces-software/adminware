@@ -15,6 +15,9 @@ from database import Base
 import asyncio
 import concurrent
 
+import functools
+
+@functools.total_ordering
 class Job(Base):
     __tablename__ = 'jobs'
 
@@ -33,12 +36,31 @@ available. Please see documentation for possible causes
     batch_id = Column(Integer, ForeignKey('batches.id'))
     batch = relationship("Batch", backref="jobs")
 
+    # The count is not automatically set as the it needs to preform an
+    # aggregate query. However the result of the query is stored on the Job
+    # object for readability purposes
+    count = None
+
     __connection = None
     __result = None
+
+    def config(self):
+        return self.batch.config_model
 
     def __init__(self, **kwargs):
         self.node = kwargs['node']
         self.batch = kwargs['batch']
+
+    def __lt__(self, other):
+        if self.node == other.node:
+            tool1 = self.config().name()
+            tool2 = other.config().name()
+            if tool1 == tool2:
+                # Intentionally sort reverse chronologically
+                return self.created_date > other.created_date
+            else: return tool1 < tool2
+        else:
+            return self.node < other.node
 
     def connection(self):
         if not self.__connection: self.__connection = Connection(self.node)

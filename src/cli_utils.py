@@ -5,6 +5,19 @@ from collections import OrderedDict
 
 import re
 
+hash__node__group = {
+    ('--node', '-n'): {
+        'help': 'Specify a node, repeat the flag for multiple',
+        'multiple': True,
+        'metavar': 'NODE'
+    },
+    ('--group', '-g'): {
+        'help': 'Specify a group, repeat the flag for multiple',
+        'multiple': True,
+        'metavar': 'GROUP'
+    }
+}
+
 def with__node__group(cmd_func):
     def __with__node__group(ctx, config, argv, options, *a):
         nodes = nodes_in__node__group(options)
