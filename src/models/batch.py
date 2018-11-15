@@ -2,11 +2,11 @@
 import datetime
 from sqlalchemy import Column, String, Integer, DateTime
 
-from database import Base, InitOrLoadModel
+from database import Base
 from models.config import Config
 from models.job import Job
 
-class Batch(InitOrLoadModel, Base):
+class Batch(Base):
 
 
     config = Column(String)

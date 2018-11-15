@@ -21,16 +21,21 @@ class Base(object):
     def __tablename__(cls):
         return inflect.plural(cls.__name__.lower())
 
+
     id = Column(Integer, primary_key=True)
 
-Base = declare.declarative_base(cls=Base)
 
-class InitOrLoadModel(object):
-    def __init__(self, *a, **kwargs):
-        super().__init__(*a, **kwargs)
+    def __init__(self, **kwargs):
+        declare.api._declarative_constructor(self, **kwargs)
         self.__init_or_load__()
 
     @orm.reconstructor
-    def __load__(self): self.__init_or_load__()
+    def __reconstruct(self):
+        self.__load__()
+        self.__init_or_load__()
+
+    def __load__(self): pass
     def __init_or_load__(self): pass
+
+Base = declare.declarative_base(cls=Base, constructor = None)
 
