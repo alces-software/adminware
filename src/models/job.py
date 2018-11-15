@@ -184,5 +184,3 @@ available. Please see documentation for possible causes
                 return self.connection().run(cmd, **kwargs)
         self.__result = __run_command()
 
-from models.batch import Batch
-
