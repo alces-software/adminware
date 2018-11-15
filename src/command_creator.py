@@ -1,5 +1,6 @@
 
 import os.path
+import click
 from glob import glob
 
 import groups
@@ -69,7 +70,10 @@ def __hashify_all(group = {}, command = {}, subcommand_key = ''):
     for config in __all_configs():
         __copy_values(command, build_group_hashes(), config)
 
-    return combined_hash[subcommand_key]
+    try:
+        return combined_hash[subcommand_key]
+    except KeyError:
+        return {}
 
 def __all_configs():
     glob_path = os.path.join(config.TOOL_DIR, '**/*/config.yaml')
