@@ -36,11 +36,11 @@ class Batch(Base):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__init_or_load()
+        self.__init_or_load__()
 
     @orm.reconstructor
-    def __load(self):
-        self.__init_or_load()
+    def __load__(self):
+        self.__init_or_load__()
 
-    def __init_or_load(self):
+    def __init_or_load__(self):
         self.config_model = Config(self.config)
