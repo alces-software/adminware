@@ -5,9 +5,8 @@ import glob
 
 import click
 
-import datetime
 from shlex import quote
-from sqlalchemy import Column, String, Integer, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -22,7 +21,6 @@ class Job(Base):
 
 
     node = Column(String)
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
     stdout = Column(String)
     stderr = Column(String, default = '''
 Internal Error: Abandoned Job Error

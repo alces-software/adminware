@@ -2,7 +2,8 @@
 import config
 import inflect as inflect_module
 
-from sqlalchemy import create_engine, Column, Integer, orm
+import datetime
+from sqlalchemy import create_engine, Column, Integer, orm, DateTime
 import sqlalchemy.ext.declarative as declare
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
@@ -23,6 +24,7 @@ class Base(object):
 
 
     id = Column(Integer, primary_key=True)
+    created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
 
     def __init__(self, **kwargs):
