@@ -43,8 +43,8 @@ def add_commands(appliance):
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, argv, options, nodes):
-        if not options['yes'].value:
-            if not get_confirmation(configs, nodes): return
+        if not (options['yes'].value or get_confirmation(configs, nodes)):
+            return
         if not argv: argv = [None]
         if len(configs) > 1:
             for config in configs:
