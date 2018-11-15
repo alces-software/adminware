@@ -34,9 +34,7 @@ Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
     del nodes[-1]
     return nodes
 
-def __nodeattr(file_path='{}genders'.format(config.LEADER),
-               arguments=[],
-               split_char="\n"):
+def __nodeattr(file_path = config.GENDERS, arguments=[], split_char="\n"):
     try:
         return local['nodeattr']['-f', file_path](arguments).split(split_char)
     # in the case that the genders file can't be accessed, we're acting as if
