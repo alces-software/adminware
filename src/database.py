@@ -2,7 +2,7 @@
 import config
 import inflect as inflect_module
 
-from sqlalchemy import create_engine, Column, Integer
+from sqlalchemy import create_engine, Column, Integer, orm
 import sqlalchemy.ext.declarative as declare
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import scoped_session
@@ -24,3 +24,13 @@ class Base(object):
     id = Column(Integer, primary_key=True)
 
 Base = declare.declarative_base(cls=Base)
+
+class InitOrLoadModel(object):
+    def __init__(self, *a, **kwargs):
+        super().__init__(*a, **kwargs)
+        self.__init_or_load__()
+
+    @orm.reconstructor
+    def __load__(self): self.__init_or_load__()
+    def __init_or_load__(self): pass
+
