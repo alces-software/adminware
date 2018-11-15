@@ -7,10 +7,8 @@ from models.config import Config
 from models.job import Job
 
 class Batch(Base):
-    __tablename__ = 'batches'
 
 
-    id = Column(Integer, primary_key=True)
     config = Column(String)
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
@@ -37,7 +35,7 @@ class Batch(Base):
         return list(map(lambda n: Job(node = n, batch = self), nodes))
 
     def __init__(self, **kwargs):
-        self.config = kwargs['config']
+        super().__init__(**kwargs)
         self.__init_or_load()
 
     @orm.reconstructor
