@@ -125,10 +125,12 @@ def add_commands(appliance):
             run_print('Done')
 
     def get_confirmation(configs, nodes):
+        tool_names = ', '.join([c.name() for c in configs])
+        node_names = ', '.join(nodes)
         click.echo("""
-You are about to run: {}\nOver nodes: {}\n
-""".strip().format(', '.join([c.name() for c in configs]),
-                   ', '.join(nodes)))
+You are about to run: {}
+Over nodes: {}
+""".strip().format(tool_names, node_names))
         question = "Please enter [y/n] or 'more' for more info"
         while "answer is invalid":
             reply = click.prompt(question)
