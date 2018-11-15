@@ -135,16 +135,12 @@ You are about to run:
 {}
 Over nodes: {}
 """.strip().format(tool_names, node_names))
-        question = "Please enter [y/n] or 'more' for more info"
+        question = "Please enter [y/n] to confirm"
+        affirmatives = ['y', 'ye', 'yes']
+        negatives = ['n', 'no']
         while "answer is invalid":
-            reply = click.prompt(question)
-            if reply == 'y':
+            reply = click.prompt(question).lower()
+            if reply in affirmatives:
                 return True
-            if reply == 'n':
+            if reply in negatives:
                 return False
-            if reply == 'more':
-                for config in configs:
-                    click.echo("\nTool: {}".format(config.name()) + \
-                               "\nHelp: {}".format(config.help()) + \
-                               "\nCommand: {}".format(config.command()))
-                click.echo()
