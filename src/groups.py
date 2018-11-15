@@ -2,19 +2,19 @@
 # all dependancy on nodeattr is to be located in this file
 import config
 
+import click
 from plumbum import local, ProcessExecutionError
 from tempfile import NamedTemporaryFile
-from click import ClickException
 from re import search
 
 def list_groups():
     groups = __nodeattr(arguments=['-l'])
-    groups.remove('')
+    while '' in groups: groups.remove('')
     return groups
 
 def nodes_in(group_name):
     nodes = __nodeattr(arguments=['-n', group_name])
-    nodes.remove('')
+    while '' in nodes: nodes.remove('')
     return nodes
 
 def expand_nodes(node_list):
@@ -22,7 +22,7 @@ def expand_nodes(node_list):
     #   before invalid nodenames are caught generically in __nodeattr
     for node in node_list:
         if search(r'[^A-z0-9,\[\]]', node):
-            raise ClickException("""
+            raise click.ClickException("""
 Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
 """.strip().format(node))
     # build and parse a genders file of the nodes
@@ -34,8 +34,12 @@ Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
     del nodes[-1]
     return nodes
 
-def __nodeattr(file_path='{}genders'.format(config.LEADER), arguments=[], split_char="\n"):
+def __nodeattr(file_path='{}genders'.format(config.LEADER),
+               arguments=[],
+               split_char="\n"):
     try:
         return local['nodeattr']['-f', file_path](arguments).split(split_char)
+    # in the case that the genders file can't be accessed, we're acting as if
+    # there's an empty genders file in that location
     except ProcessExecutionError as e:
-        raise ClickException(e.stderr.rstrip())
+        return []
