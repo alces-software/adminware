@@ -22,7 +22,8 @@ def expand_nodes(node_list):
     for node in node_list:
         if search(r'[^A-z0-9,\[\]]', node):
             raise click.ClickException("""
-Invalid nodename {} - may only contain alphanumerics, ',', '[' and ']'
+Invalid nodename {}
+May only contain alphanumeric characters and the following symbols: , [ ]
 """.strip().format(node))
     # build and parse a genders file of the nodes
     tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
