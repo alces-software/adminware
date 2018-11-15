@@ -4,6 +4,7 @@ from sqlalchemy import Column, String
 from database import Base
 from models.config import Config
 from models.job import Job
+from models.shell_variable import ShellVariable
 
 class Batch(Base):
 
@@ -31,3 +32,9 @@ class Batch(Base):
 
     def build_jobs(self, *nodes):
         return list(map(lambda n: Job(node = n, batch = self), nodes))
+
+    def build_shell_variables(self, **variables):
+        def build(key):
+            args = { 'key': key, 'value': variables[key], 'batch': self }
+            return ShellVariable(**args)
+        return list(map(lambda k: build(k), variables.keys()))
