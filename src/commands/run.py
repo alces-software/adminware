@@ -136,12 +136,8 @@ You are about to run:
 Over node(s):
   {}
 """.strip().format(tool_names, node_names))
-        question = "Please enter [y/n] to confirm"
+        question = "Please enter [y/N] to confirm"
         affirmatives = ['y', 'ye', 'yes']
-        negatives = ['n', 'no']
-        while "answer is invalid":
-            reply = click.prompt(question).lower()
-            if reply in affirmatives:
-                return True
-            if reply in negatives:
-                return False
+        reply = click.prompt(question).lower()
+        if reply in affirmatives:
+            return True
