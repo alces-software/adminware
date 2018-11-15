@@ -9,12 +9,10 @@ from tempfile import NamedTemporaryFile
 from re import search
 
 def list_():
-    groups = __nodeattr(arguments=['-l'])
-    return groups
+    return _nodeattr(arguments=['-l'])
 
 def nodes_in(group_name):
-    nodes = __nodeattr(arguments=['-n', group_name])
-    return nodes
+    return _nodeattr(arguments=['-n', group_name])
 
 def compress_nodes(node_list):
     return _create_tmp_genders_file(node_list, arguments = ['--compress'])
@@ -24,21 +22,20 @@ def expand_nodes(node_list):
 
 def _create_tmp_genders_file(node_list,  arguments = []):
     # intercept to generate a more useful error message
-    #   before invalid nodenames are caught generically in __nodeattr
+    #   before invalid nodenames are caught generically in _nodeattr
     for node in node_list:
         if search(r'[^A-z0-9,\[\]]', node):
             raise click.ClickException("""
-Invalid nodename {}
+Invalid node '{}'
 May only contain alphanumeric characters and the following symbols: , [ ]
 """.strip().format(node))
     # build and parse a genders file of the nodes
     tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
     with open(tmp_file.name, 'w') as f:
         f.write('\n'.join(node_list))
-    nodes = __nodeattr(file_path=tmp_file.name, arguments=arguments)
-    return nodes
+    return _nodeattr(file_path = tmp_file.name, arguments = arguments)
 
-def __nodeattr(file_path = config.GENDERS, arguments=[], split_char="\n"):
+def _nodeattr(file_path = config.GENDERS, arguments=[], split_char="\n"):
     if not os.path.isfile(file_path): return []
     try:
         # 'split' below leaves empty string on the end of the array
