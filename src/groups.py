@@ -17,9 +17,6 @@ def nodes_in(group_name):
 def compress_nodes(node_list):
     return _create_tmp_genders_file(node_list, arguments = ['--compress'])[0]
 
-def compress_nodes(node_list):
-    return create_tmp_genders_file(node_list, arguments = ['--compress'])
-
 def expand_nodes(node_list):
     return _create_tmp_genders_file(node_list, arguments = ['--expand'])
 
