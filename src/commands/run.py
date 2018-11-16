@@ -130,12 +130,13 @@ def add_commands(appliance):
     def get_confirmation(configs, nodes):
         tool_names = '\n'.join([c.name() for c in configs])
         node_names = groups_util.compress_nodes(nodes)[0].replace('],', ']\n  ')
+        node_tag = 'node' if len(nodes) == 1 else 'nodes'
         click.echo("""
 You are about to run:
   {}
-Over node(s):
+Over {}:
   {}
-""".strip().format(tool_names, node_names))
+""".strip().format(tool_names, node_tag, node_names))
         question = "Please enter [y/N] to confirm"
         affirmatives = ['y', 'ye', 'yes']
         reply = click.prompt(question).lower()
