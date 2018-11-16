@@ -74,14 +74,28 @@ def add_commands(appliance):
                 return batch
             return list(map(lambda c: build(c), configs))
 
+        def get_confirmation(batches, nodes):
+            tool_names = '\n  '.join([b.config_model.name() for b in batches])
+            node_names = groups_util.compress_nodes(nodes).replace('],', ']\n  ')
+            node_tag = 'node' if len(nodes) == 1 else 'nodes'
+            click.echo("""
+You are about to run:
+  {}
+Over {}:
+  {}
+""".strip().format(tool_names, node_tag, node_names))
+            question = "Please enter [y/n] to confirm"
+            affirmatives = ['y', 'ye', 'yes']
+            reply = click.prompt(question).lower()
+            if reply in affirmatives: return True
+
         error_if_no_nodes()
         error_if_invalid_interactive_batch()
 
         batches = build_batches()
 
-        if not (options['yes'].value or get_confirmation(batches, nodes)):
-            return
-        execute_batches(batches, quiet = is_quiet())
+        if (options['yes'].value or get_confirmation(batches, nodes)):
+            execute_batches(batches, quiet = is_quiet())
 
     def execute_batches(batches, quiet = False):
         def run_print(string):
@@ -136,19 +150,3 @@ def add_commands(appliance):
             session.commit()
             Session.remove()
             run_print('Done')
-
-    def get_confirmation(batches, nodes):
-        tool_names = '\n  '.join([b.config_model.name() for b in batches])
-        node_names = groups_util.compress_nodes(nodes).replace('],', ']\n  ')
-        node_tag = 'node' if len(nodes) == 1 else 'nodes'
-        click.echo("""
-You are about to run:
-  {}
-Over {}:
-  {}
-""".strip().format(tool_names, node_tag, node_names))
-        question = "Please enter [y/n] to confirm"
-        affirmatives = ['y', 'ye', 'yes']
-        reply = click.prompt(question).lower()
-        if reply in affirmatives:
-            return True
