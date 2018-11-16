@@ -45,7 +45,7 @@ def add_commands(appliance):
     @command_creator.tools(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
-    def runner(_ctx, configs, _a, options, nodes):
+    def runner(_ctx, configs, argv, options, nodes):
         def error_if_invalid_interactive_batch():
             matches = [c for c in configs if c.interactive()]
             if matches and (len(configs) > 1 or len(nodes) > 1):
@@ -67,12 +67,20 @@ def add_commands(appliance):
             if first.interactive() or first.report: return True
             else: return False
 
+        def build_batches():
+            def build(config):
+                batch = Batch(config = config.path)
+                batch.build_jobs(*nodes)
+                return batch
+            return list(map(lambda c: build(c), configs))
+
         error_if_no_nodes()
-        batches = list(map(lambda c: Batch(config = c.path), configs))
         error_if_invalid_interactive_batch()
+
+        batches = build_batches()
+
         if not (options['yes'].value or get_confirmation(batches, nodes)):
             return
-        for batch in batches: batch.build_jobs(*nodes)
         execute_batches(batches, quiet = is_quiet())
 
     def execute_batches(batches, quiet = False):
