@@ -46,9 +46,9 @@ def add_commands(appliance):
     @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, _a, options, nodes):
         def error_if_invalid_interactive_batch():
-            matches = [b for b in batches if b.is_interactive()]
-            if matches and (len(batches) > 1 or len(nodes) > 1):
-                if len(batches) > 1:
+            matches = [c for c in configs if c.interactive()]
+            if matches and (len(configs) > 1 or len(nodes) > 1):
+                if len(configs) > 1:
                     suffix = 'cannot be ran as part of a tool group'
                 else:
                     suffix = 'can only be ran on a single node'
@@ -61,9 +61,9 @@ def add_commands(appliance):
                 raise ClickException('Please give either --node or --group')
 
         def is_quiet():
-            if len(batches) > 1: return False
-            first = batches[0]
-            if first.is_interactive or first.report: return True
+            if len(configs) > 1: return False
+            first = configs[0]
+            if first.interactive() or first.report: return True
             else: return False
 
         error_if_no_nodes()
