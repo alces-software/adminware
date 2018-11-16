@@ -1,6 +1,7 @@
 
 import config
 import inflect as inflect_module
+import re
 
 import datetime
 from sqlalchemy import create_engine, Column, Integer, orm, DateTime
@@ -20,7 +21,12 @@ inflect = inflect_module.engine()
 class Base(object):
     @declare.declared_attr
     def __tablename__(cls):
-        return inflect.plural(cls.__name__.lower())
+        # Convert the name from CamalCase to snake_case
+        # The conversion is based on:
+        # https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', cls.__name__)
+        snake_name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+        return inflect.plural(snake_name)
 
 
     id = Column(Integer, primary_key=True)
