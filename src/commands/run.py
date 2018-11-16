@@ -8,6 +8,7 @@ from models.job import Job
 from models.batch import Batch
 from models.config import Config
 import command_creator
+import groups as groups_util
 
 import asyncio
 import concurrent
@@ -20,21 +21,33 @@ def add_commands(appliance):
     def run():
         pass
 
+    run_options = {
+        'options': {
+            **cli_utils.hash__node__group,
+            ('--yes', '-y'): {
+                'help': 'Skip the confirmation prompt',
+                'is_flag': True
+            }
+        }
+    }
+
     runner_cmd = {
         'help': Config.help,
         'arguments': [['remote_arguments']], # [[]]: Optional Arg
-        'options': cli_utils.hash__node__group
+        **run_options
     }
     runner_group = {
         'help': (lambda names: "Run tools in {}".format(' '.join(names))),
         'invoke_without_command': True,
-        'options': cli_utils.hash__node__group
+        **run_options
     }
 
     @command_creator.tools(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
-    def runner(_ctx, configs, argv, _, nodes):
+    def runner(_ctx, configs, argv, options, nodes):
+        if not (options['yes'].value or get_confirmation(configs, nodes)):
+            return
         if not argv: argv = [None]
         if len(configs) > 1:
             for config in configs:
@@ -113,3 +126,19 @@ def add_commands(appliance):
             session.commit()
             Session.remove()
             run_print('Done')
+
+    def get_confirmation(configs, nodes):
+        tool_names = '\n'.join([c.name() for c in configs])
+        node_names = groups_util.compress_nodes(nodes)[0].replace('],', ']\n  ')
+        node_tag = 'node' if len(nodes) == 1 else 'nodes'
+        click.echo("""
+You are about to run:
+  {}
+Over {}:
+  {}
+""".strip().format(tool_names, node_tag, node_names))
+        question = "Please enter [y/N] to confirm"
+        affirmatives = ['y', 'ye', 'yes']
+        reply = click.prompt(question).lower()
+        if reply in affirmatives:
+            return True
