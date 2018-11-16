@@ -19,6 +19,10 @@ def add_commands(appliance):
         def exit():
             raise ExitSandboxException()
 
+        @appliance.command(help=exit_sandbox_help)
+        def quit():
+            raise ExitSandboxException()
+
         try:
             repl(
                 click.get_current_context(),
