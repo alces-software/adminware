@@ -173,7 +173,7 @@ def _form_arguments(arguments_config):
             is_required = False
             for n in arg_n: add_argument(n)
         else:
-            add_argument(arg_name)
+            add_argument(arg_n)
     return args_map
 
 

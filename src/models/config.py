@@ -50,6 +50,9 @@ class Config():
         if not self.data['help']: self.data['help'] = default
         return self.data['help']
 
+    def args(self):
+        return self.arguments or []
+
     # TODO: Deprecated, avoid usage
     def interactive_only(self):
         return self.interactive()

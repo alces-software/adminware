@@ -33,7 +33,8 @@ def add_commands(appliance):
 
     runner_cmd = {
         'help': Config.help,
-        **run_options
+        **run_options,
+        'arguments': Config.args
     }
     runner_group = {
         'help': (lambda names: "Run tools in {}".format(' '.join(names))),
