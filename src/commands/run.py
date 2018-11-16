@@ -45,21 +45,17 @@ def add_commands(appliance):
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, _a, options, nodes):
-        def error_if_interactive_in_tool_groups():
-            if len(batches) > 1:
+        def error_if_invalid_interactive_batch():
+            if len(batches) > 1 or len(nodes) > 1:
                 match = check_for_interactive()
                 if match:
+                    if len(batches) > 1:
+                        suffix = 'cannot be ran as part of a tool group'
+                    else:
+                        suffix = 'can only be ran on a single node'
                     raise ClickException('''
-'{}' is an interactive tool and cannot be ran as part of a group
-'''.format(match.name()).strip())
-
-        def error_if_multiple_interactive_jobs():
-            if len(nodes) > 1:
-                match = check_for_interactive()
-                if match:
-                    raise ClickException('''
-'{}' is an interactive tool and can only be ran on a single node
-'''.format(match.name()).strip())
+'{}' is an interactive tool and {}
+'''.strip().format(match.name(), suffix))
 
         def check_for_interactive():
             for batch in batches:
@@ -78,8 +74,7 @@ def add_commands(appliance):
 
         error_if_no_nodes()
         batches = list(map(lambda c: Batch(config = c.path), configs))
-        error_if_interactive_in_tool_groups()
-        error_if_multiple_interactive_jobs()
+        error_if_invalid_interactive_batch()
         if not (options['yes'].value or get_confirmation(batches, nodes)):
             return
         for batch in batches: batch.build_jobs(*nodes)
