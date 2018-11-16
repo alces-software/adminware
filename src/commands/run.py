@@ -33,7 +33,6 @@ def add_commands(appliance):
 
     runner_cmd = {
         'help': Config.help,
-        'arguments': [['remote_arguments']], # [[]]: Optional Arg
         **run_options
     }
     runner_group = {
@@ -45,18 +44,17 @@ def add_commands(appliance):
     @command_creator.tools(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
-    def runner(_ctx, configs, argv, options, nodes):
-        if not (options['yes'].value or get_confirmation(configs, nodes)):
+    def runner(_ctx, configs, _a, opts, nodes):
+        if not (opts['yes'].value or get_confirmation(configs, nodes)):
             return
-        if not argv: argv = [None]
         if len(configs) > 1:
             for config in configs:
                 if config.interactive():
                     raise ClickException('''
 '{}' is an interactive tool and cannot be ran as part of a group
-'''.format(config.__name__()).strip())
+'''.format(config.name()).strip())
         for config in configs:
-            batch = Batch(config = config.path, arguments = (argv[0] or ''))
+            batch = Batch(config = config.path)
             batch.build_jobs(*nodes)
             if batch.is_interactive():
                 if len(batch.jobs) == 1:
@@ -115,7 +113,7 @@ def add_commands(appliance):
             for batch in batches:
                 session.add(batch)
                 session.commit()
-                run_print('Executing: {}'.format(batch.__name__()))
+                run_print('Executing: {}'.format(batch.name()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 loop.run_until_complete(start_tasks(tasks))
         except concurrent.futures.CancelledError: pass
@@ -129,7 +127,7 @@ def add_commands(appliance):
 
     def get_confirmation(configs, nodes):
         tool_names = '\n'.join([c.name() for c in configs])
-        node_names = groups_util.compress_nodes(nodes)[0].replace('],', ']\n  ')
+        node_names = groups_util.compress_nodes(nodes).replace('],', ']\n  ')
         node_tag = 'node' if len(nodes) == 1 else 'nodes'
         click.echo("""
 You are about to run:

@@ -74,8 +74,7 @@ def add_commands(appliance):
             ['Job ID', job.id],
             ['Node', job.node],
             ['Exit Code', job.exit_code],
-            ['Tool', job.batch.__name__()],
-            ['Arguments', job.batch.arguments],
+            ['Tool', job.batch.name()],
             ['STDOUT', job.stdout],
             ['STDERR', job.stderr]
         ]
@@ -120,7 +119,6 @@ def add_commands(appliance):
                    'Tool',
                    'Job ID',
                    'Exit Code',
-                   'Arguments',
                    'Date']
 
         if opts['history'].value: jobs += run_query()
@@ -142,12 +140,10 @@ def add_commands(appliance):
 
         rows = []
         for job in jobs:
-            arguments = None if not job.batch.arguments else job.batch.arguments
             row = [job.node,
                    job.batch.config_model.name(),
                    job.id,
                    job.exit_code,
-                   arguments,
                    job.created_date]
             if isinstance(job.count, int): row.append(job.count)
             rows += [row]

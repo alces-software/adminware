@@ -89,7 +89,7 @@ def glob_configs(parts = []):
 #   }
 def __hashify_all_groups(command = {}):
      combined_hash = {}
-     for group in groups_util.list_groups():
+     for group in groups_util.list_():
          group_hash = combined_hash.setdefault(group, {})
          __copy_values(command, group_hash, group)
      return combined_hash
