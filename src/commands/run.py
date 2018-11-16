@@ -67,10 +67,18 @@ def add_commands(appliance):
             if first.interactive() or first.report: return True
             else: return False
 
+        def argument_hash(config):
+            keys = config.args()
+            arg_hash = {}
+            for index, value in enumerate(argv):
+                arg_hash[keys[index]] = value
+            return arg_hash
+
         def build_batches():
             def build(config):
                 batch = Batch(config = config.path)
                 batch.build_jobs(*nodes)
+                batch.build_shell_variables(**argument_hash(config))
                 return batch
             return list(map(lambda c: build(c), configs))
 
