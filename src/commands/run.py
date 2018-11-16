@@ -149,7 +149,7 @@ You are about to run:
 Over {}:
   {}
 """.strip().format(tool_names, node_tag, node_names))
-        question = "Please enter [y/N] to confirm"
+        question = "Please enter [y/n] to confirm"
         affirmatives = ['y', 'ye', 'yes']
         reply = click.prompt(question).lower()
         if reply in affirmatives:
