@@ -1,5 +1,6 @@
 
 import os.path
+import click
 from glob import glob
 
 import click
@@ -71,7 +72,7 @@ def __hashify_all(group = {}, command = {}, subcommand_key = ''):
     for config in glob_configs():
         __copy_values(command, build_group_hashes(), config)
 
-    return combined_hash[subcommand_key]
+    return combined_hash.setdefault(subcommand_key, {})
 
 @lru_cache()
 def __glob_paths(*parts):

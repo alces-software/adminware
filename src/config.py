@@ -20,6 +20,8 @@ LEADER = '/var/lib/adminware/'
 
 TOOL_LOCATION = 'tools'
 
+GENDERS = os.path.join(LEADER, 'genders')
+
 TOOL_DIR = os.path.join(LEADER, TOOL_LOCATION)
 
 def join_with_tool_location(namespace):
