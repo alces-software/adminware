@@ -127,7 +127,7 @@ def add_commands(appliance):
 
     def get_confirmation(configs, nodes):
         tool_names = '\n'.join([c.name() for c in configs])
-        node_names = groups_util.compress_nodes(nodes)[0].replace('],', ']\n  ')
+        node_names = groups_util.compress_nodes(nodes).replace('],', ']\n  ')
         node_tag = 'node' if len(nodes) == 1 else 'nodes'
         click.echo("""
 You are about to run:

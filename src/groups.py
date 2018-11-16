@@ -15,7 +15,7 @@ def nodes_in(group_name):
     return _nodeattr(arguments=['-n', group_name])
 
 def compress_nodes(node_list):
-    return _create_tmp_genders_file(node_list, arguments = ['--compress'])
+    return _create_tmp_genders_file(node_list, arguments = ['--compress'])[0]
 
 def expand_nodes(node_list):
     return _create_tmp_genders_file(node_list, arguments = ['--expand'])
