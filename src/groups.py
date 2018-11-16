@@ -33,10 +33,7 @@ May only contain alphanumeric characters and the following symbols: , [ ]
     tmp_file = NamedTemporaryFile(dir='/tmp/', prefix='adminware-genders')
     with open(tmp_file.name, 'w') as f:
         f.write('\n'.join(node_list))
-    nodes = _nodeattr(file_path = tmp_file.name, arguments = arguments)
-    # above split adds trailing empty string in array so
-    del nodes[-1]
-    return nodes
+    return _nodeattr(file_path = tmp_file.name, arguments = arguments)
 
 def _nodeattr(file_path = config.GENDERS, arguments=[], split_char="\n"):
     if not os.path.isfile(file_path): return []
