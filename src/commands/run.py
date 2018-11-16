@@ -70,19 +70,20 @@ def add_commands(appliance):
             if not nodes:
                 raise ClickException('Please give either --node or --group')
 
+        def is_quiet():
+            if len(batches) > 1: return False
+            first = batches[0]
+            if first.is_interactive or first.report: return True
+            else: return False
+
         error_if_no_nodes()
         batches = list(map(lambda c: Batch(config = c.path), configs))
         error_if_interactive_in_tool_groups()
         error_if_multiple_interactive_jobs()
         if not (options['yes'].value or get_confirmation(batches, nodes)):
             return
-        for batch in batches:
-            batch.build_jobs(*nodes)
-            if batch.is_interactive():
-                execute_batches([batch], quiet = True)
-            elif batch.jobs:
-                report = batch.config_model.report
-                execute_batches([batch], quiet = report)
+        for batch in batches: batch.build_jobs(*nodes)
+        execute_batches(batches, quiet = is_quiet())
 
     def execute_batches(batches, quiet = False):
         def run_print(string):
