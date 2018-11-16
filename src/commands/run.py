@@ -46,8 +46,13 @@ def add_commands(appliance):
     @cli_utils.ignore_parent_commands
     def runner(_ctx, configs, _a, options, nodes):
         def error_if_invalid_interactive_batch():
+            def first_interactive():
+                for batch in batches:
+                    if batch.is_interactive():
+                        return batch
+
             if len(batches) > 1 or len(nodes) > 1:
-                match = check_for_interactive()
+                match = first_interactive()
                 if match:
                     if len(batches) > 1:
                         suffix = 'cannot be ran as part of a tool group'
@@ -56,11 +61,6 @@ def add_commands(appliance):
                     raise ClickException('''
 '{}' is an interactive tool and {}
 '''.strip().format(match.name(), suffix))
-
-        def check_for_interactive():
-            for batch in batches:
-                if batch.is_interactive():
-                    return batch
 
         def error_if_no_nodes():
             if not nodes:
