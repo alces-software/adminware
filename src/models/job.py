@@ -68,6 +68,9 @@ available. Please see documentation for possible causes
             self.add_job_callback(lambda job: job.set_ssh_results())
             self.add_done_callback(type(self).report_results)
 
+        def finished(self):
+            return self._state == 'FINISHED'
+
         def __getattr__(self, attr):
             return getattr(self.job, attr)
 
