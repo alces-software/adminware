@@ -61,10 +61,10 @@ def add_commands(appliance):
     def _run_status(*a): run_status(*a)
 
     @cli_utils.ignore_parent_commands
-    def run_status(ctx, _, argv, opts):
+    def run_status(ctx, configs, argv, opts):
         job_id = opts['job'].value
         if isinstance(job_id, int): view_job(job_id)
-        else: get_status(ctx, [], argv, opts)
+        else: get_status(ctx, configs, argv, opts)
 
     def view_job(job_id):
         job = Session().query(Job).get(job_id)
