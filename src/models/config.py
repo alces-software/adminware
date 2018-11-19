@@ -12,11 +12,11 @@ import config
 class Config():
     def __init__(self, path):
         self.path = path
-        def __read_data():
+        def _read_data():
             with open(self.path, 'r') as stream:
                 return yaml.load(stream) or {}
         if os.path.isfile(path):
-            self.data = __read_data()
+            self.data = _read_data()
         else:
             self.data = defaultdict(lambda: 'File not found')
 
