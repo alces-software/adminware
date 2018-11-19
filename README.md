@@ -124,8 +124,9 @@ interactive: True
 # be dumped to the screen instead of the exit code.
 report: True
 
-# The following list form the arguments to the command line. They are set as bash shell
-# variables when running the command. This allows them to be used within the command
+# The following list forms the arguments for the command line. They are set as
+# bash shell variables when running the command. This allows them to be used
+# within the command
 # NOTE: this key is optional
 arguments:
   - arg1
