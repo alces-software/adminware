@@ -64,9 +64,16 @@ available. Please see documentation for possible causes
             self.thread_pool = thread_pool
             super().__init__(self.run_async())
             self.job = job
-            self.add_job_callback(lambda job: job.connection().close())
+            self.add_job_callback(type(self).close)
             self.add_job_callback(lambda job: job.set_ssh_results())
             self.add_done_callback(type(self).report_results)
+
+        def close(self):
+            try: job.connection.close()
+            except: pass
+
+        def finished(self):
+            return self._state == 'FINISHED'
 
         def __getattr__(self, attr):
             return getattr(self.job, attr)
@@ -117,8 +124,7 @@ available. Please see documentation for possible causes
 
         async def run_async(self):
             if self.check_command():
-                try: await self._run_thread(self.connection().open)
-                except concurrent.futures.CancelledError as e: raise e
+                await self._run_thread(self.connection().open)
 
                 if self.connection().is_connected:
                     await self._run_thread(self.run, self.batch)
