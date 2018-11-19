@@ -4,6 +4,8 @@ from sqlalchemy.orm import relationship, validates
 
 from database import Base
 
+import click
+
 class ShellVariable(Base):
 
 
@@ -15,5 +17,8 @@ class ShellVariable(Base):
 
     @validates('value')
     def validate_value(self, _, value):
-        assert value.isalnum()
-        return value
+        try:
+            assert value.isalnum()
+            return value
+        except AssertionError:
+            raise click.ClickException('The arguments must be alphanumeric')

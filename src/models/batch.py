@@ -42,4 +42,5 @@ class Batch(Base):
         def build(key):
             args = { 'key': key, 'value': variables[key], 'batch': self }
             return ShellVariable(**args)
+
         return list(map(lambda k: build(k), variables.keys()))
