@@ -22,7 +22,12 @@ class Batch(Base):
         return self.config_model.help()
 
     def command(self):
-        return self.config_model.command()
+        var_models = self.shell_variables
+        var_map = map(lambda v: '='.join([v.key, v.value]), var_models)
+        var_str = ' && '.join(var_map)
+        cmd = self.config_model.command()
+        if var_str: cmd = ' && '.join([var_str, cmd])
+        return cmd
 
     def command_exists(self):
         return self.config_model.command_exists()
