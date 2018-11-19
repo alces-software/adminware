@@ -129,18 +129,27 @@ Over {}:
                     if active_task.finished:
                         active_tasks.remove(active_task)
                         break
-            for task in tasks:
-                while len(active_tasks) > max_ssh:
+
+            async def add_tasks():
+                for task in tasks:
+                    while len(active_tasks) > max_ssh:
+                        remove_done_tasks()
+                        await asyncio.sleep(0.01)
+                    asyncio.ensure_future(task, loop = loop)
+                    active_tasks.append(task)
+                    run_print('Starting Job: {}'.format(task.node))
+                    await(asyncio.sleep(start_delay))
+
+            async def await_finished():
+                while len(active_tasks) > 0:
                     remove_done_tasks()
                     await asyncio.sleep(0.01)
-                asyncio.ensure_future(task, loop = loop)
-                active_tasks.append(task)
-                run_print('Starting Job: {}'.format(task.node))
-                await(asyncio.sleep(start_delay))
-            run_print('Waiting for jobs to finish...')
-            while len(active_tasks) > 0:
-                remove_done_tasks()
-                await asyncio.sleep(0.01)
+
+            try:
+                await add_tasks()
+                run_print('Waiting for jobs to finish...')
+            except concurrent.futures.CancelledError: pass
+            finally: await await_finished()
 
         session = Session()
         try:
@@ -153,7 +162,6 @@ Over {}:
                 run_print('Executing: {}'.format(batch.name()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 loop.run_until_complete(start_tasks(tasks))
-        except concurrent.futures.CancelledError: pass
         finally:
             run_print('Cleaning up...')
             pool.shutdown(wait = True)
