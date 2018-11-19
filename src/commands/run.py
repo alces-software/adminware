@@ -44,34 +44,48 @@ def add_commands(appliance):
     @command_creator.tools(run, command = runner_cmd, group = runner_group)
     @cli_utils.with__node__group
     @cli_utils.ignore_parent_commands
-    def runner(_ctx, configs, _a, opts, nodes):
-        if not (opts['yes'].value or get_confirmation(configs, nodes)):
-            return
-        if len(configs) > 1:
-            for config in configs:
-                if config.interactive():
+    def runner(_ctx, configs, _a, options, nodes):
+        def error_if_interactive_in_tool_groups():
+            if len(batches) > 1:
+                match = check_for_interactive()
+                if match:
                     raise ClickException('''
 '{}' is an interactive tool and cannot be ran as part of a group
-'''.format(config.name()).strip())
-        for config in configs:
-            batch = Batch(config = config.path)
-            batch.build_jobs(*nodes)
-            if batch.is_interactive():
-                if len(batch.jobs) == 1:
-                    execute_threaded_batches([batch], quiet = True)
-                elif batch.jobs:
+'''.format(match.name()).strip())
+
+        def error_if_multiple_interactive_jobs():
+            if len(nodes) > 1:
+                match = check_for_interactive()
+                if match:
                     raise ClickException('''
 '{}' is an interactive tool and can only be ran on a single node
-'''.format(config.name()).strip())
-                else:
-                    raise ClickException('Please specify a node with --node')
-            elif batch.jobs:
-                report = batch.config_model.report
-                execute_threaded_batches([batch], quiet = report)
-            else:
+'''.format(match.name()).strip())
+
+        def check_for_interactive():
+            for batch in batches:
+                if batch.is_interactive():
+                    return batch
+
+        def error_if_no_nodes():
+            if not nodes:
                 raise ClickException('Please give either --node or --group')
 
-    def execute_threaded_batches(batches, quiet = False):
+        def is_quiet():
+            if len(batches) > 1: return False
+            first = batches[0]
+            if first.is_interactive or first.report: return True
+            else: return False
+
+        error_if_no_nodes()
+        batches = list(map(lambda c: Batch(config = c.path), configs))
+        error_if_interactive_in_tool_groups()
+        error_if_multiple_interactive_jobs()
+        if not (options['yes'].value or get_confirmation(batches, nodes)):
+            return
+        for batch in batches: batch.build_jobs(*nodes)
+        execute_batches(batches, quiet = is_quiet())
+
+    def execute_batches(batches, quiet = False):
         def run_print(string):
             if quiet: return
             click.echo(string)
@@ -125,8 +139,8 @@ def add_commands(appliance):
             Session.remove()
             run_print('Done')
 
-    def get_confirmation(configs, nodes):
-        tool_names = '\n'.join([c.name() for c in configs])
+    def get_confirmation(batches, nodes):
+        tool_names = '\n  '.join([b.config_model.name() for b in batches])
         node_names = groups_util.compress_nodes(nodes).replace('],', ']\n  ')
         node_tag = 'node' if len(nodes) == 1 else 'nodes'
         click.echo("""
@@ -135,7 +149,7 @@ You are about to run:
 Over {}:
   {}
 """.strip().format(tool_names, node_tag, node_names))
-        question = "Please enter [y/N] to confirm"
+        question = "Please enter [y/n] to confirm"
         affirmatives = ['y', 'ye', 'yes']
         reply = click.prompt(question).lower()
         if reply in affirmatives:
