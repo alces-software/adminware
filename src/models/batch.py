@@ -1,6 +1,5 @@
 
-import datetime
-from sqlalchemy import Column, String, Integer, DateTime
+from sqlalchemy import Column, String
 
 from database import Base
 from models.config import Config
@@ -10,7 +9,6 @@ class Batch(Base):
 
 
     config = Column(String)
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
 
 
     def _init_or_load(self):
