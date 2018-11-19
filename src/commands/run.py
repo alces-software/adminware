@@ -147,6 +147,9 @@ Over {}:
             for batch in batches:
                 session.add(batch)
                 session.commit()
+                # Ensure the models are loaded from the db
+                batch.jobs
+                batch.shell_variables
                 run_print('Executing: {}'.format(batch.name()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 loop.run_until_complete(start_tasks(tasks))
