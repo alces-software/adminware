@@ -58,7 +58,7 @@ def add_commands(appliance):
     }
 
     @command_creator.tools(click_cmd, command = status_cmd, group = status_grp)
-    def __run_status(*a): run_status(*a)
+    def _run_status(*a): run_status(*a)
 
     @cli_utils.ignore_parent_commands
     def run_status(ctx, _, argv, opts):

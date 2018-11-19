@@ -37,8 +37,8 @@ available. Please see documentation for possible causes
     # object for readability purposes
     count = None
 
-    __connection = None
-    __result = None
+    _connection = None
+    _result = None
 
 
     def config(self):
@@ -56,8 +56,8 @@ available. Please see documentation for possible causes
             return self.node < other.node
 
     def connection(self):
-        if not self.__connection: self.__connection = Connection(self.node)
-        return self.__connection
+        if not self._connection: self._connection = Connection(self.node)
+        return self._connection
 
     class JobTask(asyncio.Task):
         def __init__(self, job, thread_pool = None):
@@ -107,7 +107,7 @@ available. Please see documentation for possible causes
                 args = [self.id, self.node, symbol]
                 click.echo('ID: {}, Node: {}, {}'.format(*args))
 
-        async def __run_thread(self, func, *a):
+        async def _run_thread(self, func, *a):
             def catch_errors(func, *args):
                 try: func(*args)
                 except: pass
@@ -117,11 +117,11 @@ available. Please see documentation for possible causes
 
         async def run_async(self):
             if self.check_command():
-                try: await self.__run_thread(self.connection().open)
+                try: await self._run_thread(self.connection().open)
                 except concurrent.futures.CancelledError as e: raise e
 
                 if self.connection().is_connected:
-                    await self.__run_thread(self.run, self.batch)
+                    await self._run_thread(self.run, self.batch)
                 else:
                     self.set_ssh_error()
 
@@ -140,18 +140,18 @@ available. Please see documentation for possible causes
         self.exit_code = -1
 
     def set_ssh_results(self):
-        if self.__result == None: return
+        if self._result == None: return
         if self.batch.is_interactive():
             self.stdout = 'Interactive Job: STDOUT is unavailable'
             self.stderr = 'Interactive Job: STDERR is unavailable'
             self.exit_code = -3
         else:
-            self.stdout = self.__result.stdout
-            self.stderr = self.__result.stderr
-            self.exit_code = self.__result.return_code
+            self.stdout = self._result.stdout
+            self.stderr = self._result.stderr
+            self.exit_code = self._result.return_code
 
     def run(self, batch):
-        def __with_tempdir(func):
+        def _with_tempdir(func):
             def wrapper(*args):
                 result = self.connection().run('mktemp -d', hide='both')
                 if result:
@@ -163,8 +163,8 @@ available. Please see documentation for possible causes
                 return result
             return wrapper
 
-        @__with_tempdir
-        def __run_command(temp_dir):
+        @_with_tempdir
+        def _run_command(temp_dir):
             # Copies the files across
             parts = [os.path.dirname(batch.config), '*']
             for src_path in glob.glob(os.path.join(*parts)):
@@ -180,5 +180,5 @@ available. Please see documentation for possible causes
                     kwargs.update({ 'hide': 'both' })
                 cmd = batch.command()
                 return self.connection().run(cmd, **kwargs)
-        self.__result = __run_command()
+        self._result = _run_command()
 
