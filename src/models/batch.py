@@ -1,4 +1,5 @@
 
+import re
 from sqlalchemy import Column, String
 
 from database import Base
@@ -26,6 +27,11 @@ class Batch(Base):
         var_map = map(lambda v: '='.join([v.key, v.value]), var_models)
         var_str = ' && '.join(var_map)
         cmd = self.config_model.command()
+        # replace any instances of the variable in cmd with the lowercase
+        for variable in [var_model.key for var_model in var_models]:
+            matches = re.findall(variable, cmd, re.IGNORECASE)
+            for match in matches:
+                cmd = re.sub(match, variable, cmd)
         if var_str: cmd = ' && '.join([var_str, cmd])
         return cmd
 
