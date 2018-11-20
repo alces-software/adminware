@@ -126,7 +126,9 @@ report: True
 
 # The following list forms the arguments for the command line. They are set as
 # bash shell variables when running the command. This allows them to be used
-# within the command
+# within the command.
+# Argument names are comprised of lowercase alphanumerics and must start with
+# a letter.
 # NOTE: this key is optional
 arguments:
   - arg1
