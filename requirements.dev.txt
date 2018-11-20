@@ -2,7 +2,9 @@ appdirs==1.4.3
 asn1crypto==0.24.0
 autorepr==0.3.0
 bcrypt==3.1.4
+certifi==2018.10.15
 cffi==1.11.5
+chardet==3.0.4
 click==6.7
 -e git+https://github.com/alces-software/click-repl.git@6a809b2af43054035027618f9fd37af4c31a8abc#egg=click_repl
 cryptography==2.3.1
@@ -10,6 +12,7 @@ DateTime==4.2
 decorator==4.0.11
 fabric==2.4.0
 idna==2.7
+inflect==2.1.0
 invoke==1.2.0
 ipython==5.3.0
 ipython-genutils==0.1.0
@@ -30,11 +33,12 @@ pytest==3.0.5
 pytest-mock==1.5.0
 pytz==2018.5
 PyYAML==3.13
-requests==2.12.5
+requests==2.20.1
 simplegeneric==0.8.1
 six==1.10.0
 SQLAlchemy==1.2.11
 terminaltables==3.1.0
 traitlets==4.3.2
+urllib3==1.24.1
 wcwidth==0.1.7
 zope.interface==4.5.0

@@ -1,8 +1,7 @@
 
 from database import Base, Session, engine
 
-from models import batch
-from models import job
+import models.batch
 
 Base.metadata.create_all(engine)
 

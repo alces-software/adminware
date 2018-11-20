@@ -131,7 +131,7 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
 
     # Define function to be passed as 'callback' parameter to click.Command,
     # transforming its arguments suitable to be passed to our own callback.
-    def click_callback(**params):
+    def click_callback(ctx, **params):
         argument_values = [
             params[arg_name] for arg_name in arguments.keys()
         ]
@@ -147,19 +147,33 @@ def _parse_simple_command_config(ancestor_commands, config, callback):
         new_commands = deepcopy(ancestor_commands)
         new_options = deepcopy(options)
 
-        callback(new_commands, argument_values, new_options)
+        callback_args = [new_commands, argument_values, new_options]
+
+        if config.get('pass_context'):
+            callback(ctx, *callback_args)
+        else:
+            callback(*callback_args)
 
     return {
         'params': click_params,
-        'callback': click_callback
+        'callback': click.pass_context(click_callback)
     }
 
 
 def _form_arguments(arguments_config):
     args_map = OrderedDict()
-    for arg_name in arguments_config:
-        identifier = _parameter_identifier(arg_name)
-        args_map[identifier] = click.Argument([arg_name])
+    is_required = True
+    for arg_n in arguments_config:
+        def add_argument(name):
+            identifier = _parameter_identifier(name)
+            args_map[identifier] = click.Argument([name], required = is_required)
+
+        if isinstance(arg_n, list):
+            # Sublists flag all future arguments as optional
+            is_required = False
+            for n in arg_n: add_argument(n)
+        else:
+            add_argument(arg_n)
     return args_map
 
 
@@ -191,6 +205,15 @@ def _parse_group_command_config(ancestor_commands, config, callback):
         in config['commands'].items()
     }
 
-    return {
-        'commands': commands
-    }
+    config.setdefault('invoke_without_command', False)
+
+    return_hash = { 'commands': commands }
+
+    if config['invoke_without_command']:
+        return_hash['invoke_without_command'] = True
+        return_hash = {
+            **return_hash,
+            **_parse_simple_command_config(ancestor_commands, config, callback)
+        }
+
+    return return_hash

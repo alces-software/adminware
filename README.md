@@ -8,16 +8,98 @@ cd adminware
 make setup
 ```
 
-# Adding Commands
-Commands can be added to `batch run` and `open` features. `batch` runs the 
-command over a single or group of nodes and stores results in a database.
-`open` establishes and interactive session with a single node.  This allows
-for full screen applications (e.g. `vi`, `top`, `bash`). `open` does not
-save the anything to the database.
+# Commands' Structure
+The command line interface of Adminware is laid out as follows:
 
-Commands are automatically picked up from config files stored within:
+exit - exits the CLI.
 
-`/var/lib/adminware/tools/{batch,open}/[<optional-namespace>/].../<command-name>/config.yaml`
+help - displays help for the current level's commands.
+
+run - command group used for running tools - works in parallel across nodes.
+ - run <TOOL...> NODE(S) [ARGUMENTS]
+    - Runs tool TOOL on NODE(S).
+    - If a tool marked as being interactive only (see 'Adding Tools') and you
+      attempt to run it on more than one node it will cancel and an error will
+      be thrown.
+    - Additionally a tool marked as interactive will open an interactive ssh
+      session with the node when ran
+    - Optionally, arguments for the shell command can be provided.
+
+view - inspect groups and tools.
+ - view group [GROUP]
+    - Lists all the nodes in group GROUP
+    - If no group is given, a list of all groups can be found in the command's
+      help display
+ - view tool [TOOL...]
+    - Shows info about tool TOOL
+    - Displays the tool's name, description, command, whether it must
+      be ran interactively and the contents of its working directory
+    - If a tool consisting of other tools is given, in the command's help display
+      it lists the sub-tools of that tool.
+    - If NAMESPACE(S) is not given, it lists at the highest level `tools` directory.
+
+status - retrieve the past job results
+ - status [TOOL...]
+   - By default it returns the last run of each tool on all the nodes
+   - The nodes can be filtered using `--node` and `--group`
+   - The TOOL input will filter by tool name/group
+   - All the past results are retrieved by the `--history` flag. Without this
+     flag only the most recent job is returned for each node/tool combination.
+   - The special `--job` input will retrieve a single job by id
+
+# Error Codes
+
+The exit code for the remote command is saved within the database. The meaning
+of the exit code is determined by the underlying command and will range from
+0-255.
+
+All negative exit codes indicate an internal `Adminware` error. The exit codes
+and their meanings are as follows:
+
+| Error Code | Description             |
+| ---------- | ----------------------- |
+| -1         | SSH Connection Error    |
+| -2         | General Error           |
+| -3         | Interactive Job         |
+| -4         | Abandoned Job Error     |
+
+## -1: SSH Connection Error
+An initial SSH connection could not be established with the node.
+
+NOTE: This error code will only be issued for handled errors. It is still
+possible for unhandled SSH errors to be issued a different error code.
+
+## -2: General Error
+An error has occurred that concerns the job. See the jobs `STDERR` for more
+details.
+
+## -3: Interactive Job
+The tool has been ran in an interactive shell. The `STDOUT`, `STDERR`, and
+exit code are not available. This does not mean the job failed, instead its
+status is undetermined.
+
+## -4: Abandoned Job Error
+The job has been created and queued to be ran but has since been abandoned.
+This indicates the job was never ran, but this can not been known for
+certain.
+
+Possible Causes:
+1. `Adminware` was sent an interrupt,
+2. An uncaught SSH connection error has occurred,
+3. The connection was lost to the `adminware` appliance, or
+4. An unexpected error occurred before the job was started.
+
+# Adding Tools
+Tools can be ran interactively and non-interactively; a tool will automatically
+be ran interactively if selected with a single node. Interactive mode establishes
+an interactive shell session, this allows for full screen applications
+(e.g. `vi`, `top`, `bash`). Interactive mode does not save anything to the database.
+Non-interactive mode allows for multiple tools to be ran over mutliple nodes with
+single line output. The full results are logged to the database.
+
+Tools are automatically picked up from config files stored at:
+
+`/var/lib/adminware/tools/[<optional-directories>/].../<tool-name>/config.yaml`
 
 The config.yaml files cannot have directories as their siblings, although
 there can be other files in the same directories.
@@ -28,21 +110,48 @@ The config files should follow the following format:
 # `./script.rb`.
 command: command_to_run
 
-# Full help text for command, will be picked up and displayed in full when
-# `help` displayed for command, or first line displayed when `help` displayed for
-# parent command (see http://click.pocoo.org/5/documentation/#help-texts).
+# Full help text for this tool, it will be picked up and displayed in full when `help
+# is displayed for this tool in `run` commands.
 help: command_help
 
-# A list of any families that the command is in. A family is a group of commands that
-# can be executed with a single statement using `batch run-family`. Commands within a
-# family are executed in alphabetical order and each command is executed on every node
-# before the second command is executed on any.
-# This field is optional and only valid for batch commands.
-families:
- - family1
- - family2
- - etc..
+# A flag stating that this tool's command is only to be ran in an interactive
+# shell. It's value must be "True" for this to take effect. If a tool marked as
+# interactive only is ran as part of another tool or on more than one node an error
+# will be thrown.
+interactive: True
+
+# Runs the command in reporting mode. The standard output of the remote command will
+# be dumped to the screen instead of the exit code.
+report: True
+
+# The following list forms the arguments for the command line. They are set as
+# bash shell variables when running the command. This allows them to be used
+# within the command.
+# Argument names are comprised of lowercase alphanumerics and must start with
+# a letter.
+# NOTE: this key is optional
+arguments:
+  - arg1
+  - arg2
+  ...
 ```
+
+# Configuring Run Parameters
+
+# Maximum SSH Operations
+There is an inbuilt limit on how many parallel ssh operations can be made. This
+is not strictly the number of open connections, but however the number of actions
+that can be preformed over them.
+
+The default maximum is 100, but it can be set from the environment with:
+`ADMINWARE_MAX_SSH`
+
+# Delay Between Jobs
+There is a minor delay between starting new Jobs. This causes the initial `SSH`
+connections to be spread out whist the Jobs are starting.
+
+The delay defaults to 0.2s, but can be changed by setting:
+`ADMINWARE_START_DELAY`
 
 # Development setup
 
