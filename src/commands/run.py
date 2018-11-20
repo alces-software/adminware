@@ -126,7 +126,7 @@ Over {}:
             active_tasks = []
             def remove_done_tasks():
                 for active_task in active_tasks:
-                    if active_task.finished:
+                    if active_task.finished():
                         active_tasks.remove(active_task)
                         break
 
