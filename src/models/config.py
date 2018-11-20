@@ -51,7 +51,7 @@ class Config():
         return self.data['help']
 
     def args(self):
-        if self.arguments: return [a.lower() for a in self.arguments]
+        if self.arguments: return [str(a).lower() for a in self.arguments]
         else: return []
 
     # TODO: Deprecated, avoid usage
