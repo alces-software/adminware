@@ -69,8 +69,11 @@ available. Please see documentation for possible causes
             self.add_done_callback(type(self).report_results)
 
         def close(self):
-            try: job.connection.close()
-            except: pass
+            try: self.connection().close()
+            except RuntimeError as e: click.echo('''
+Failure while closing connection to {}
+{}
+'''.strip().format(self.node, e))
 
         def finished(self):
             return self._state == 'FINISHED'
