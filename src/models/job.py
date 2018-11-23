@@ -64,12 +64,12 @@ available. Please see documentation for possible causes
             self.thread_pool = thread_pool
             super().__init__(self.run_async())
             self.job = job
-            self.add_job_callback(type(self).close)
+            self.add_done_callback(type(self).close)
             self.add_job_callback(lambda job: job.set_ssh_results())
             self.add_done_callback(type(self).report_results)
 
         def close(self):
-            try: self.connection().close()
+            try: self.job.connection().close()
             except RuntimeError as e: click.echo('''
 Failure while closing connection to {}
 {}
