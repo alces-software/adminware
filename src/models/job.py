@@ -76,7 +76,7 @@ Failure while closing connection to {}
 '''.strip().format(self.node, e))
 
         def finished(self):
-            return self._state == 'FINISHED'
+            return self._state in ['FINISHED', 'CANCELLED']
 
         def __getattr__(self, attr):
             return getattr(self.job, attr)
