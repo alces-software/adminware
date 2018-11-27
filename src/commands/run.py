@@ -148,7 +148,6 @@ Over {}:
             try:
                 await add_tasks()
                 run_print('Waiting for jobs to finish...')
-            except concurrent.futures.CancelledError: pass
             finally: await await_finished()
 
         session = Session()
@@ -162,6 +161,7 @@ Over {}:
                 run_print('Executing: {}'.format(batch.name()))
                 tasks = map(lambda j: j.task(thread_pool = pool), batch.jobs)
                 loop.run_until_complete(start_tasks(tasks))
+        except concurrent.futures.CancelledError: pass
         finally:
             run_print('Cleaning up...')
             pool.shutdown(wait = True)
