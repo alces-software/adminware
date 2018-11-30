@@ -51,7 +51,8 @@ class Config():
         return self.data['help']
 
     def args(self):
-        return self.arguments or []
+        if self.arguments: return [str(a).lower() for a in self.arguments]
+        else: return []
 
     # TODO: Deprecated, avoid usage
     def interactive_only(self):
