@@ -32,7 +32,7 @@ pyparsing==2.1.10
 pytest==3.0.5
 pytest-mock==1.5.0
 pytz==2018.5
-PyYAML==3.13
+PyYAML==5.4
 requests==2.20.1
 simplegeneric==0.8.1
 six==1.10.0
